@@ -112,19 +112,28 @@ export const logout = (req, res) => {
 // Update user profilePic in database
 // Return updated user data (without password)
 export const updateProfile = async (req, res) => {
-  const { profilePic } = req.body;
+  const { profilePic, fullName } = req.body;
   const userId = req.user._id;
 
   try {
-    if (!profilePic) {
-      return res.status(400).json({ message: "Profile pic is required" });
+    const updateData = {};
+
+    if (fullName) {
+      updateData.fullName = fullName;
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    if (profilePic) {
+      const uploadResponse = await cloudinary.uploader.upload(profilePic);
+      updateData.profilePic = uploadResponse.secure_url;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No data provided to update" });
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { profilePic: uploadResponse.secure_url },
+      updateData,
       { new: true }
     ).select("-password");
 
@@ -139,9 +148,10 @@ export const updateProfile = async (req, res) => {
 // Middleware validates JWT
 // Middleware attaches user to req.user
 // Return req.user in response
-export const checkAuth = (req, res) => {
+export const checkAuth = async (req, res) => {
   try {
-    res.status(200).json(req.user);
+    const user = await User.findById(req.user._id).select("-password");
+    res.status(200).json(user);
   } catch (error) {
     console.error("Check auth error:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
