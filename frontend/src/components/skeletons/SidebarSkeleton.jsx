@@ -5,14 +5,18 @@ const SidebarSkeleton = () => {
 
   return (
     <aside
-      className="h-full w-20 lg:w-72 border-r border-base-300
-      flex flex-col transition-all duration-200 bg-base-100"
+      className="h-full w-16 sm:w-20 lg:w-72
+      border-r border-base-300
+      flex flex-col bg-base-100
+      transition-all duration-200"
     >
       {/* Header */}
-      <div className="border-b border-base-300 w-full p-4">
+      <div className="border-b border-base-300 w-full p-3 sm:p-4">
         <div className="flex items-center gap-2 justify-center lg:justify-start">
-          <Users className="h-6 w-6" />
-          <span className="hidden lg:block font-medium">Contacts</span>
+          <Users className="h-5 w-5 sm:h-6 sm:w-6" />
+          <span className="hidden lg:block font-medium">
+            Contacts
+          </span>
         </div>
       </div>
 
@@ -21,10 +25,10 @@ const SidebarSkeleton = () => {
         {skeletonContacts.map((_, idx) => (
           <div
             key={idx}
-            className="flex items-center gap-3 px-3 py-2"
+            className="flex items-center gap-3 px-2 sm:px-3 py-2"
           >
             <div className="mx-auto lg:mx-0">
-              <div className="skeleton h-11 w-11 rounded-full" />
+              <div className="skeleton h-10 w-10 sm:h-11 sm:w-11 rounded-full" />
             </div>
 
             <div className="hidden lg:block flex-1 space-y-2">
