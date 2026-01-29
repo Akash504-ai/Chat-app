@@ -11,18 +11,40 @@ const ChatHeader = () => {
     selectedChatType,
     setSelectedUser,
     setSelectedGroup,
+    typingUsers,
   } = useChatStore();
 
-  const { onlineUsers } = useAuthStore();
+  const { authUser, onlineUsers } = useAuthStore();
   const [showMembers, setShowMembers] = useState(false);
 
-  // nothing selected
   if (!selectedUser && !selectedGroup) return null;
+
+  const isGroup = selectedChatType === "group";
+
+  // =====================
+  // TYPING USERS
+  // =====================
+  const typingUserIds = Object.keys(typingUsers).filter(
+    (id) => id !== authUser._id
+  );
+
+  let typingText = null;
+
+  if (typingUserIds.length > 0) {
+    if (!isGroup) {
+      typingText = "typing...";
+    } else {
+      typingText =
+        typingUserIds.length === 1
+          ? "Someone is typing..."
+          : `${typingUserIds.length} people typing...`;
+    }
+  }
 
   // =====================
   // PRIVATE CHAT HEADER
   // =====================
-  if (selectedChatType === "private" && selectedUser) {
+  if (!isGroup && selectedUser) {
     const isOnline = onlineUsers.includes(selectedUser._id);
 
     return (
@@ -47,7 +69,7 @@ const ChatHeader = () => {
                 {selectedUser.fullName}
               </h3>
               <p className="text-xs text-base-content/70">
-                {isOnline ? "Online" : "Offline"}
+                {typingText || (isOnline ? "Online" : "Offline")}
               </p>
             </div>
           </div>
@@ -66,7 +88,7 @@ const ChatHeader = () => {
   // =====================
   // GROUP CHAT HEADER
   // =====================
-  if (selectedChatType === "group" && selectedGroup) {
+  if (isGroup && selectedGroup) {
     return (
       <>
         <div className="border-b border-base-300 px-4 py-3">
@@ -83,13 +105,13 @@ const ChatHeader = () => {
                   {selectedGroup.name}
                 </h3>
                 <p className="text-xs text-base-content/70">
-                  Group chat
+                  {typingText || "Group chat"}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-1">
-              {/* INFO / MEMBERS */}
+              {/* MEMBERS */}
               <button
                 onClick={() => setShowMembers(true)}
                 className="btn btn-ghost btn-sm"

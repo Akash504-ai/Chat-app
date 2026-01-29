@@ -15,13 +15,19 @@ const MessageInput = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
+  const typingTimeoutRef = useRef(null);
+
   const {
     sendMessage,
     sendGroupMessage,
     selectedChatType,
+    startTyping,
+    stopTyping,
   } = useChatStore();
 
+  // =====================
   // IMAGE
+  // =====================
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith("image/")) {
@@ -34,7 +40,9 @@ const MessageInput = () => {
     reader.readAsDataURL(file);
   };
 
+  // =====================
   // FILE
+  // =====================
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -51,7 +59,9 @@ const MessageInput = () => {
     reader.readAsDataURL(file);
   };
 
+  // =====================
   // AUDIO
+  // =====================
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
@@ -79,10 +89,33 @@ const MessageInput = () => {
     setRecording(false);
   };
 
+  // =====================
+  // TYPING HANDLER
+  // =====================
+  const handleTyping = (value) => {
+    setText(value);
+
+    if (!value.trim()) {
+      stopTyping();
+      return;
+    }
+
+    startTyping();
+
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      stopTyping();
+    }, 1200);
+  };
+
+  // =====================
   // SEND
+  // =====================
   const handleSend = async (e) => {
     e.preventDefault();
     if (!text && !imagePreview && !fileData && !audioData) return;
+
+    stopTyping();
 
     const payload = {
       text: text.trim(),
@@ -129,7 +162,8 @@ const MessageInput = () => {
       <form onSubmit={handleSend} className="flex items-center gap-2">
         <input
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => handleTyping(e.target.value)}
+          onBlur={stopTyping}
           className="input input-bordered flex-1"
           placeholder="Type a message..."
         />
@@ -149,20 +183,36 @@ const MessageInput = () => {
           onChange={handleFileChange}
         />
 
-        <button type="button" onClick={() => imageRef.current.click()} className="btn btn-ghost">
+        <button
+          type="button"
+          onClick={() => imageRef.current.click()}
+          className="btn btn-ghost"
+        >
           <Image size={20} />
         </button>
 
-        <button type="button" onClick={() => fileRef.current.click()} className="btn btn-ghost">
+        <button
+          type="button"
+          onClick={() => fileRef.current.click()}
+          className="btn btn-ghost"
+        >
           <Paperclip size={20} />
         </button>
 
         {!recording ? (
-          <button type="button" onClick={startRecording} className="btn btn-ghost">
+          <button
+            type="button"
+            onClick={startRecording}
+            className="btn btn-ghost"
+          >
             <Mic size={20} />
           </button>
         ) : (
-          <button type="button" onClick={stopRecording} className="btn btn-error">
+          <button
+            type="button"
+            onClick={stopRecording}
+            className="btn btn-error"
+          >
             <StopCircle size={20} />
           </button>
         )}

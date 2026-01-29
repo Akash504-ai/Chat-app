@@ -15,6 +15,9 @@ export const useChatStore = create((set, get) => ({
   selectedGroup: null,
   selectedChatType: "private",
 
+  // 👇 typing users (key = userId)
+  typingUsers: {},
+
   isUsersLoading: false,
   isGroupsLoading: false,
   isMessagesLoading: false,
@@ -100,44 +103,36 @@ export const useChatStore = create((set, get) => ({
   // =====================
   // GROUP ACTIONS
   // =====================
-
-  // 🗑 Delete group (creator only)
   deleteGroup: async (groupId) => {
     try {
       await axiosInstance.delete(`/groups/${groupId}`);
-
       set((state) => ({
         groups: state.groups.filter((g) => g._id !== groupId),
         selectedGroup: null,
         messages: [],
         selectedChatType: "private",
       }));
-
       toast.success("Group deleted");
     } catch {
       toast.error("Failed to delete group");
     }
   },
 
-  // 🚪 Leave group
   leaveGroup: async (groupId) => {
     try {
       await axiosInstance.post(`/groups/${groupId}/leave`);
-
       set((state) => ({
         groups: state.groups.filter((g) => g._id !== groupId),
         selectedGroup: null,
         messages: [],
         selectedChatType: "private",
       }));
-
       toast.success("You left the group");
     } catch {
       toast.error("Failed to leave group");
     }
   },
 
-  // ➕ Add member (admin only)
   addGroupMember: async (groupId, userId) => {
     try {
       const res = await axiosInstance.post(
@@ -157,7 +152,6 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  // ➖ Remove member (admin only)
   removeGroupMember: async (groupId, userId) => {
     try {
       const res = await axiosInstance.post(
@@ -178,6 +172,39 @@ export const useChatStore = create((set, get) => ({
   },
 
   // =====================
+  // ⌨️ TYPING INDICATOR
+  // =====================
+  startTyping: () => {
+    console.log("⌨️ startTyping fired");
+    const { selectedUser, selectedGroup, selectedChatType } = get();
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+
+    socket.emit("typing", {
+      chatType: selectedChatType,
+      to:
+        selectedChatType === "private"
+          ? selectedUser?._id
+          : selectedGroup?._id,
+    });
+  },
+
+  stopTyping: () => {
+    console.log("🛑 stopTyping fired");
+    const { selectedUser, selectedGroup, selectedChatType } = get();
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+
+    socket.emit("stopTyping", {
+      chatType: selectedChatType,
+      to:
+        selectedChatType === "private"
+          ? selectedUser?._id
+          : selectedGroup?._id,
+    });
+  },
+
+  // =====================
   // SOCKET
   // =====================
   subscribeToMessages: () => {
@@ -188,7 +215,6 @@ export const useChatStore = create((set, get) => ({
       const { selectedUser, selectedChatType } = get();
       if (selectedChatType !== "private") return;
       if (msg.senderId !== selectedUser?._id) return;
-
       set({ messages: [...get().messages, msg] });
     });
 
@@ -196,8 +222,22 @@ export const useChatStore = create((set, get) => ({
       const { selectedGroup, selectedChatType } = get();
       if (selectedChatType !== "group") return;
       if (msg.groupId !== selectedGroup?._id) return;
-
       set({ messages: [...get().messages, msg] });
+    });
+
+    // 👇 typing listeners
+    socket.on("typing", ({ userId }) => {
+      set((state) => ({
+        typingUsers: { ...state.typingUsers, [userId]: true },
+      }));
+    });
+
+    socket.on("stopTyping", ({ userId }) => {
+      set((state) => {
+        const copy = { ...state.typingUsers };
+        delete copy[userId];
+        return { typingUsers: copy };
+      });
     });
   },
 
@@ -207,6 +247,8 @@ export const useChatStore = create((set, get) => ({
 
     socket.off("newMessage");
     socket.off("newGroupMessage");
+    socket.off("typing");
+    socket.off("stopTyping");
   },
 
   // =====================
@@ -218,6 +260,7 @@ export const useChatStore = create((set, get) => ({
       selectedGroup: null,
       selectedChatType: "private",
       messages: [],
+      typingUsers: {},
     }),
 
   setSelectedGroup: (group) =>
@@ -226,5 +269,6 @@ export const useChatStore = create((set, get) => ({
       selectedUser: null,
       selectedChatType: "group",
       messages: [],
+      typingUsers: {},
     }),
 }));

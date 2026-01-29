@@ -21,11 +21,15 @@ const ChatContainer = () => {
     selectedChatType,
     subscribeToMessages,
     unsubscribeFromMessages,
+    typingUsers,
   } = useChatStore();
 
   const { authUser } = useAuthStore();
   const bottomRef = useRef(null);
 
+  // =====================
+  // FETCH MESSAGES
+  // =====================
   useEffect(() => {
     if (selectedChatType === "private" && selectedUser?._id) {
       getMessages(selectedUser._id);
@@ -39,9 +43,12 @@ const ChatContainer = () => {
     return () => unsubscribeFromMessages();
   }, [selectedUser?._id, selectedGroup?._id, selectedChatType]);
 
+  // =====================
+  // AUTO SCROLL
+  // =====================
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, typingUsers]);
 
   if (!selectedUser && !selectedGroup) return null;
 
@@ -53,6 +60,36 @@ const ChatContainer = () => {
         <MessageInput />
       </div>
     );
+  }
+
+  // =====================
+  // TYPING TEXT
+  // =====================
+  const typingUserIds = Object.keys(typingUsers).filter((id) => {
+    if (id === authUser._id) return false;
+
+    if (selectedChatType === "private") {
+      return id === selectedUser?._id;
+    }
+
+    if (selectedChatType === "group") {
+      return true;
+    }
+
+    return false;
+  });
+
+  let typingText = null;
+
+  if (typingUserIds.length > 0) {
+    if (selectedChatType === "private") {
+      typingText = "Typing...";
+    } else {
+      typingText =
+        typingUserIds.length === 1
+          ? "Someone is typing..."
+          : `${typingUserIds.length} people are typing...`;
+    }
   }
 
   return (
@@ -134,6 +171,15 @@ const ChatContainer = () => {
             </div>
           );
         })}
+
+        {/* 👇 TYPING INDICATOR */}
+        {/* {typingText && (
+          <div className="text-sm italic opacity-60 px-2">
+            {typingText}
+          </div>
+        )} */}
+
+        <div ref={bottomRef} />
       </div>
 
       <MessageInput />

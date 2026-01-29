@@ -12,8 +12,8 @@ const io = new Server(server, {
   },
 });
 
-// used to store online users
-const userSocketMap = {}; // { userId: socketId }
+// { userId: socketId }
+const userSocketMap = {};
 
 export function getReceiverSocketId(userId) {
   return userSocketMap[userId];
@@ -26,8 +26,11 @@ io.on("connection", async (socket) => {
 
   if (userId) {
     userSocketMap[userId] = socket.id;
+
+    // join personal room
     socket.join(userId);
 
+    // join all groups
     const groups = await Group.find({
       "members.userId": userId,
     }).select("_id");
@@ -37,8 +40,29 @@ io.on("connection", async (socket) => {
     });
   }
 
+  // 🔵 ONLINE USERS
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
+  // =========================
+  // ⌨️ TYPING INDICATOR
+  // =========================
+  socket.on("typing", ({ chatType, to }) => {
+    socket.to(to).emit("typing", {
+      userId,
+      chatType,
+    });
+  });
+
+  socket.on("stopTyping", ({ chatType, to }) => {
+    socket.to(to).emit("stopTyping", {
+      userId,
+      chatType,
+    });
+  });
+
+  // =========================
+  // DISCONNECT
+  // =========================
   socket.on("disconnect", () => {
     console.log("A user disconnected", socket.id);
     if (userId) delete userSocketMap[userId];
