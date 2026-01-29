@@ -15,15 +15,15 @@ export const useChatStore = create((set, get) => ({
   selectedGroup: null,
   selectedChatType: "private",
 
-  // 👇 typing users (key = userId)
   typingUsers: {},
+  unreadCounts: {}, // { chatId: number }
 
   isUsersLoading: false,
   isGroupsLoading: false,
   isMessagesLoading: false,
 
   // =====================
-  // USERS (PRIVATE CHAT)
+  // USERS
   // =====================
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -42,6 +42,33 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await axiosInstance.get(`/messages/${userId}`);
       set({ messages: res.data });
+
+      // ✅ clear unread
+      set((state) => ({
+        unreadCounts: {
+          ...state.unreadCounts,
+          [userId]: 0,
+        },
+      }));
+
+      // ✅ seen emit
+      const socket = useAuthStore.getState().socket;
+      const unseenIds = res.data
+        .filter(
+          (m) =>
+            (typeof m.senderId === "string"
+              ? m.senderId
+              : m.senderId?._id) === userId &&
+            m.status !== "seen"
+        )
+        .map((m) => m._id);
+
+      if (socket && unseenIds.length > 0) {
+        socket.emit("messageSeen", {
+          messageIds: unseenIds,
+          senderId: userId,
+        });
+      }
     } catch {
       toast.error("Failed to load messages");
     } finally {
@@ -55,7 +82,7 @@ export const useChatStore = create((set, get) => ({
 
     const res = await axiosInstance.post(
       `/messages/send/${selectedUser._id}`,
-      messageData,
+      messageData
     );
 
     set({ messages: [...messages, res.data] });
@@ -81,6 +108,14 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await axiosInstance.get(`/messages/group/${groupId}`);
       set({ messages: res.data });
+
+      // ✅ clear unread
+      set((state) => ({
+        unreadCounts: {
+          ...state.unreadCounts,
+          [groupId]: 0,
+        },
+      }));
     } catch {
       toast.error("Failed to load group messages");
     } finally {
@@ -94,103 +129,38 @@ export const useChatStore = create((set, get) => ({
 
     const res = await axiosInstance.post(
       `/messages/group/send/${selectedGroup._id}`,
-      messageData,
+      messageData
     );
 
     set({ messages: [...messages, res.data] });
   },
 
   // =====================
-  // GROUP ACTIONS
-  // =====================
-  deleteGroup: async (groupId) => {
-    try {
-      await axiosInstance.delete(`/groups/${groupId}`);
-      set((state) => ({
-        groups: state.groups.filter((g) => g._id !== groupId),
-        selectedGroup: null,
-        messages: [],
-        selectedChatType: "private",
-      }));
-      toast.success("Group deleted");
-    } catch {
-      toast.error("Failed to delete group");
-    }
-  },
-
-  leaveGroup: async (groupId) => {
-    try {
-      await axiosInstance.post(`/groups/${groupId}/leave`);
-      set((state) => ({
-        groups: state.groups.filter((g) => g._id !== groupId),
-        selectedGroup: null,
-        messages: [],
-        selectedChatType: "private",
-      }));
-      toast.success("You left the group");
-    } catch {
-      toast.error("Failed to leave group");
-    }
-  },
-
-  addGroupMember: async (groupId, userId) => {
-    try {
-      const res = await axiosInstance.post(`/groups/${groupId}/add-user`, {
-        userId,
-      });
-
-      set((state) => ({
-        groups: state.groups.map((g) => (g._id === groupId ? res.data : g)),
-      }));
-
-      toast.success("Member added");
-    } catch {
-      toast.error("Failed to add member");
-    }
-  },
-
-  removeGroupMember: async (groupId, userId) => {
-    try {
-      const res = await axiosInstance.post(`/groups/${groupId}/remove-user`, {
-        userId,
-      });
-
-      set((state) => ({
-        groups: state.groups.map((g) => (g._id === groupId ? res.data : g)),
-      }));
-
-      toast.success("Member removed");
-    } catch {
-      toast.error("Failed to remove member");
-    }
-  },
-
-  // =====================
-  // ⌨️ TYPING INDICATOR
+  // TYPING (EMIT)
   // =====================
   startTyping: () => {
-    console.log("⌨️ startTyping fired");
     const { selectedUser, selectedGroup, selectedChatType } = get();
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
 
     socket.emit("typing", {
-      chatType: selectedChatType,
       to:
-        selectedChatType === "private" ? selectedUser?._id : selectedGroup?._id,
+        selectedChatType === "private"
+          ? selectedUser?._id
+          : selectedGroup?._id,
     });
   },
 
   stopTyping: () => {
-    console.log("🛑 stopTyping fired");
     const { selectedUser, selectedGroup, selectedChatType } = get();
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
 
     socket.emit("stopTyping", {
-      chatType: selectedChatType,
       to:
-        selectedChatType === "private" ? selectedUser?._id : selectedGroup?._id,
+        selectedChatType === "private"
+          ? selectedUser?._id
+          : selectedGroup?._id,
     });
   },
 
@@ -201,63 +171,79 @@ export const useChatStore = create((set, get) => ({
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
 
+    // -------- PRIVATE MESSAGE --------
     socket.on("newMessage", (msg) => {
-      const { selectedUser, selectedChatType } = get();
-      if (selectedChatType !== "private") return;
-      if (msg.senderId !== selectedUser?._id) return;
+      const { selectedUser, selectedChatType, unreadCounts } = get();
+
+      const senderId =
+        typeof msg.senderId === "string"
+          ? msg.senderId
+          : msg.senderId?._id;
+
+      if (
+        selectedChatType !== "private" ||
+        selectedUser?._id !== senderId
+      ) {
+        set({
+          unreadCounts: {
+            ...unreadCounts,
+            [senderId]: (unreadCounts[senderId] || 0) + 1,
+          },
+        });
+        return;
+      }
+
       set({ messages: [...get().messages, msg] });
     });
 
+    // -------- GROUP MESSAGE --------
     socket.on("newGroupMessage", (msg) => {
-      const { selectedGroup, selectedChatType } = get();
-      if (selectedChatType !== "group") return;
-      if (msg.groupId !== selectedGroup?._id) return;
+      const { selectedGroup, selectedChatType, unreadCounts } = get();
+
+      if (
+        selectedChatType !== "group" ||
+        selectedGroup?._id !== msg.groupId
+      ) {
+        set({
+          unreadCounts: {
+            ...unreadCounts,
+            [msg.groupId]: (unreadCounts[msg.groupId] || 0) + 1,
+          },
+        });
+        return;
+      }
+
       set({ messages: [...get().messages, msg] });
     });
 
-    // 👇 typing listeners
-    socket.on("typing", ({ userId, chatType, to }) => {
-      const { selectedChatType, selectedUser, selectedGroup } = get();
-
-      // PRIVATE CHAT
-      if (
-        chatType === "private" &&
-        selectedChatType === "private" &&
-        selectedUser?._id === userId
-      ) {
-        set((state) => ({
-          typingUsers: { ...state.typingUsers, [userId]: true },
-        }));
-      }
-
-      // GROUP CHAT
-      if (
-        chatType === "group" &&
-        selectedChatType === "group" &&
-        selectedGroup?._id === to
-      ) {
-        set((state) => ({
-          typingUsers: { ...state.typingUsers, [userId]: true },
-        }));
-      }
+    // -------- MESSAGE STATUS --------
+    socket.on("messageStatusUpdate", ({ messageId, status }) => {
+      set((state) => ({
+        messages: state.messages.map((m) =>
+          m._id === messageId ? { ...m, status } : m
+        ),
+      }));
     });
 
-    socket.on("stopTyping", ({ userId, chatType, to }) => {
-      const { selectedChatType, selectedUser, selectedGroup } = get();
+    socket.on("messageStatusUpdateBulk", ({ messageIds, status }) => {
+      set((state) => ({
+        messages: state.messages.map((m) =>
+          messageIds.includes(m._id) ? { ...m, status } : m
+        ),
+      }));
+    });
 
-      const isSameChat =
-        (chatType === "private" &&
-          selectedChatType === "private" &&
-          selectedUser?._id === userId) ||
-        (chatType === "group" &&
-          selectedChatType === "group" &&
-          selectedGroup?._id === to);
+    // -------- TYPING --------
+    socket.on("typing", ({ from }) => {
+      set((state) => ({
+        typingUsers: { ...state.typingUsers, [from]: true },
+      }));
+    });
 
-      if (!isSameChat) return;
-
+    socket.on("stopTyping", ({ from }) => {
       set((state) => {
         const copy = { ...state.typingUsers };
-        delete copy[userId];
+        delete copy[from];
         return { typingUsers: copy };
       });
     });
@@ -271,26 +257,36 @@ export const useChatStore = create((set, get) => ({
     socket.off("newGroupMessage");
     socket.off("typing");
     socket.off("stopTyping");
+    socket.off("messageStatusUpdate");
+    socket.off("messageStatusUpdateBulk");
   },
 
   // =====================
   // SELECTORS
   // =====================
   setSelectedUser: (user) =>
-    set({
+    set((state) => ({
       selectedUser: user,
       selectedGroup: null,
       selectedChatType: "private",
       messages: [],
       typingUsers: {},
-    }),
+      unreadCounts: {
+        ...state.unreadCounts,
+        [user?._id]: 0,
+      },
+    })),
 
   setSelectedGroup: (group) =>
-    set({
+    set((state) => ({
       selectedGroup: group,
       selectedUser: null,
       selectedChatType: "group",
       messages: [],
       typingUsers: {},
-    }),
+      unreadCounts: {
+        ...state.unreadCounts,
+        [group?._id]: 0,
+      },
+    })),
 }));

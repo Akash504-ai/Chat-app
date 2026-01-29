@@ -15,6 +15,7 @@ const Sidebar = () => {
     selectedGroup,
     selectedChatType,
     typingUsers,
+    unreadCounts, // ✅ ADDED
     setSelectedUser,
     setSelectedGroup,
     deleteGroup,
@@ -82,9 +83,7 @@ const Sidebar = () => {
         {/* GROUPS */}
         {groups.length > 0 && (
           <div className="border-b border-base-300 py-2">
-            <p className="px-4 text-xs font-semibold opacity-60">
-              GROUPS
-            </p>
+            <p className="px-4 text-xs font-semibold opacity-60">GROUPS</p>
 
             {groups.map((group) => {
               const isActive = selectedGroup?._id === group._id;
@@ -108,21 +107,30 @@ const Sidebar = () => {
                   <div className="flex items-center gap-3 min-w-0">
                     <UsersRound className="h-10 w-10 rounded-full bg-primary/10 p-2" />
                     <div className="hidden lg:block min-w-0">
-                      <p className="truncate font-medium">
-                        {group.name}
-                      </p>
+                      <p className="truncate font-medium">{group.name}</p>
                       <p className="text-xs opacity-60">
                         {isTyping ? "Someone typing..." : "Group chat"}
                       </p>
                     </div>
                   </div>
 
-                  <button
-                    onClick={(e) => handleDeleteGroup(e, group._id)}
-                    className="btn btn-ghost btn-xs text-error"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {/* 🔴 UNREAD BADGE (GROUP) */}
+                    {unreadCounts[group._id] > 0 && (
+                      <span className="badge badge-error text-xs">
+                        {unreadCounts[group._id] > 9
+                          ? "9+"
+                          : unreadCounts[group._id]}
+                      </span>
+                    )}
+
+                    <button
+                      onClick={(e) => handleDeleteGroup(e, group._id)}
+                      className="btn btn-ghost btn-xs text-error"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -131,9 +139,7 @@ const Sidebar = () => {
 
         {/* USERS */}
         <div className="flex-1 overflow-y-auto py-2">
-          <p className="px-4 text-xs font-semibold opacity-60">
-            USERS
-          </p>
+          <p className="px-4 text-xs font-semibold opacity-60">USERS</p>
 
           {filteredUsers.map((user) => {
             const isSelected = selectedUser?._id === user._id;
@@ -163,7 +169,7 @@ const Sidebar = () => {
                   )}
                 </div>
 
-                <div className="hidden lg:block min-w-0">
+                <div className="hidden lg:block min-w-0 flex-1">
                   <p className="truncate font-medium">{user.fullName}</p>
                   <p className="text-xs opacity-60">
                     {isTyping
@@ -173,6 +179,15 @@ const Sidebar = () => {
                       : "Offline"}
                   </p>
                 </div>
+
+                {/* 🔴 UNREAD BADGE (USER) */}
+                {unreadCounts[user._id] > 0 && (
+                  <span className="badge badge-error text-xs">
+                    {unreadCounts[user._id] > 9
+                      ? "9+"
+                      : unreadCounts[user._id]}
+                  </span>
+                )}
               </button>
             );
           })}

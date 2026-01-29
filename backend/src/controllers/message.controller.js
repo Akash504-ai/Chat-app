@@ -6,7 +6,9 @@ import { getReceiverSocketId, io } from "../lib/socket.js";
 import mongoose from "mongoose";
 
 /**
- * USERS FOR SIDEBAR (unchanged)
+ * =========================
+ * USERS FOR SIDEBAR
+ * =========================
  */
 export const getUsersForSidebar = async (req, res) => {
   try {
@@ -40,6 +42,24 @@ export const getMessages = async (req, res) => {
         { senderId: id, receiverId: myId },
       ],
     }).sort({ createdAt: 1 });
+
+    // ✅ mark messages as SEEN
+    await Message.updateMany(
+      {
+        senderId: id,
+        receiverId: myId,
+        status: { $ne: "seen" },
+      },
+      { status: "seen" }
+    );
+
+    const senderSocketId = getReceiverSocketId(id);
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messageStatusUpdate", {
+        from: myId,
+        status: "seen",
+      });
+    }
 
     res.status(200).json(messages);
   } catch {
@@ -92,7 +112,8 @@ export const sendMessage = async (req, res) => {
       };
     }
 
-    const newMessage = await Message.create({
+    // ✅ SENT
+    let newMessage = await Message.create({
       senderId,
       receiverId,
       text: text?.trim() || "",
@@ -100,11 +121,28 @@ export const sendMessage = async (req, res) => {
       audio: audioUrl,
       file: fileData,
       groupId: null,
+      status: "sent",
     });
 
     const receiverSocketId = getReceiverSocketId(receiverId);
+    const senderSocketId = getReceiverSocketId(senderId);
+
+    // ✅ DELIVERED
     if (receiverSocketId) {
+      newMessage = await Message.findByIdAndUpdate(
+        newMessage._id,
+        { status: "delivered" },
+        { new: true }
+      );
+
       io.to(receiverSocketId).emit("newMessage", newMessage);
+
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("messageStatusUpdate", {
+          messageId: newMessage._id,
+          status: "delivered",
+        });
+      }
     }
 
     res.status(201).json(newMessage);
@@ -213,11 +251,12 @@ export const sendGroupMessage = async (req, res) => {
     const newMessage = await Message.create({
       senderId,
       groupId,
+      receiverId: null,
       text: text?.trim() || "",
       image: imageUrl,
       audio: audioUrl,
       file: fileData,
-      receiverId: null,
+      status: "sent",
     });
 
     io.to(groupId.toString()).emit("newGroupMessage", newMessage);

@@ -27,9 +27,12 @@ const ChatContainer = () => {
   const { authUser } = useAuthStore();
   const bottomRef = useRef(null);
 
-  // =====================
-  // FETCH MESSAGES
-  // =====================
+  // useEffect(() => {
+  //   console.log("subscribeToMessages called");
+  //   subscribeToMessages();
+  //   return () => unsubscribeFromMessages();
+  // }, [selectedUser?._id, selectedGroup?._id]);
+
   useEffect(() => {
     if (selectedChatType === "private" && selectedUser?._id) {
       getMessages(selectedUser._id);
@@ -43,9 +46,6 @@ const ChatContainer = () => {
     return () => unsubscribeFromMessages();
   }, [selectedUser?._id, selectedGroup?._id, selectedChatType]);
 
-  // =====================
-  // AUTO SCROLL
-  // =====================
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typingUsers]);
@@ -60,36 +60,6 @@ const ChatContainer = () => {
         <MessageInput />
       </div>
     );
-  }
-
-  // =====================
-  // TYPING TEXT
-  // =====================
-  const typingUserIds = Object.keys(typingUsers).filter((id) => {
-    if (id === authUser._id) return false;
-
-    if (selectedChatType === "private") {
-      return id === selectedUser?._id;
-    }
-
-    if (selectedChatType === "group") {
-      return true;
-    }
-
-    return false;
-  });
-
-  let typingText = null;
-
-  if (typingUserIds.length > 0) {
-    if (selectedChatType === "private") {
-      typingText = "Typing...";
-    } else {
-      typingText =
-        typingUserIds.length === 1
-          ? "Someone is typing..."
-          : `${typingUserIds.length} people are typing...`;
-    }
   }
 
   return (
@@ -118,7 +88,6 @@ const ChatContainer = () => {
               ref={isLast ? bottomRef : null}
               className={`chat ${isMe ? "chat-end" : "chat-start"}`}
             >
-              {/* Avatar */}
               <div className="chat-image avatar">
                 <div className="h-10 w-10 rounded-full border">
                   <img
@@ -128,7 +97,6 @@ const ChatContainer = () => {
                 </div>
               </div>
 
-              {/* Header */}
               <div className="chat-header mb-1 flex items-center gap-2">
                 {selectedChatType === "group" && !isMe && (
                   <span className="text-sm font-medium">
@@ -140,7 +108,6 @@ const ChatContainer = () => {
                 </time>
               </div>
 
-              {/* Bubble */}
               <div className="chat-bubble max-w-[75%] flex flex-col gap-2">
                 {(message.image || message.audio || message.file?.url) && (
                   <div className="flex flex-col gap-2 rounded-lg bg-base-200/50 p-2">
@@ -167,17 +134,20 @@ const ChatContainer = () => {
                     {message.text}
                   </p>
                 )}
+
+                {isMe && selectedChatType === "private" && (
+                  <div className="flex justify-end text-xs opacity-60 mt-1">
+                    {message.status === "sent" && "✓"}
+                    {message.status === "delivered" && "✓✓"}
+                    {message.status === "seen" && (
+                      <span className="text-blue-500">✓✓</span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           );
         })}
-
-        {/* 👇 TYPING INDICATOR */}
-        {/* {typingText && (
-          <div className="text-sm italic opacity-60 px-2">
-            {typingText}
-          </div>
-        )} */}
 
         <div ref={bottomRef} />
       </div>

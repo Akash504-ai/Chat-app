@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import http from "http";
 import express from "express";
 import Group from "../models/group.model.js";
+import Message from "../models/message.model.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -12,7 +13,7 @@ const io = new Server(server, {
   },
 });
 
-// { userId: socketId }
+// userId -> socketId
 const userSocketMap = {};
 
 export function getReceiverSocketId(userId) {
@@ -20,17 +21,17 @@ export function getReceiverSocketId(userId) {
 }
 
 io.on("connection", async (socket) => {
-  console.log("A user connected", socket.id);
+  console.log("🔌 User connected:", socket.id);
 
   const userId = socket.handshake.query.userId;
 
   if (userId) {
     userSocketMap[userId] = socket.id;
 
-    // personal room
+    // personal room (VERY IMPORTANT)
     socket.join(userId);
 
-    // join all groups
+    // join group rooms
     const groups = await Group.find({
       "members.userId": userId,
     }).select("_id");
@@ -46,20 +47,40 @@ io.on("connection", async (socket) => {
   // =========================
   // ⌨️ TYPING INDICATOR
   // =========================
-  // typing
-  socket.on("typing", ({ chatType, to }) => {
-    socket.to(to).emit("typing", {
-      userId,
-      chatType,
-      to, 
-    });
+  socket.on("typing", ({ to }) => {
+    socket.to(to).emit("typing", { from: userId });
   });
 
-  socket.on("stopTyping", ({ chatType, to }) => {
-    socket.to(to).emit("stopTyping", {
+  socket.on("stopTyping", ({ to }) => {
+    socket.to(to).emit("stopTyping", { from: userId });
+  });
+
+  // =========================
+  // 👀 MESSAGE SEEN (1–1)
+  // =========================
+  socket.on("messageSeen", async ({ messageIds, senderId }) => {
+    await Message.updateMany(
+      { _id: { $in: messageIds } },
+      { status: "seen" }
+    );
+
+    const senderSocketId = getReceiverSocketId(senderId);
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messageStatusUpdateBulk", {
+        messageIds,
+        status: "seen",
+      });
+    }
+  });
+
+  // =========================
+  // 👀 GROUP MESSAGE SEEN (BASE)
+  // =========================
+  socket.on("groupMessageSeen", async ({ messageId, groupId }) => {
+    // later you’ll push userId into seenBy[]
+    socket.to(groupId).emit("groupMessageSeen", {
+      messageId,
       userId,
-      chatType,
-      to, 
     });
   });
 
@@ -67,7 +88,7 @@ io.on("connection", async (socket) => {
   // DISCONNECT
   // =========================
   socket.on("disconnect", () => {
-    console.log("A user disconnected", socket.id);
+    console.log("❌ User disconnected:", socket.id);
     if (userId) delete userSocketMap[userId];
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });

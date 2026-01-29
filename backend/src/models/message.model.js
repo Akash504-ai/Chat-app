@@ -45,11 +45,18 @@ const messageSchema = new mongoose.Schema(
       type: { type: String, default: "" },
       size: { type: Number, default: 0 },
     },
+
+    // ✅ MESSAGE STATUS (NEW)
+    status: {
+      type: String,
+      enum: ["sent", "delivered", "seen"],
+      default: "sent",
+    },
   },
   { timestamps: true }
 );
 
-// Safety check: either receiverId or groupId must exist
+// Safety check
 messageSchema.pre("validate", function (next) {
   if (!this.receiverId && !this.groupId) {
     return next(
