@@ -14,8 +14,11 @@ const ChatContainer = () => {
   const {
     messages,
     getMessages,
+    getGroupMessages,
     isMessagesLoading,
     selectedUser,
+    selectedGroup,
+    selectedChatType,
     subscribeToMessages,
     unsubscribeFromMessages,
   } = useChatStore();
@@ -24,19 +27,23 @@ const ChatContainer = () => {
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    if (!selectedUser?._id) return;
+    if (selectedChatType === "private" && selectedUser?._id) {
+      getMessages(selectedUser._id);
+    }
 
-    getMessages(selectedUser._id);
+    if (selectedChatType === "group" && selectedGroup?._id) {
+      getGroupMessages(selectedGroup._id);
+    }
+
     subscribeToMessages();
-
     return () => unsubscribeFromMessages();
-  }, [selectedUser?._id]);
+  }, [selectedUser?._id, selectedGroup?._id, selectedChatType]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  if (!selectedUser) return null;
+  if (!selectedUser && !selectedGroup) return null;
 
   if (isMessagesLoading) {
     return (
@@ -54,8 +61,19 @@ const ChatContainer = () => {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, idx) => {
-          const isMe = message.senderId === authUser._id;
+          const isMe =
+            typeof message.senderId === "string"
+              ? message.senderId === authUser._id
+              : message.senderId?._id === authUser._id;
+
           const isLast = idx === messages.length - 1;
+
+          const sender =
+            selectedChatType === "group"
+              ? message.senderId
+              : isMe
+              ? authUser
+              : selectedUser;
 
           return (
             <div
@@ -67,49 +85,51 @@ const ChatContainer = () => {
               <div className="chat-image avatar">
                 <div className="h-10 w-10 rounded-full border">
                   <img
-                    src={
-                      isMe
-                        ? authUser.profilePic || "/avatar.png"
-                        : selectedUser.profilePic || "/avatar.png"
-                    }
+                    src={sender?.profilePic || "/avatar.png"}
                     alt="avatar"
                   />
                 </div>
               </div>
 
-              {/* Time */}
-              <div className="chat-header mb-1">
+              {/* Header */}
+              <div className="chat-header mb-1 flex items-center gap-2">
+                {selectedChatType === "group" && !isMe && (
+                  <span className="text-sm font-medium">
+                    {sender?.fullName}
+                  </span>
+                )}
                 <time className="text-xs opacity-50">
                   {formatMessageTime(message.createdAt)}
                 </time>
               </div>
 
               {/* Bubble */}
-              <div className="chat-bubble flex flex-col gap-2 max-w-[75%]">
-                {/* IMAGE */}
-                {message.image && (
-                  <img
-                    src={message.image}
-                    alt="image"
-                    className="rounded-lg max-w-[220px]"
-                  />
+              <div className="chat-bubble max-w-[75%] flex flex-col gap-2">
+                {(message.image || message.audio || message.file?.url) && (
+                  <div className="flex flex-col gap-2 rounded-lg bg-base-200/50 p-2">
+                    {message.image && (
+                      <img
+                        src={message.image}
+                        alt="image"
+                        className="rounded-lg max-w-[220px]"
+                      />
+                    )}
+
+                    {message.audio && (
+                      <AudioMessage audioUrl={message.audio} isMe={isMe} />
+                    )}
+
+                    {message.file?.url && (
+                      <FileMessage file={message.file} />
+                    )}
+                  </div>
                 )}
 
-                {/* AUDIO */}
-                {message.audio && (
-                  <AudioMessage
-                    audioUrl={message.audio}
-                    isMe={isMe}
-                  />
+                {message.text && (
+                  <p className="leading-relaxed break-words">
+                    {message.text}
+                  </p>
                 )}
-
-                {/* FILE */}
-                {message.file?.url && (
-                  <FileMessage file={message.file} />
-                )}
-
-                {/* TEXT */}
-                {message.text && <p>{message.text}</p>}
               </div>
             </div>
           );

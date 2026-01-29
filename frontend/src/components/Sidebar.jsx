@@ -1,100 +1,168 @@
 import { useEffect, useState } from "react";
-import { Users } from "lucide-react";
+import { Users, Plus, UsersRound, Trash2 } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
+import CreateGroupModal from "./CreateGroupModal";
 
 const Sidebar = () => {
   const {
     getUsers,
+    getGroups,
     users,
+    groups,
     selectedUser,
+    selectedGroup,
     setSelectedUser,
+    setSelectedGroup,
+    deleteGroup,
     isUsersLoading,
+    isGroupsLoading,
   } = useChatStore();
 
   const { onlineUsers } = useAuthStore();
+
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
 
   useEffect(() => {
     getUsers();
-  }, [getUsers]);
+    getGroups();
+  }, []);
 
   const filteredUsers = showOnlineOnly
     ? users.filter((u) => onlineUsers.includes(u._id))
     : users;
 
-  if (isUsersLoading) return <SidebarSkeleton />;
+  const handleDeleteGroup = (e, groupId) => {
+    e.stopPropagation(); // 🚫 prevent opening chat
+    if (!confirm("Delete this group?")) return;
+    deleteGroup(groupId);
+  };
+
+  if (isUsersLoading || isGroupsLoading) return <SidebarSkeleton />;
 
   return (
-    <aside className="flex h-full w-20 flex-col border-r border-base-300 transition-all duration-200 lg:w-72">
-      {/* Header */}
-      <div className="border-b border-base-300 p-5">
-        <div className="flex items-center gap-2">
-          <Users className="h-6 w-6" />
-          <span className="hidden font-medium lg:block">Contacts</span>
-        </div>
+    <>
+      <aside className="flex h-full w-20 flex-col border-r border-base-300 lg:w-72">
+        {/* HEADER */}
+        <div className="border-b border-base-300 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-6 w-6" />
+              <span className="hidden font-medium lg:block">Chats</span>
+            </div>
 
-        {/* Online filter */}
-        <div className="mt-3 hidden items-center gap-2 lg:flex">
-          <label className="flex cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
-              className="checkbox checkbox-sm"
-              checked={showOnlineOnly}
-              onChange={(e) => setShowOnlineOnly(e.target.checked)}
-            />
-            <span className="text-sm">Online only</span>
-          </label>
-          <span className="text-xs text-base-content/60">
-            ({onlineUsers.length} online)
-          </span>
-        </div>
-      </div>
-
-      {/* Users */}
-      <div className="w-full flex-1 overflow-y-auto py-2">
-        {filteredUsers.map((user) => {
-          const isSelected = selectedUser?._id === user._id;
-          const isOnline = onlineUsers.includes(user._id);
-
-          return (
             <button
-              key={user._id}
-              onClick={() => setSelectedUser(user)}
-              className={`flex w-full items-center gap-3 p-3 text-left transition
-                hover:bg-base-200
-                ${isSelected ? "bg-base-200" : ""}
-              `}
+              onClick={() => setShowCreateGroup(true)}
+              className="btn btn-sm btn-ghost"
             >
-              <div className="relative mx-auto lg:mx-0">
-                <img
-                  src={user.profilePic || "/avatar.png"}
-                  alt={user.fullName}
-                  className="h-12 w-12 rounded-full object-cover"
-                />
-                {isOnline && (
-                  <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success ring-2 ring-base-100" />
-                )}
-              </div>
-
-              <div className="hidden min-w-0 lg:block">
-                <p className="truncate font-medium">{user.fullName}</p>
-                <p className="text-xs text-base-content/60">
-                  {isOnline ? "Online" : "Offline"}
-                </p>
-              </div>
+              <Plus className="h-5 w-5" />
             </button>
-          );
-        })}
+          </div>
 
-        {filteredUsers.length === 0 && (
-          <div className="py-6 text-center text-sm text-base-content/60">
-            No users found
+          <div className="mt-3 hidden items-center gap-2 lg:flex">
+            <label className="flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-sm"
+                checked={showOnlineOnly}
+                onChange={(e) => setShowOnlineOnly(e.target.checked)}
+              />
+              <span className="text-sm">Online only</span>
+            </label>
+            <span className="text-xs opacity-60">
+              ({onlineUsers.length} online)
+            </span>
+          </div>
+        </div>
+
+        {/* GROUPS */}
+        {groups.length > 0 && (
+          <div className="border-b border-base-300 py-2">
+            <p className="px-4 text-xs font-semibold opacity-60">
+              GROUPS
+            </p>
+
+            {groups.map((group) => {
+              const isActive = selectedGroup?._id === group._id;
+
+              return (
+                <div
+                  key={group._id}
+                  onClick={() => {
+                    setSelectedUser(null);
+                    setSelectedGroup(group);
+                  }}
+                  className={`flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-base-200
+                    ${isActive ? "bg-base-200" : ""}
+                  `}
+                >
+                  <div className="flex items-center gap-3">
+                    <UsersRound className="h-10 w-10 rounded-full bg-primary/10 p-2" />
+                    <span className="hidden truncate lg:block">
+                      {group.name}
+                    </span>
+                  </div>
+
+                  {/* DELETE GROUP */}
+                  <button
+                    onClick={(e) => handleDeleteGroup(e, group._id)}
+                    className="btn btn-ghost btn-xs text-error"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
-      </div>
-    </aside>
+
+        {/* USERS */}
+        <div className="flex-1 overflow-y-auto py-2">
+          <p className="px-4 text-xs font-semibold opacity-60">
+            USERS
+          </p>
+
+          {filteredUsers.map((user) => {
+            const isSelected = selectedUser?._id === user._id;
+            const isOnline = onlineUsers.includes(user._id);
+
+            return (
+              <button
+                key={user._id}
+                onClick={() => setSelectedUser(user)}
+                className={`flex w-full items-center gap-3 p-3 text-left hover:bg-base-200
+                  ${isSelected ? "bg-base-200" : ""}
+                `}
+              >
+                <div className="relative">
+                  <img
+                    src={user.profilePic || "/avatar.png"}
+                    alt={user.fullName}
+                    className="h-10 w-10 rounded-full"
+                  />
+                  {isOnline && (
+                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success ring-2 ring-base-100" />
+                  )}
+                </div>
+
+                <div className="hidden lg:block">
+                  <p className="truncate font-medium">{user.fullName}</p>
+                  <p className="text-xs opacity-60">
+                    {isOnline ? "Online" : "Offline"}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+
+      {showCreateGroup && (
+        <CreateGroupModal onClose={() => setShowCreateGroup(false)} />
+      )}
+    </>
   );
 };
 

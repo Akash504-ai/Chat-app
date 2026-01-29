@@ -15,7 +15,11 @@ const MessageInput = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
-  const { sendMessage } = useChatStore();
+  const {
+    sendMessage,
+    sendGroupMessage,
+    selectedChatType,
+  } = useChatStore();
 
   // IMAGE
   const handleImageChange = (e) => {
@@ -47,10 +51,11 @@ const MessageInput = () => {
     reader.readAsDataURL(file);
   };
 
-  // AUDIO RECORD
+  // AUDIO
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
+
     mediaRecorderRef.current = mediaRecorder;
     audioChunksRef.current = [];
 
@@ -79,12 +84,18 @@ const MessageInput = () => {
     e.preventDefault();
     if (!text && !imagePreview && !fileData && !audioData) return;
 
-    await sendMessage({
+    const payload = {
       text: text.trim(),
       image: imagePreview,
       audio: audioData,
       file: fileData,
-    });
+    };
+
+    if (selectedChatType === "group") {
+      await sendGroupMessage(payload);
+    } else {
+      await sendMessage(payload);
+    }
 
     setText("");
     setImagePreview(null);
@@ -95,7 +106,7 @@ const MessageInput = () => {
   return (
     <div className="border-t border-base-300 p-3">
       {/* PREVIEWS */}
-      <div className="flex gap-2 mb-2 flex-wrap">
+      <div className="mb-2 flex flex-wrap gap-2">
         {imagePreview && (
           <Preview onRemove={() => setImagePreview(null)}>
             <img src={imagePreview} className="h-16 w-16 rounded" />
@@ -123,8 +134,20 @@ const MessageInput = () => {
           placeholder="Type a message..."
         />
 
-        <input ref={imageRef} type="file" accept="image/*" hidden onChange={handleImageChange} />
-        <input ref={fileRef} type="file" hidden onChange={handleFileChange} />
+        <input
+          ref={imageRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={handleImageChange}
+        />
+
+        <input
+          ref={fileRef}
+          type="file"
+          hidden
+          onChange={handleFileChange}
+        />
 
         <button type="button" onClick={() => imageRef.current.click()} className="btn btn-ghost">
           <Image size={20} />
@@ -153,7 +176,7 @@ const MessageInput = () => {
 };
 
 const Preview = ({ children, onRemove }) => (
-  <div className="flex items-center gap-2 bg-base-200 px-2 py-1 rounded">
+  <div className="flex items-center gap-2 rounded bg-base-200 px-2 py-1">
     {children}
     <button onClick={onRemove}>
       <X size={14} />
