@@ -13,6 +13,8 @@ const Sidebar = () => {
     groups,
     selectedUser,
     selectedGroup,
+    selectedChatType,
+    typingUsers,
     setSelectedUser,
     setSelectedGroup,
     deleteGroup,
@@ -35,7 +37,7 @@ const Sidebar = () => {
     : users;
 
   const handleDeleteGroup = (e, groupId) => {
-    e.stopPropagation(); // 🚫 prevent opening chat
+    e.stopPropagation();
     if (!confirm("Delete this group?")) return;
     deleteGroup(groupId);
   };
@@ -87,6 +89,11 @@ const Sidebar = () => {
             {groups.map((group) => {
               const isActive = selectedGroup?._id === group._id;
 
+              const isTyping =
+                selectedChatType === "group" &&
+                selectedGroup?._id === group._id &&
+                Object.keys(typingUsers).length > 0;
+
               return (
                 <div
                   key={group._id}
@@ -98,14 +105,18 @@ const Sidebar = () => {
                     ${isActive ? "bg-base-200" : ""}
                   `}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <UsersRound className="h-10 w-10 rounded-full bg-primary/10 p-2" />
-                    <span className="hidden truncate lg:block">
-                      {group.name}
-                    </span>
+                    <div className="hidden lg:block min-w-0">
+                      <p className="truncate font-medium">
+                        {group.name}
+                      </p>
+                      <p className="text-xs opacity-60">
+                        {isTyping ? "Someone typing..." : "Group chat"}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* DELETE GROUP */}
                   <button
                     onClick={(e) => handleDeleteGroup(e, group._id)}
                     className="btn btn-ghost btn-xs text-error"
@@ -128,6 +139,11 @@ const Sidebar = () => {
             const isSelected = selectedUser?._id === user._id;
             const isOnline = onlineUsers.includes(user._id);
 
+            const isTyping =
+              selectedChatType === "private" &&
+              selectedUser?._id === user._id &&
+              Object.keys(typingUsers).includes(user._id);
+
             return (
               <button
                 key={user._id}
@@ -147,10 +163,14 @@ const Sidebar = () => {
                   )}
                 </div>
 
-                <div className="hidden lg:block">
+                <div className="hidden lg:block min-w-0">
                   <p className="truncate font-medium">{user.fullName}</p>
                   <p className="text-xs opacity-60">
-                    {isOnline ? "Online" : "Offline"}
+                    {isTyping
+                      ? "typing..."
+                      : isOnline
+                      ? "Online"
+                      : "Offline"}
                   </p>
                 </div>
               </button>

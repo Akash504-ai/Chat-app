@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Image, Send, X, Paperclip, Mic, StopCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { useChatStore } from "../store/useChatStore";
@@ -24,6 +24,13 @@ const MessageInput = () => {
     startTyping,
     stopTyping,
   } = useChatStore();
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(typingTimeoutRef.current);
+      stopTyping();
+    };
+  }, []);
 
   // =====================
   // IMAGE
@@ -176,12 +183,7 @@ const MessageInput = () => {
           onChange={handleImageChange}
         />
 
-        <input
-          ref={fileRef}
-          type="file"
-          hidden
-          onChange={handleFileChange}
-        />
+        <input ref={fileRef} type="file" hidden onChange={handleFileChange} />
 
         <button
           type="button"

@@ -27,7 +27,7 @@ io.on("connection", async (socket) => {
   if (userId) {
     userSocketMap[userId] = socket.id;
 
-    // join personal room
+    // personal room
     socket.join(userId);
 
     // join all groups
@@ -46,10 +46,12 @@ io.on("connection", async (socket) => {
   // =========================
   // ⌨️ TYPING INDICATOR
   // =========================
+  // typing
   socket.on("typing", ({ chatType, to }) => {
     socket.to(to).emit("typing", {
       userId,
       chatType,
+      to, 
     });
   });
 
@@ -57,6 +59,7 @@ io.on("connection", async (socket) => {
     socket.to(to).emit("stopTyping", {
       userId,
       chatType,
+      to, 
     });
   });
 

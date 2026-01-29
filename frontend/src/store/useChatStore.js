@@ -55,7 +55,7 @@ export const useChatStore = create((set, get) => ({
 
     const res = await axiosInstance.post(
       `/messages/send/${selectedUser._id}`,
-      messageData
+      messageData,
     );
 
     set({ messages: [...messages, res.data] });
@@ -94,7 +94,7 @@ export const useChatStore = create((set, get) => ({
 
     const res = await axiosInstance.post(
       `/messages/group/send/${selectedGroup._id}`,
-      messageData
+      messageData,
     );
 
     set({ messages: [...messages, res.data] });
@@ -135,15 +135,12 @@ export const useChatStore = create((set, get) => ({
 
   addGroupMember: async (groupId, userId) => {
     try {
-      const res = await axiosInstance.post(
-        `/groups/${groupId}/add-user`,
-        { userId }
-      );
+      const res = await axiosInstance.post(`/groups/${groupId}/add-user`, {
+        userId,
+      });
 
       set((state) => ({
-        groups: state.groups.map((g) =>
-          g._id === groupId ? res.data : g
-        ),
+        groups: state.groups.map((g) => (g._id === groupId ? res.data : g)),
       }));
 
       toast.success("Member added");
@@ -154,15 +151,12 @@ export const useChatStore = create((set, get) => ({
 
   removeGroupMember: async (groupId, userId) => {
     try {
-      const res = await axiosInstance.post(
-        `/groups/${groupId}/remove-user`,
-        { userId }
-      );
+      const res = await axiosInstance.post(`/groups/${groupId}/remove-user`, {
+        userId,
+      });
 
       set((state) => ({
-        groups: state.groups.map((g) =>
-          g._id === groupId ? res.data : g
-        ),
+        groups: state.groups.map((g) => (g._id === groupId ? res.data : g)),
       }));
 
       toast.success("Member removed");
@@ -183,9 +177,7 @@ export const useChatStore = create((set, get) => ({
     socket.emit("typing", {
       chatType: selectedChatType,
       to:
-        selectedChatType === "private"
-          ? selectedUser?._id
-          : selectedGroup?._id,
+        selectedChatType === "private" ? selectedUser?._id : selectedGroup?._id,
     });
   },
 
@@ -198,9 +190,7 @@ export const useChatStore = create((set, get) => ({
     socket.emit("stopTyping", {
       chatType: selectedChatType,
       to:
-        selectedChatType === "private"
-          ? selectedUser?._id
-          : selectedGroup?._id,
+        selectedChatType === "private" ? selectedUser?._id : selectedGroup?._id,
     });
   },
 
@@ -226,13 +216,45 @@ export const useChatStore = create((set, get) => ({
     });
 
     // 👇 typing listeners
-    socket.on("typing", ({ userId }) => {
-      set((state) => ({
-        typingUsers: { ...state.typingUsers, [userId]: true },
-      }));
+    socket.on("typing", ({ userId, chatType, to }) => {
+      const { selectedChatType, selectedUser, selectedGroup } = get();
+
+      // PRIVATE CHAT
+      if (
+        chatType === "private" &&
+        selectedChatType === "private" &&
+        selectedUser?._id === userId
+      ) {
+        set((state) => ({
+          typingUsers: { ...state.typingUsers, [userId]: true },
+        }));
+      }
+
+      // GROUP CHAT
+      if (
+        chatType === "group" &&
+        selectedChatType === "group" &&
+        selectedGroup?._id === to
+      ) {
+        set((state) => ({
+          typingUsers: { ...state.typingUsers, [userId]: true },
+        }));
+      }
     });
 
-    socket.on("stopTyping", ({ userId }) => {
+    socket.on("stopTyping", ({ userId, chatType, to }) => {
+      const { selectedChatType, selectedUser, selectedGroup } = get();
+
+      const isSameChat =
+        (chatType === "private" &&
+          selectedChatType === "private" &&
+          selectedUser?._id === userId) ||
+        (chatType === "group" &&
+          selectedChatType === "group" &&
+          selectedGroup?._id === to);
+
+      if (!isSameChat) return;
+
       set((state) => {
         const copy = { ...state.typingUsers };
         delete copy[userId];
