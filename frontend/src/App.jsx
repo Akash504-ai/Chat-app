@@ -20,12 +20,10 @@ const App = () => {
   const { subscribeToMessages, unsubscribeFromMessages } = useChatStore();
   const { theme } = useThemeStore();
 
-  // 🔐 AUTH CHECK
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  // 🔌 GLOBAL SOCKET LISTENERS (VERY IMPORTANT)
   useEffect(() => {
     if (!authUser) return;
 

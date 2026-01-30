@@ -19,10 +19,14 @@ const MessageInput = () => {
   const {
     sendMessage,
     sendGroupMessage,
+    sendMessageToAI,
     selectedChatType,
+    selectedUser,
     startTyping,
     stopTyping,
   } = useChatStore();
+
+  const isAI = selectedChatType === "private" && selectedUser?.isAI;
 
   useEffect(() => {
     return () => {
@@ -32,6 +36,7 @@ const MessageInput = () => {
   }, []);
 
   const handleImageChange = (e) => {
+    if (isAI) return;
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith("image/")) {
       toast.error("Select an image");
@@ -44,6 +49,7 @@ const MessageInput = () => {
   };
 
   const handleFileChange = (e) => {
+    if (isAI) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -60,6 +66,7 @@ const MessageInput = () => {
   };
 
   const startRecording = async () => {
+    if (isAI) return;
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
 
@@ -89,6 +96,8 @@ const MessageInput = () => {
   const handleTyping = (value) => {
     setText(value);
 
+    if (isAI) return;
+
     if (!value.trim()) {
       stopTyping();
       return;
@@ -108,17 +117,21 @@ const MessageInput = () => {
 
     stopTyping();
 
-    const payload = {
-      text: text.trim(),
-      image: imagePreview,
-      audio: audioData,
-      file: fileData,
-    };
-
-    if (selectedChatType === "group") {
-      await sendGroupMessage(payload);
+    if (isAI) {
+      await sendMessageToAI(text.trim());
     } else {
-      await sendMessage(payload);
+      const payload = {
+        text: text.trim(),
+        image: imagePreview,
+        audio: audioData,
+        file: fileData,
+      };
+
+      if (selectedChatType === "group") {
+        await sendGroupMessage(payload);
+      } else {
+        await sendMessage(payload);
+      }
     }
 
     setText("");
@@ -155,7 +168,9 @@ const MessageInput = () => {
           onChange={(e) => handleTyping(e.target.value)}
           onBlur={stopTyping}
           className="input input-bordered flex-1"
-          placeholder="Type a message..."
+          placeholder={
+            isAI ? "Ask something to AI..." : "Type a message..."
+          }
         />
 
         <input
@@ -168,38 +183,42 @@ const MessageInput = () => {
 
         <input ref={fileRef} type="file" hidden onChange={handleFileChange} />
 
-        <button
-          type="button"
-          onClick={() => imageRef.current.click()}
-          className="btn btn-ghost"
-        >
-          <Image size={20} />
-        </button>
+        {!isAI && (
+          <>
+            <button
+              type="button"
+              onClick={() => imageRef.current.click()}
+              className="btn btn-ghost"
+            >
+              <Image size={20} />
+            </button>
 
-        <button
-          type="button"
-          onClick={() => fileRef.current.click()}
-          className="btn btn-ghost"
-        >
-          <Paperclip size={20} />
-        </button>
+            <button
+              type="button"
+              onClick={() => fileRef.current.click()}
+              className="btn btn-ghost"
+            >
+              <Paperclip size={20} />
+            </button>
 
-        {!recording ? (
-          <button
-            type="button"
-            onClick={startRecording}
-            className="btn btn-ghost"
-          >
-            <Mic size={20} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={stopRecording}
-            className="btn btn-error"
-          >
-            <StopCircle size={20} />
-          </button>
+            {!recording ? (
+              <button
+                type="button"
+                onClick={startRecording}
+                className="btn btn-ghost"
+              >
+                <Mic size={20} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={stopRecording}
+                className="btn btn-error"
+              >
+                <StopCircle size={20} />
+              </button>
+            )}
+          </>
         )}
 
         <button type="submit" className="btn btn-primary">

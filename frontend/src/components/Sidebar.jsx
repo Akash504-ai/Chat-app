@@ -15,7 +15,7 @@ const Sidebar = () => {
     selectedGroup,
     selectedChatType,
     typingUsers,
-    unreadCounts, // ✅ ADDED
+    unreadCounts,
     setSelectedUser,
     setSelectedGroup,
     deleteGroup,
@@ -115,7 +115,6 @@ const Sidebar = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* 🔴 UNREAD BADGE (GROUP) */}
                     {unreadCounts[group._id] > 0 && (
                       <span className="badge badge-error text-xs">
                         {unreadCounts[group._id] > 9
@@ -144,6 +143,7 @@ const Sidebar = () => {
           {filteredUsers.map((user) => {
             const isSelected = selectedUser?._id === user._id;
             const isOnline = onlineUsers.includes(user._id);
+            const isAI = user.isAI;
 
             const isTyping =
               selectedChatType === "private" &&
@@ -162,30 +162,31 @@ const Sidebar = () => {
                   <img
                     src={user.profilePic || "/avatar.png"}
                     alt={user.fullName}
-                    className="h-10 w-10 rounded-full"
+                    className="h-12 w-12 rounded-full"
                   />
-                  {isOnline && (
+                  {!isAI && isOnline && (
                     <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success ring-2 ring-base-100" />
                   )}
                 </div>
 
                 <div className="hidden lg:block min-w-0 flex-1">
-                  <p className="truncate font-medium">{user.fullName}</p>
+                  <p className="truncate font-medium">
+                    {isAI ? "AI Assistant" : user.fullName}
+                  </p>
                   <p className="text-xs opacity-60">
-                    {isTyping
-                      ? "typing..."
-                      : isOnline
-                      ? "Online"
-                      : "Offline"}
+                    {isAI
+                      ? "AI Assistant"
+                      : isTyping
+                        ? "typing..."
+                        : isOnline
+                          ? "Online"
+                          : "Offline"}
                   </p>
                 </div>
 
-                {/* 🔴 UNREAD BADGE (USER) */}
-                {unreadCounts[user._id] > 0 && (
+                {!isAI && unreadCounts[user._id] > 0 && (
                   <span className="badge badge-error text-xs">
-                    {unreadCounts[user._id] > 9
-                      ? "9+"
-                      : unreadCounts[user._id]}
+                    {unreadCounts[user._id] > 9 ? "9+" : unreadCounts[user._id]}
                   </span>
                 )}
               </button>

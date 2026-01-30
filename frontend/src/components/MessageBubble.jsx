@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   MoreVertical,
   Trash,
@@ -7,6 +7,9 @@ import {
   Copy,
   SmilePlus,
   Pin,
+  Check,
+  CheckCheck,
+  Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChatStore } from "../store/useChatStore";
@@ -17,7 +20,7 @@ import toast from "react-hot-toast";
 
 const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
 
-const MessageBubble = ({ message, sender, isMe, chatType }) => {
+const MessageBubble = ({ message, sender, isMe, chatId }) => {
   const [open, setOpen] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
   const menuRef = useRef(null);
@@ -32,21 +35,30 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
     togglePin,
   } = useChatStore();
 
-  const isPinned = pinnedMessages?.[message._id];
-  const myReaction = reactions?.[message._id];
+  const isPinned = pinnedMessages?.[chatId]?.[message._id];
+  const myReaction = reactions?.[chatId]?.[message._id];
+  const canDeleteForEveryone = isMe && !message.deletedForEveryone;
 
-  const canDeleteForEveryone =
-    isMe && chatType === "private" && !message.deletedForEveryone;
+  // AI Detection
+  const isAI = sender?.isAI;
 
-  // Close menus when clicking outside
+  const renderStatusTick = () => {
+    if (!isMe || message.isTemp || message.deletedForEveryone) return null;
+    if (message.status === "sent")
+      return <Check size={12} className="opacity-40" />;
+    if (message.status === "delivered")
+      return <CheckCheck size={12} className="opacity-40" />;
+    if (message.status === "seen")
+      return <CheckCheck size={12} className="text-sky-500" />;
+    return null;
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      if (menuRef.current && !menuRef.current.contains(event.target))
         setOpen(false);
-      }
-      if (emojiRef.current && !emojiRef.current.contains(event.target)) {
+      if (emojiRef.current && !emojiRef.current.contains(event.target))
         setShowEmojis(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -54,265 +66,260 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
 
   const handleCopyText = async () => {
     if (!message.text) return;
-    await navigator.clipboard.writeText(message.text);
-    toast.success("Copied to clipboard");
-    setOpen(false);
+    try {
+      await navigator.clipboard.writeText(message.text);
+      toast.success("Copied to clipboard");
+    } catch (err) {
+      toast.error("Failed to copy");
+    } finally {
+      setOpen(false);
+    }
   };
 
   return (
-    <div
+    <motion.div
+      initial={isAI ? { opacity: 0, y: 10, scale: 0.95 } : false}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
       id={`msg-${message._id}`}
-      className={`chat ${isMe ? "chat-end" : "chat-start"} w-full group mb-3 px-4 transition-all`}
+      className={`chat ${isMe ? "chat-end" : "chat-start"} w-full group mb-6 px-4 transition-all relative`}
     >
       {/* Avatar */}
       <div className="chat-image avatar self-end mb-1">
-        <div className="h-8 w-8 rounded-full ring-2 ring-base-100 shadow-sm">
+        <div
+          className={`h-8 w-8 rounded-full shadow-sm overflow-hidden ring-1 flex items-center justify-center
+      ${isAI ? "ring-primary animate-pulse" : "ring-base-300"}
+    `}
+        >
           <img
             src={sender?.profilePic || "/avatar.png"}
             alt="avatar"
-            className="object-cover"
+            className="h-full w-full object-cover rounded-full"
+            onError={(e) => {
+              e.currentTarget.src = "/avatar.png";
+            }}
           />
         </div>
       </div>
 
       <div
-        className={`flex flex-col max-w-[80%] md:max-w-[70%] ${isMe ? "items-end" : "items-start"}`}
+        className={`flex flex-col max-w-[85%] md:max-w-[70%] ${isMe ? "items-end" : "items-start"}`}
       >
-        <div className="relative flex items-center gap-2 max-w-full">
-          {/* Buttons (me) */}
-          {isMe && !message.deletedForEveryone && (
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-200 order-first">
-              {/* Emoji Trigger Icon */}
-              <div className="relative" ref={emojiRef}>
-                <button
-                  onClick={() => setShowEmojis(!showEmojis)}
-                  className={`p-1.5 rounded-full hover:bg-base-200 text-base-content/40 ${showEmojis ? "text-primary bg-base-200" : ""}`}
-                >
-                  <SmilePlus size={16} />
-                </button>
-
-                <AnimatePresence>
-                  {showEmojis && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8, y: 5 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.8, y: 5 }}
-                      className="absolute bottom-full mb-2 right-0 flex items-center gap-1 bg-base-100 border border-base-200 rounded-full px-2 py-1 shadow-xl z-[60]"
-                    >
-                      {REACTIONS.map((emoji, i) => (
-                        <motion.button
-                          key={emoji}
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: i * 0.04 }}
-                          onClick={() => {
-                            addReaction(message._id, emoji);
-                            setShowEmojis(false);
-                          }}
-                          className="text-lg hover:scale-125 transition-transform"
-                        >
-                          {emoji}
-                        </motion.button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Settings Trigger */}
+        <div
+          className={`flex items-center gap-2 ${isMe ? "flex-row" : "flex-row-reverse"}`}
+        >
+          {/* Action Menu (Icons) */}
+          <div
+            className={`flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
+          >
+            <div className="relative" ref={emojiRef}>
               <button
-                onClick={() => setOpen(!open)}
-                className={`p-1.5 rounded-full hover:bg-base-200 text-base-content/40 ${open ? "bg-base-200" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowEmojis(!showEmojis);
+                  setOpen(false);
+                }}
+                className={`p-1.5 rounded-full hover:bg-base-200 transition-colors ${showEmojis ? "text-primary bg-base-200" : "text-base-content/40"}`}
+              >
+                <SmilePlus size={16} />
+              </button>
+
+              <AnimatePresence>
+                {showEmojis && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                    className={`absolute bottom-full mb-2 ${isMe ? "right-0" : "left-0"} flex items-center gap-1 bg-base-100 border border-base-300 rounded-full px-2 py-1.5 shadow-2xl z-[100]`}
+                  >
+                    {REACTIONS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={() => {
+                          addReaction(chatId, message._id, emoji);
+                          setShowEmojis(false);
+                        }}
+                        className="text-xl hover:scale-125 active:scale-90 transition-transform px-1"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpen(!open);
+                  setShowEmojis(false);
+                }}
+                className={`p-1.5 rounded-full hover:bg-base-200 transition-colors ${open ? "text-primary bg-base-200" : "text-base-content/40"}`}
               >
                 <MoreVertical size={16} />
               </button>
-            </div>
-          )}
 
-          {/* Pin Visual Indicator */}
-          {isPinned && (
-            <Pin
-              size={14}
-              className={`absolute -top-2 ${isMe ? "-left-2" : "-right-2"} rotate-45 text-warning z-10`}
-            />
-          )}
-
-          {/* Bubble */}
-          <div
-            className={`relative chat-bubble px-4 py-2.5 shadow-sm transition-colors ${
-              message.deletedForEveryone
-                ? "bg-base-200/50 border border-base-300 text-base-content/40 italic"
-                : isMe
-                  ? "bg-primary text-primary-content rounded-2xl rounded-tr-none"
-                  : "bg-base-100 border border-base-200 text-base-content rounded-2xl rounded-tl-none"
-            }`}
-          >
-            {message.deletedForEveryone ? (
-              <div className="flex items-center gap-2 text-xs">
-                <ShieldAlert size={12} />
-                <span>This message was deleted</span>
-              </div>
-            ) : (
-              <>
-                {(message.image || message.audio || message.file?.url) && (
-                  <div className="flex flex-col gap-2 mb-2">
-                    {message.image && (
-                      <motion.img
-                        layoutId={message._id}
-                        src={message.image}
-                        className="rounded-lg max-w-full"
-                        alt="attachment"
-                      />
+              <AnimatePresence>
+                {open && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                    className={`absolute bottom-full mb-2 z-[101] ${isMe ? "right-0" : "left-0"} bg-base-100 border border-base-300 rounded-xl shadow-2xl w-48 overflow-hidden py-1`}
+                  >
+                    {!message.deletedForEveryone && (
+                      <button
+                        onClick={() => {
+                          togglePin(chatId, message._id);
+                          setOpen(false);
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200"
+                      >
+                        <Pin
+                          size={14}
+                          className={
+                            isPinned
+                              ? "text-warning fill-warning"
+                              : "opacity-50"
+                          }
+                        />
+                        <span>{isPinned ? "Unpin" : "Pin Message"}</span>
+                      </button>
                     )}
-                    {message.audio && (
-                      <AudioMessage audioUrl={message.audio} isMe={isMe} />
+                    {message.text && (
+                      <button
+                        onClick={handleCopyText}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200"
+                      >
+                        <Copy size={14} className="opacity-50" />{" "}
+                        <span>Copy Text</span>
+                      </button>
                     )}
-                    {message.file?.url && <FileMessage file={message.file} />}
-                  </div>
-                )}
-
-                {message.text && (
-                  <p className="text-[14.5px] leading-relaxed whitespace-pre-wrap break-words">
-                    {message.text}
-                  </p>
-                )}
-              </>
-            )}
-
-            {/* SELECTED REACTION DISPLAY */}
-            {myReaction && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className={`absolute -bottom-2 ${isMe ? "left-0" : "right-0"} inline-flex items-center justify-center rounded-full bg-base-100 border border-base-200 px-1.5 py-0.5 shadow-sm`}
-              >
-                <span className="text-sm">{myReaction}</span>
-              </motion.div>
-            )}
-
-            {/* Dropdown Menu */}
-            <AnimatePresence>
-              {open && (
-                <motion.div
-                  ref={menuRef}
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className={`absolute bottom-full mb-2 z-[100] ${
-                    isMe ? "right-0" : "left-0"
-                  } bg-base-100 border border-base-200 rounded-xl shadow-2xl w-44 overflow-hidden py-1`}
-                >
-                  {/* Pin/Unpin Option Inside Menu */}
-                  {!message.deletedForEveryone && (
                     <button
                       onClick={() => {
-                        togglePin(message._id);
+                        deleteMessageForMe(message._id);
                         setOpen(false);
                       }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200"
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200 border-t border-base-200"
                     >
-                      <Pin
-                        size={14}
-                        className={isPinned ? "text-warning" : ""}
-                      />
-                      {isPinned ? "Unpin message" : "Pin message"}
+                      <Trash size={14} className="opacity-50" />{" "}
+                      <span>Delete for me</span>
                     </button>
+                    {canDeleteForEveryone && (
+                      <button
+                        onClick={() => {
+                          deleteMessageForEveryone(message._id);
+                          setOpen(false);
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error/10 border-t border-base-200 font-medium"
+                      >
+                        <Trash2 size={14} /> <span>Delete for all</span>
+                      </button>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* MESSAGE BUBBLE */}
+          <div className="relative">
+            {isPinned && (
+              <div
+                className={`absolute -top-3 ${isMe ? "-left-1" : "-right-1"} z-20`}
+              >
+                <Pin
+                  size={14}
+                  className="text-warning fill-warning rotate-45 shadow-sm"
+                />
+              </div>
+            )}
+
+            <motion.div
+              animate={
+                isAI
+                  ? {
+                      boxShadow: [
+                        "0px 0px 0px rgba(59, 130, 246, 0)",
+                        "0px 0px 12px rgba(59, 130, 246, 0.2)",
+                        "0px 0px 0px rgba(59, 130, 246, 0)",
+                      ],
+                    }
+                  : {}
+              }
+              transition={{ repeat: Infinity, duration: 3 }}
+              className={`relative px-4 py-2.5 shadow-sm transition-all duration-300 ${
+                message.deletedForEveryone
+                  ? "bg-base-200/50 border border-base-300 text-base-content/40 italic rounded-2xl"
+                  : isMe
+                    ? "bg-primary text-primary-content rounded-2xl rounded-tr-none shadow-md"
+                    : isAI
+                      ? "bg-base-100 border-2 border-primary/20 text-base-content rounded-2xl rounded-tl-none shadow-lg shadow-primary/5"
+                      : "bg-base-100 border border-base-200 text-base-content rounded-2xl rounded-tl-none shadow-sm"
+              }`}
+            >
+              {message.deletedForEveryone ? (
+                <div className="flex items-center gap-2 text-[13px]">
+                  <ShieldAlert size={14} /> <span>Message deleted</span>
+                </div>
+              ) : (
+                <>
+                  {isAI && (
+                    <div className="absolute -top-2 -left-2 bg-primary text-primary-content p-1 rounded-full shadow-lg scale-75">
+                      <Sparkles size={10} fill="currentColor" />
+                    </div>
+                  )}
+
+                  {(message.image || message.audio || message.file?.url) && (
+                    <div className="flex flex-col gap-2 mb-1.5">
+                      {message.image && (
+                        <img
+                          src={message.image}
+                          className="rounded-lg max-w-full max-h-72 object-cover border border-black/5"
+                          alt="attachment"
+                        />
+                      )}
+                      {message.audio && (
+                        <AudioMessage audioUrl={message.audio} isMe={isMe} />
+                      )}
+                      {message.file?.url && <FileMessage file={message.file} />}
+                    </div>
                   )}
 
                   {message.text && (
-                    <button
-                      onClick={handleCopyText}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200"
-                    >
-                      <Copy size={14} />
-                      Copy text
-                    </button>
+                    <p className="text-[14.5px] leading-relaxed whitespace-pre-wrap break-words">
+                      {message.text}
+                    </p>
                   )}
+                </>
+              )}
 
-                  <button
-                    onClick={() => {
-                      deleteMessageForMe(message._id);
-                      setOpen(false);
-                    }}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200 border-t border-base-200"
-                  >
-                    <Trash size={14} />
-                    Delete for me
-                  </button>
-
-                  {canDeleteForEveryone && (
-                    <button
-                      onClick={() => {
-                        deleteMessageForEveryone(message._id);
-                        setOpen(false);
-                      }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error/10 border-t border-base-200"
-                    >
-                      <Trash2 size={14} />
-                      Delete for all
-                    </button>
-                  )}
+              {/* Reaction Display */}
+              {myReaction && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className={`absolute -bottom-3 ${isMe ? "left-0" : "right-0"} flex items-center bg-base-100 border border-base-300 rounded-full px-1.5 py-0.5 shadow-md z-10`}
+                >
+                  <span className="text-[12px]">{myReaction}</span>
                 </motion.div>
               )}
-            </AnimatePresence>
+            </motion.div>
           </div>
-
-          {/* Buttons (other) */}
-          {!isMe && !message.deletedForEveryone && (
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-200">
-              <div className="relative" ref={emojiRef}>
-                <button
-                  onClick={() => setShowEmojis(!showEmojis)}
-                  className={`p-1.5 rounded-full hover:bg-base-200 text-base-content/40 ${showEmojis ? "text-primary bg-base-200" : ""}`}
-                >
-                  <SmilePlus size={16} />
-                </button>
-                <AnimatePresence>
-                  {showEmojis && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8, y: 5 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.8, y: 5 }}
-                      className="absolute bottom-full mb-2 left-0 flex items-center gap-1 bg-base-100 border border-base-200 rounded-full px-2 py-1 shadow-xl z-[60]"
-                    >
-                      {REACTIONS.map((emoji, i) => (
-                        <motion.button
-                          key={emoji}
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: i * 0.04 }}
-                          onClick={() => {
-                            addReaction(message._id, emoji);
-                            setShowEmojis(false);
-                          }}
-                          className="text-lg hover:scale-125 transition-transform"
-                        >
-                          {emoji}
-                        </motion.button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <button
-                onClick={() => setOpen(!open)}
-                className={`p-1.5 rounded-full hover:bg-base-200 text-base-content/40 ${open ? "bg-base-200" : ""}`}
-              >
-                <MoreVertical size={16} />
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Footer */}
+        {/* FOOTER */}
         <div
-          className={`mt-1.5 flex items-center gap-1.5 text-[10px] opacity-60 ${isMe ? "mr-1" : "ml-1"}`}
+          className={`mt-1.5 flex items-center gap-1.5 text-[10px] font-semibold opacity-50 ${isMe ? "mr-1" : "ml-1"}`}
         >
+          {isAI && <span className="text-primary">AI Assistant</span>}
           <span>{formatMessageTime(message.createdAt)}</span>
+          {renderStatusTick()}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,15 +1,18 @@
+import mongoose from "mongoose";
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
 import Group from "../models/group.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
-import mongoose from "mongoose";
 
+/* =========================
+   USERS FOR SIDEBAR
+========================= */
 export const getUsersForSidebar = async (req, res) => {
   try {
-    const users = await User.find({
-      _id: { $ne: req.user._id },
-    }).select("_id fullName email profilePic");
+    const users = await User.find({ _id: { $ne: req.user._id } }).select(
+      "_id fullName email profilePic isAI",
+    );
 
     res.status(200).json(users);
   } catch {
@@ -17,6 +20,9 @@ export const getUsersForSidebar = async (req, res) => {
   }
 };
 
+/* =========================
+   PRIVATE CHAT (1–1)
+========================= */
 export const getMessages = async (req, res) => {
   try {
     const { id } = req.params;
@@ -27,33 +33,35 @@ export const getMessages = async (req, res) => {
     }
 
     const messages = await Message.find({
-      deletedForEveryone: false,
-      deletedFor: { $ne: myId },
       $or: [
         { senderId: myId, receiverId: id },
         { senderId: id, receiverId: myId },
       ],
+      deletedForEveryone: false,
+      deletedFor: { $ne: myId },
     }).sort({ createdAt: 1 });
 
     await Message.updateMany(
-      {
-        senderId: id,
-        receiverId: myId,
-        status: { $ne: "seen" },
-      },
-      { status: "seen" }
+      { senderId: id, receiverId: myId, status: { $ne: "seen" } },
+      { status: "seen" },
     );
 
     const senderSocketId = getReceiverSocketId(id);
     if (senderSocketId) {
-      io.to(senderSocketId).emit("messageStatusUpdate", {
-        from: myId,
+      const seenMessages = await Message.find({
+        senderId: id,
+        receiverId: myId,
+        status: "seen",
+      }).select("_id");
+
+      io.to(senderSocketId).emit("messageStatusUpdateBulk", {
+        messageIds: seenMessages.map((m) => m._id),
         status: "seen",
       });
     }
 
     res.status(200).json(messages);
-  } catch {
+  } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -74,7 +82,7 @@ export const sendMessage = async (req, res) => {
 
     let imageUrl = "";
     let audioUrl = "";
-    let fileData = { url: "", name: "", type: "", size: 0 };
+    let fileData = null;
 
     if (image) {
       const upload = await cloudinary.uploader.upload(image, {
@@ -94,7 +102,6 @@ export const sendMessage = async (req, res) => {
       const upload = await cloudinary.uploader.upload(file.base64, {
         resource_type: "raw",
       });
-
       fileData = {
         url: upload.secure_url,
         name: file.name,
@@ -103,14 +110,13 @@ export const sendMessage = async (req, res) => {
       };
     }
 
-    let newMessage = await Message.create({
+    let message = await Message.create({
       senderId,
       receiverId,
       text: text?.trim() || "",
       image: imageUrl,
       audio: audioUrl,
       file: fileData,
-      groupId: null,
       status: "sent",
     });
 
@@ -118,29 +124,31 @@ export const sendMessage = async (req, res) => {
     const senderSocketId = getReceiverSocketId(senderId);
 
     if (receiverSocketId) {
-      newMessage = await Message.findByIdAndUpdate(
-        newMessage._id,
+      message = await Message.findByIdAndUpdate(
+        message._id,
         { status: "delivered" },
-        { new: true }
+        { new: true },
       );
 
-      io.to(receiverSocketId).emit("newMessage", newMessage);
+      io.to(receiverSocketId).emit("newMessage", message);
 
       if (senderSocketId) {
         io.to(senderSocketId).emit("messageStatusUpdate", {
-          messageId: newMessage._id,
+          messageId: message._id,
           status: "delivered",
         });
       }
     }
 
-    res.status(201).json(newMessage);
-  } catch (error) {
-    console.error("sendMessage error:", error);
+    res.status(201).json(message);
+  } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
+/* =========================
+   GROUP CHAT
+========================= */
 export const getGroupMessages = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -151,17 +159,12 @@ export const getGroupMessages = async (req, res) => {
     }
 
     const group = await Group.findById(groupId);
-    if (!group) {
-      return res.status(404).json({ message: "Group not found" });
-    }
+    if (!group) return res.status(404).json({ message: "Group not found" });
 
     const isMember = group.members.some(
-      (m) => m.userId.toString() === userId.toString()
+      (m) => m.userId.toString() === userId.toString(),
     );
-
-    if (!isMember) {
-      return res.status(403).json({ message: "Access denied" });
-    }
+    if (!isMember) return res.status(403).json({ message: "Access denied" });
 
     const messages = await Message.find({
       groupId,
@@ -172,8 +175,7 @@ export const getGroupMessages = async (req, res) => {
       .sort({ createdAt: 1 });
 
     res.status(200).json(messages);
-  } catch (error) {
-    console.error("getGroupMessages error:", error);
+  } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -189,25 +191,17 @@ export const sendGroupMessage = async (req, res) => {
     }
 
     const group = await Group.findById(groupId);
-    if (!group) {
-      return res.status(404).json({ message: "Group not found" });
-    }
+    if (!group) return res.status(404).json({ message: "Group not found" });
 
     const isMember = group.members.some(
-      (m) => m.userId.toString() === senderId.toString()
+      (m) => m.userId.toString() === senderId.toString(),
     );
-
-    if (!isMember) {
-      return res.status(403).json({ message: "You are not a group member" });
-    }
-
-    if (!text && !image && !audio && !file) {
-      return res.status(400).json({ message: "Message cannot be empty" });
-    }
+    if (!isMember)
+      return res.status(403).json({ message: "Not a group member" });
 
     let imageUrl = "";
     let audioUrl = "";
-    let fileData = { url: "", name: "", type: "", size: 0 };
+    let fileData = null;
 
     if (image) {
       const upload = await cloudinary.uploader.upload(image, {
@@ -227,7 +221,6 @@ export const sendGroupMessage = async (req, res) => {
       const upload = await cloudinary.uploader.upload(file.base64, {
         resource_type: "raw",
       });
-
       fileData = {
         url: upload.secure_url,
         name: file.name,
@@ -236,10 +229,9 @@ export const sendGroupMessage = async (req, res) => {
       };
     }
 
-    const newMessage = await Message.create({
+    const message = await Message.create({
       senderId,
       groupId,
-      receiverId: null,
       text: text?.trim() || "",
       image: imageUrl,
       audio: audioUrl,
@@ -247,64 +239,58 @@ export const sendGroupMessage = async (req, res) => {
       status: "sent",
     });
 
-    io.to(groupId.toString()).emit("newGroupMessage", newMessage);
+    io.to(groupId.toString()).emit("newGroupMessage", message);
 
-    res.status(201).json(newMessage);
-  } catch (error) {
-    console.error("sendGroupMessage error:", error);
+    res.status(201).json(message);
+  } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
+/* =========================
+   DELETE MESSAGE
+========================= */
 export const deleteMessageForMe = async (req, res) => {
-  const { messageId } = req.params;
-  const userId = req.user._id;
+  try {
+    const { messageId } = req.params;
+    const userId = req.user._id;
 
-  const message = await Message.findById(messageId);
-  if (!message) return res.status(404).json({ message: "Not found" });
+    await Message.findByIdAndUpdate(messageId, {
+      $addToSet: { deletedFor: userId },
+    });
 
-  const isParticipant =
-    message.senderId.equals(userId) ||
-    message.receiverId?.equals(userId) ||
-    message.groupId;
-
-  if (!isParticipant) {
-    return res.status(403).json({ message: "Not allowed" });
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
   }
-
-  await Message.findByIdAndUpdate(messageId, {
-    $addToSet: { deletedFor: userId },
-  });
-
-  res.status(200).json({ success: true });
 };
 
 export const deleteMessageForEveryone = async (req, res) => {
-  const { messageId } = req.params;
-  const userId = req.user._id;
+  try {
+    const { messageId } = req.params;
+    const userId = req.user._id;
 
-  const message = await Message.findById(messageId);
-  if (!message) return res.status(404).json({ message: "Not found" });
+    const message = await Message.findById(messageId);
+    if (!message || !message.senderId.equals(userId)) {
+      return res.status(403).json({ message: "Action not allowed" });
+    }
 
-  if (!message.senderId.equals(userId)) {
-    return res.status(403).json({ message: "Not allowed" });
+    message.deletedForEveryone = true;
+    await message.save();
+
+    if (message.groupId) {
+      io.to(message.groupId.toString()).emit("messageDeletedEveryone", {
+        messageId,
+      });
+    } else {
+      [message.senderId, message.receiverId].forEach((id) => {
+        if (id)
+          io.to(id.toString()).emit("messageDeletedEveryone", { messageId });
+      });
+    }
+
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
   }
-
-  message.deletedForEveryone = true;
-  await message.save();
-
-  if (message.receiverId) {
-    io.to(message.receiverId.toString())
-      .to(message.senderId.toString())
-      .emit("messageDeletedEveryone", { messageId });
-  }
-
-  if (message.groupId) {
-    io.to(message.groupId.toString()).emit(
-      "messageDeletedEveryone",
-      { messageId }
-    );
-  }
-
-  res.status(200).json({ success: true });
 };
