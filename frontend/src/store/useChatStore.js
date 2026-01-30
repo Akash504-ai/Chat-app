@@ -17,7 +17,16 @@ export const useChatStore = create((set, get) => ({
   isMessagesLoading: false,
   reactions: {},
   pinnedMessages: {},
-  
+  clearedChats: {},
+
+  clearChatForMe: (chatId) =>
+  set((state) => ({
+    clearedChats: {
+      ...state.clearedChats,
+      [chatId]: Date.now(),
+    },
+  })),
+
   togglePin: (messageId) =>
     set((state) => ({
       pinnedMessages: {
