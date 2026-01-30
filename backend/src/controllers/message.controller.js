@@ -5,11 +5,6 @@ import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 import mongoose from "mongoose";
 
-/**
- * =========================
- * USERS FOR SIDEBAR
- * =========================
- */
 export const getUsersForSidebar = async (req, res) => {
   try {
     const users = await User.find({
@@ -22,11 +17,6 @@ export const getUsersForSidebar = async (req, res) => {
   }
 };
 
-/**
- * =========================
- * PRIVATE CHAT (1-to-1)
- * =========================
- */
 export const getMessages = async (req, res) => {
   try {
     const { id } = req.params;
@@ -37,13 +27,14 @@ export const getMessages = async (req, res) => {
     }
 
     const messages = await Message.find({
+      deletedForEveryone: false,
+      deletedFor: { $ne: myId },
       $or: [
         { senderId: myId, receiverId: id },
         { senderId: id, receiverId: myId },
       ],
     }).sort({ createdAt: 1 });
 
-    // ✅ mark messages as SEEN
     await Message.updateMany(
       {
         senderId: id,
@@ -112,7 +103,6 @@ export const sendMessage = async (req, res) => {
       };
     }
 
-    // ✅ SENT
     let newMessage = await Message.create({
       senderId,
       receiverId,
@@ -127,7 +117,6 @@ export const sendMessage = async (req, res) => {
     const receiverSocketId = getReceiverSocketId(receiverId);
     const senderSocketId = getReceiverSocketId(senderId);
 
-    // ✅ DELIVERED
     if (receiverSocketId) {
       newMessage = await Message.findByIdAndUpdate(
         newMessage._id,
@@ -152,11 +141,6 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-/**
- * =========================
- * GROUP CHAT
- * =========================
- */
 export const getGroupMessages = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -179,7 +163,11 @@ export const getGroupMessages = async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    const messages = await Message.find({ groupId })
+    const messages = await Message.find({
+      groupId,
+      deletedForEveryone: false,
+      deletedFor: { $ne: userId },
+    })
       .populate("senderId", "fullName profilePic")
       .sort({ createdAt: 1 });
 
@@ -266,4 +254,57 @@ export const sendGroupMessage = async (req, res) => {
     console.error("sendGroupMessage error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
+};
+
+export const deleteMessageForMe = async (req, res) => {
+  const { messageId } = req.params;
+  const userId = req.user._id;
+
+  const message = await Message.findById(messageId);
+  if (!message) return res.status(404).json({ message: "Not found" });
+
+  const isParticipant =
+    message.senderId.equals(userId) ||
+    message.receiverId?.equals(userId) ||
+    message.groupId;
+
+  if (!isParticipant) {
+    return res.status(403).json({ message: "Not allowed" });
+  }
+
+  await Message.findByIdAndUpdate(messageId, {
+    $addToSet: { deletedFor: userId },
+  });
+
+  res.status(200).json({ success: true });
+};
+
+export const deleteMessageForEveryone = async (req, res) => {
+  const { messageId } = req.params;
+  const userId = req.user._id;
+
+  const message = await Message.findById(messageId);
+  if (!message) return res.status(404).json({ message: "Not found" });
+
+  if (!message.senderId.equals(userId)) {
+    return res.status(403).json({ message: "Not allowed" });
+  }
+
+  message.deletedForEveryone = true;
+  await message.save();
+
+  if (message.receiverId) {
+    io.to(message.receiverId.toString())
+      .to(message.senderId.toString())
+      .emit("messageDeletedEveryone", { messageId });
+  }
+
+  if (message.groupId) {
+    io.to(message.groupId.toString()).emit(
+      "messageDeletedEveryone",
+      { messageId }
+    );
+  }
+
+  res.status(200).json({ success: true });
 };

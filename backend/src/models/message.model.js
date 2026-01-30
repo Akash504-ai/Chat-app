@@ -9,6 +9,7 @@ const messageSchema = new mongoose.Schema(
       index: true,
     },
 
+    // Personal chat
     receiverId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -16,6 +17,7 @@ const messageSchema = new mongoose.Schema(
       index: true,
     },
 
+    // Group chat
     groupId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Group",
@@ -46,23 +48,45 @@ const messageSchema = new mongoose.Schema(
       size: { type: Number, default: 0 },
     },
 
-    // ✅ MESSAGE STATUS (NEW)
+    // Message delivery status
     status: {
       type: String,
       enum: ["sent", "delivered", "seen"],
       default: "sent",
+      index: true,
+    },
+
+    // Delete for me
+    deletedFor: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        index: true,
+      },
+    ],
+
+    // Delete for everyone
+    deletedForEveryone: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-// Safety check
+// ✅ Safety checks
 messageSchema.pre("validate", function (next) {
+  // must be personal OR group
   if (!this.receiverId && !this.groupId) {
-    return next(
-      new Error("Message must have either receiverId or groupId")
-    );
+    return next(new Error("Message must have receiverId or groupId"));
   }
+
+  // cannot be both
+  if (this.receiverId && this.groupId) {
+    return next(new Error("Message cannot have both receiverId and groupId"));
+  }
+
   next();
 });
 

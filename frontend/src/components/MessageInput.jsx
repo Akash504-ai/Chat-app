@@ -14,7 +14,6 @@ const MessageInput = () => {
   const imageRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
-
   const typingTimeoutRef = useRef(null);
 
   const {
@@ -32,9 +31,6 @@ const MessageInput = () => {
     };
   }, []);
 
-  // =====================
-  // IMAGE
-  // =====================
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith("image/")) {
@@ -47,9 +43,6 @@ const MessageInput = () => {
     reader.readAsDataURL(file);
   };
 
-  // =====================
-  // FILE
-  // =====================
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -66,9 +59,6 @@ const MessageInput = () => {
     reader.readAsDataURL(file);
   };
 
-  // =====================
-  // AUDIO
-  // =====================
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
@@ -96,9 +86,6 @@ const MessageInput = () => {
     setRecording(false);
   };
 
-  // =====================
-  // TYPING HANDLER
-  // =====================
   const handleTyping = (value) => {
     setText(value);
 
@@ -115,9 +102,6 @@ const MessageInput = () => {
     }, 1200);
   };
 
-  // =====================
-  // SEND
-  // =====================
   const handleSend = async (e) => {
     e.preventDefault();
     if (!text && !imagePreview && !fileData && !audioData) return;
@@ -145,7 +129,6 @@ const MessageInput = () => {
 
   return (
     <div className="border-t border-base-300 p-3">
-      {/* PREVIEWS */}
       <div className="mb-2 flex flex-wrap gap-2">
         {imagePreview && (
           <Preview onRemove={() => setImagePreview(null)}>
