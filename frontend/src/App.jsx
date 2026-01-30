@@ -15,6 +15,11 @@ import { useEffect } from "react";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
+import IncomingCallModal from "./components/call/IncomingCallModal.jsx";
+import CallRoom from "./components/call/CallRoom";
+import OutgoingCallModal from "./components/call/OutgoingCallModal";
+
+
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
   const { subscribeToMessages, unsubscribeFromMessages } = useChatStore();
@@ -46,6 +51,9 @@ const App = () => {
 
   return (
     <div data-theme={theme} className="min-h-screen">
+      {authUser && <IncomingCallModal />}
+      {authUser && <OutgoingCallModal />}
+      {authUser && <CallRoom />}
       {authUser && <Navbar />}
 
       <Routes>

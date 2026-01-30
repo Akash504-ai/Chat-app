@@ -14,6 +14,8 @@ const io = new Server(server, {
 });
 
 const userSocketMap = {};
+const activeCalls = new Set();
+const activeGroupCalls = new Map();
 
 export function getReceiverSocketId(userId) {
   return userSocketMap[userId];
@@ -44,6 +46,9 @@ io.on("connection", async (socket) => {
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
+  // =====================
+  // Typing
+  // =====================
   socket.on("typing", ({ to }) => {
     socket.to(to).emit("typing", { from: userId });
   });
@@ -52,11 +57,11 @@ io.on("connection", async (socket) => {
     socket.to(to).emit("stopTyping", { from: userId });
   });
 
+  // =====================
+  // Message seen
+  // =====================
   socket.on("messageSeen", async ({ messageIds, senderId }) => {
-    await Message.updateMany(
-      { _id: { $in: messageIds } },
-      { status: "seen" }
-    );
+    await Message.updateMany({ _id: { $in: messageIds } }, { status: "seen" });
 
     const senderSocketId = getReceiverSocketId(senderId);
     if (senderSocketId) {
@@ -74,8 +79,85 @@ io.on("connection", async (socket) => {
     });
   });
 
+  // =====================
+  // 📞 CALL SIGNALING
+  // =====================
+
+  // Invite
+  socket.on("call:invite", ({ to, callType, roomId }) => {
+    // 🚫 busy check
+    if (activeCalls.has(to)) {
+      socket.emit("call:busy");
+      return;
+    }
+
+    activeCalls.add(userId);
+    activeCalls.add(to);
+
+    socket.to(to).emit("call:incoming", {
+      caller: { _id: userId },
+      callType,
+      roomId,
+    });
+  });
+
+  // Accept
+  socket.on("call:accept", ({ to, roomId }) => {
+    socket.to(to).emit("call:accepted", { roomId });
+  });
+
+  // Reject
+  socket.on("call:reject", ({ to }) => {
+    activeCalls.delete(userId);
+    activeCalls.delete(to);
+
+    socket.to(to).emit("call:rejected");
+  });
+
+  // End
+  socket.on("call:end", ({ to }) => {
+    activeCalls.delete(userId);
+    activeCalls.delete(to);
+
+    socket.to(to).emit("call:ended");
+  });
+
+  // =====================
+  // 👥 GROUP CALL
+  // =====================
+
+  // Start group call
+  socket.on("group:call:start", ({ groupId, callType, roomId }) => {
+    if (activeGroupCalls.has(groupId)) {
+      socket.emit("group:call:already-active");
+      return;
+    }
+
+    activeGroupCalls.set(groupId, roomId);
+
+    socket.to(groupId).emit("group:call:incoming", {
+      groupId,
+      callType,
+      roomId,
+      caller: { _id: userId },
+    });
+  });
+
+  // End group call
+  socket.on("group:call:end", ({ groupId }) => {
+    activeGroupCalls.delete(groupId);
+    socket.to(groupId).emit("group:call:ended", { groupId });
+  });
+
+  // =====================
+  // Disconnect
+  // =====================
   socket.on("disconnect", () => {
-    if (userId) delete userSocketMap[userId];
+    if (userId) {
+      delete userSocketMap[userId];
+      activeCalls.delete(userId); // 🧹 safety cleanup
+    }
+
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });
 });

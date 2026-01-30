@@ -2,11 +2,10 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import { useCallStore } from "./useCallStore";
 
 const BASE_URL =
-  import.meta.env.MODE === "development"
-    ? "http://localhost:5001"
-    : "/";
+  import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -18,7 +17,7 @@ export const useAuthStore = create((set, get) => ({
   socket: null,
 
   // =====================
-  // AUTH CHECK
+  // AUTH
   // =====================
   checkAuth: async () => {
     try {
@@ -93,17 +92,14 @@ export const useAuthStore = create((set, get) => ({
     const { authUser, socket } = get();
     if (!authUser) return;
 
-    // ✅ IMPORTANT: clean old socket
-    if (socket) {
-      socket.disconnect();
-    }
+    // 🧹 Clean old socket
+    if (socket) socket.disconnect();
 
     const newSocket = io(BASE_URL, {
       query: { userId: authUser._id },
       transports: ["websocket"],
     });
 
-    // ✅ DEBUG (keep for now)
     newSocket.on("connect", () => {
       console.log("✅ Socket connected:", newSocket.id);
     });
@@ -114,6 +110,46 @@ export const useAuthStore = create((set, get) => ({
 
     newSocket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
+    });
+
+    // =====================
+    // 📞 1–1 CALL EVENTS
+    // =====================
+    newSocket.on("call:incoming", (data) => {
+      useCallStore.getState().receiveCall(data);
+    });
+
+    newSocket.on("call:accepted", () => {
+      useCallStore.setState({ callStatus: "in-call" });
+    });
+
+    newSocket.on("call:rejected", () => {
+      useCallStore.getState().resetCall();
+    });
+
+    newSocket.on("call:ended", () => {
+      useCallStore.getState().resetCall();
+    });
+
+    newSocket.on("call:busy", () => {
+      toast.error("User is busy on another call");
+      useCallStore.getState().resetCall();
+    });
+
+    // =====================
+    // 👥 GROUP CALL EVENTS
+    // =====================
+    newSocket.on("group:call:incoming", (data) => {
+      useCallStore.getState().receiveGroupCall(data);
+    });
+
+    newSocket.on("group:call:ended", () => {
+      useCallStore.getState().resetCall();
+    });
+
+    newSocket.on("group:call:already-active", () => {
+      toast.error("A group call is already active");
+      useCallStore.getState().resetCall();
     });
 
     set({ socket: newSocket });

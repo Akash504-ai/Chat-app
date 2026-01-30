@@ -3,16 +3,14 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
-
 import { connectDB } from "./lib/db.js";
 import { app, server } from "./lib/socket.js";
-
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import groupRoutes from "./routes/group.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
-
 import seedAIUser from "./seeds/seedAIUser.js";
+import callRoutes from "./routes/call.routes.js";
 
 dotenv.config();
 
@@ -33,6 +31,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/call", callRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

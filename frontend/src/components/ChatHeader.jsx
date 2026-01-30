@@ -5,12 +5,15 @@ import {
   MoreVertical,
   Trash2,
   Sparkles,
+  Phone,
+  Video,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 import GroupMembersModal from "./GroupMembersModal";
+import { useCallStore } from "../store/useCallStore";
 
 const ChatHeader = () => {
   const {
@@ -28,6 +31,8 @@ const ChatHeader = () => {
   const [showMembers, setShowMembers] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef(null);
+
+  const { startCall, startGroupCall } = useCallStore();
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -182,13 +187,70 @@ const ChatHeader = () => {
           {/* RIGHT SECTION: Actions */}
           <div className="flex items-center gap-1">
             {isGroup && (
-              <button
-                onClick={() => setShowMembers(true)}
-                className="btn btn-ghost btn-sm btn-circle hover:bg-base-200 transition-colors"
-                title="Group Info"
-              >
-                <Info className="h-5 w-5 text-base-content/60" />
-              </button>
+              <>
+                {/* Group Info */}
+                <button
+                  onClick={() => setShowMembers(true)}
+                  className="btn btn-ghost btn-sm btn-circle hover:bg-base-200"
+                  title="Group Info"
+                >
+                  <Info className="h-5 w-5 text-base-content/60" />
+                </button>
+
+                {/* Group Voice Call */}
+                <button
+                  onClick={() =>
+                    startGroupCall({
+                      groupId: selectedGroup._id,
+                      callType: "voice",
+                    })
+                  }
+                  className="btn btn-ghost btn-sm btn-circle text-base-content/60 hover:text-primary"
+                  title="Group voice call"
+                >
+                  <Phone className="h-5 w-5" />
+                </button>
+
+                {/* Group Video Call */}
+                <button
+                  onClick={() =>
+                    startGroupCall({
+                      groupId: selectedGroup._id,
+                      callType: "video",
+                    })
+                  }
+                  className="btn btn-ghost btn-sm btn-circle text-base-content/60 hover:text-primary"
+                  title="Group video call"
+                >
+                  <Video className="h-5 w-5" />
+                </button>
+              </>
+            )}
+
+            {!isGroup && !isAI && (
+              <>
+                {/* Voice Call */}
+                <button
+                  onClick={() =>
+                    startCall({ receiver: selectedUser, callType: "voice" })
+                  }
+                  className="btn btn-ghost btn-sm btn-circle text-base-content/60 hover:text-primary"
+                  title="Voice call"
+                >
+                  <Phone className="h-5 w-5" />
+                </button>
+
+                {/* Video Call */}
+                <button
+                  onClick={() =>
+                    startCall({ receiver: selectedUser, callType: "video" })
+                  }
+                  className="btn btn-ghost btn-sm btn-circle text-base-content/60 hover:text-primary"
+                  title="Video call"
+                >
+                  <Video className="h-5 w-5" />
+                </button>
+              </>
             )}
 
             <div className="relative" ref={menuRef}>
