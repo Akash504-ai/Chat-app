@@ -10,6 +10,7 @@ import { formatMessageTime } from "../lib/utils";
 
 import FileMessage from "./FileMessage";
 import AudioMessage from "./AudioMessage";
+import PinnedHeader from "./PinnedHeader";
 
 const ChatContainer = () => {
   const {
@@ -63,6 +64,7 @@ const ChatContainer = () => {
   return (
     <div className="flex flex-1 flex-col h-full min-h-0">
       <ChatHeader />
+      <PinnedHeader />
 
       <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-3 space-y-3 sm:space-y-4">
         {messages.map((message, idx) => {

@@ -16,6 +16,15 @@ export const useChatStore = create((set, get) => ({
   isGroupsLoading: false,
   isMessagesLoading: false,
   reactions: {},
+  pinnedMessages: {},
+  
+  togglePin: (messageId) =>
+    set((state) => ({
+      pinnedMessages: {
+        ...state.pinnedMessages,
+        [messageId]: !state.pinnedMessages[messageId],
+      },
+    })),
 
   addReaction: (messageId, emoji) =>
     set((state) => {

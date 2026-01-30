@@ -1,5 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, Trash, Trash2, ShieldAlert, Copy, SmilePlus } from "lucide-react";
+import {
+  MoreVertical,
+  Trash,
+  Trash2,
+  ShieldAlert,
+  Copy,
+  SmilePlus,
+  Pin,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChatStore } from "../store/useChatStore";
 import FileMessage from "./FileMessage";
@@ -11,17 +19,20 @@ const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
 
 const MessageBubble = ({ message, sender, isMe, chatType }) => {
   const [open, setOpen] = useState(false);
-  const [showEmojis, setShowEmojis] = useState(false); // Added for emoji tray
+  const [showEmojis, setShowEmojis] = useState(false);
   const menuRef = useRef(null);
-  const emojiRef = useRef(null); // Added for emoji tray click-outside
+  const emojiRef = useRef(null);
 
   const {
     deleteMessageForMe,
     deleteMessageForEveryone,
     reactions,
     addReaction,
+    pinnedMessages,
+    togglePin,
   } = useChatStore();
 
+  const isPinned = pinnedMessages?.[message._id];
   const myReaction = reactions?.[message._id];
 
   const canDeleteForEveryone =
@@ -49,17 +60,25 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
   };
 
   return (
-    <div className={`chat ${isMe ? "chat-end" : "chat-start"} w-full group mb-3 px-4 transition-all`}>
+    <div
+      id={`msg-${message._id}`}
+      className={`chat ${isMe ? "chat-end" : "chat-start"} w-full group mb-3 px-4 transition-all`}
+    >
       {/* Avatar */}
       <div className="chat-image avatar self-end mb-1">
         <div className="h-8 w-8 rounded-full ring-2 ring-base-100 shadow-sm">
-          <img src={sender?.profilePic || "/avatar.png"} alt="avatar" className="object-cover" />
+          <img
+            src={sender?.profilePic || "/avatar.png"}
+            alt="avatar"
+            className="object-cover"
+          />
         </div>
       </div>
 
-      <div className={`flex flex-col max-w-[80%] md:max-w-[70%] ${isMe ? "items-end" : "items-start"}`}>
+      <div
+        className={`flex flex-col max-w-[80%] md:max-w-[70%] ${isMe ? "items-end" : "items-start"}`}
+      >
         <div className="relative flex items-center gap-2 max-w-full">
-
           {/* Buttons (me) */}
           {isMe && !message.deletedForEveryone && (
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-200 order-first">
@@ -72,7 +91,6 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
                   <SmilePlus size={16} />
                 </button>
 
-                {/* Staggered Emoji Tray */}
                 <AnimatePresence>
                   {showEmojis && (
                     <motion.div
@@ -111,14 +129,22 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
             </div>
           )}
 
+          {/* Pin Visual Indicator */}
+          {isPinned && (
+            <Pin
+              size={14}
+              className={`absolute -top-2 ${isMe ? "-left-2" : "-right-2"} rotate-45 text-warning z-10`}
+            />
+          )}
+
           {/* Bubble */}
           <div
             className={`relative chat-bubble px-4 py-2.5 shadow-sm transition-colors ${
               message.deletedForEveryone
                 ? "bg-base-200/50 border border-base-300 text-base-content/40 italic"
                 : isMe
-                ? "bg-primary text-primary-content rounded-2xl rounded-tr-none"
-                : "bg-base-100 border border-base-200 text-base-content rounded-2xl rounded-tl-none"
+                  ? "bg-primary text-primary-content rounded-2xl rounded-tr-none"
+                  : "bg-base-100 border border-base-200 text-base-content rounded-2xl rounded-tl-none"
             }`}
           >
             {message.deletedForEveryone ? (
@@ -138,7 +164,9 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
                         alt="attachment"
                       />
                     )}
-                    {message.audio && <AudioMessage audioUrl={message.audio} isMe={isMe} />}
+                    {message.audio && (
+                      <AudioMessage audioUrl={message.audio} isMe={isMe} />
+                    )}
                     {message.file?.url && <FileMessage file={message.file} />}
                   </div>
                 )}
@@ -153,8 +181,8 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
 
             {/* SELECTED REACTION DISPLAY */}
             {myReaction && (
-              <motion.div 
-                initial={{ scale: 0 }} 
+              <motion.div
+                initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 className={`absolute -bottom-2 ${isMe ? "left-0" : "right-0"} inline-flex items-center justify-center rounded-full bg-base-100 border border-base-200 px-1.5 py-0.5 shadow-sm`}
               >
@@ -174,6 +202,23 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
                     isMe ? "right-0" : "left-0"
                   } bg-base-100 border border-base-200 rounded-xl shadow-2xl w-44 overflow-hidden py-1`}
                 >
+                  {/* Pin/Unpin Option Inside Menu */}
+                  {!message.deletedForEveryone && (
+                    <button
+                      onClick={() => {
+                        togglePin(message._id);
+                        setOpen(false);
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200"
+                    >
+                      <Pin
+                        size={14}
+                        className={isPinned ? "text-warning" : ""}
+                      />
+                      {isPinned ? "Unpin message" : "Pin message"}
+                    </button>
+                  )}
+
                   {message.text && (
                     <button
                       onClick={handleCopyText}
@@ -189,7 +234,7 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
                       deleteMessageForMe(message._id);
                       setOpen(false);
                     }}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200 border-t border-base-200"
                   >
                     <Trash size={14} />
                     Delete for me
@@ -215,7 +260,6 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
           {/* Buttons (other) */}
           {!isMe && !message.deletedForEveryone && (
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-200">
-              {/* Emoji Trigger for other's messages */}
               <div className="relative" ref={emojiRef}>
                 <button
                   onClick={() => setShowEmojis(!showEmojis)}
@@ -262,7 +306,9 @@ const MessageBubble = ({ message, sender, isMe, chatType }) => {
         </div>
 
         {/* Footer */}
-        <div className={`mt-1.5 flex items-center gap-1.5 text-[10px] opacity-60 ${isMe ? "mr-1" : "ml-1"}`}>
+        <div
+          className={`mt-1.5 flex items-center gap-1.5 text-[10px] opacity-60 ${isMe ? "mr-1" : "ml-1"}`}
+        >
           <span>{formatMessageTime(message.createdAt)}</span>
         </div>
       </div>
