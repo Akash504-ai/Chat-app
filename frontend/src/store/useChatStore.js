@@ -22,6 +22,15 @@ export const useChatStore = create(
       pinnedMessages: {},
       clearedChats: {},
 
+      clearSelectedChat: () =>
+        set({
+          selectedUser: null,
+          selectedGroup: null,
+          selectedChatType: "private",
+          messages: [],
+          typingUsers: {},
+        }),
+
       clearChatForMe: (chatId) =>
         set((state) => ({
           clearedChats: {
@@ -31,15 +40,18 @@ export const useChatStore = create(
         })),
 
       togglePin: (chatId, messageId) =>
-        set((state) => ({
-          pinnedMessages: {
-            ...state.pinnedMessages,
-            [chatId]: {
-              ...(state.pinnedMessages[chatId] || {}),
-              [messageId]: !state.pinnedMessages?.[chatId]?.[messageId],
+        set((state) => {
+          const chatPins = state.pinnedMessages[chatId] || {};
+          return {
+            pinnedMessages: {
+              ...state.pinnedMessages,
+              [chatId]: {
+                ...chatPins,
+                [messageId]: !chatPins[messageId],
+              },
             },
-          },
-        })),
+          };
+        }),
 
       addReaction: (chatId, messageId, emoji) =>
         set((state) => ({
@@ -87,6 +99,7 @@ export const useChatStore = create(
       sendMessage: async (messageData) => {
         const { selectedUser, messages } = get();
         if (!selectedUser) return;
+        if (get().selectedChatType !== "private") return;
 
         const res = await axiosInstance.post(
           `/messages/send/${selectedUser._id}`,
@@ -99,7 +112,7 @@ export const useChatStore = create(
       getGroups: async () => {
         set({ isGroupsLoading: true });
         try {
-          const res = await axiosInstance.get("/groups");
+          const res = await axiosInstance.get("/groups/my");
           set({ groups: res.data });
         } catch {
           toast.error("Failed to load groups");
@@ -130,6 +143,7 @@ export const useChatStore = create(
       sendGroupMessage: async (messageData) => {
         const { selectedGroup, messages } = get();
         if (!selectedGroup) return;
+        if (get().selectedChatType !== "group") return;
 
         const res = await axiosInstance.post(
           `/messages/group/send/${selectedGroup._id}`,
@@ -153,6 +167,7 @@ export const useChatStore = create(
       deleteMessageForEveryone: async (messageId) => {
         try {
           await axiosInstance.delete(`/messages/${messageId}/everyone`);
+          // ✅ backend will emit socket event
         } catch {
           toast.error("Failed to delete message");
         }
@@ -212,13 +227,18 @@ export const useChatStore = create(
         const socket = useAuthStore.getState().socket;
         if (!socket) return;
 
-        // 🔥 IMPORTANT: remove old listeners first
+        // 🔥 clear old listeners (VERY IMPORTANT)
         socket.off("newMessage");
         socket.off("newGroupMessage");
+        socket.off("typing");
+        socket.off("stopTyping");
+        socket.off("messageDeletedEveryone");
+        socket.off("messageStatusUpdate");
+        socket.off("messageStatusUpdateBulk");
 
+        /* ---------- PRIVATE MESSAGE ---------- */
         socket.on("newMessage", (msg) => {
-          const { selectedUser, selectedChatType, messages, unreadCounts } =
-            get();
+          const { selectedUser, selectedChatType } = get();
           const authUser = useAuthStore.getState().authUser;
 
           const senderId =
@@ -235,34 +255,73 @@ export const useChatStore = create(
             selectedChatType === "private" &&
             selectedUser?._id === chatUserId
           ) {
-            set({ messages: [...messages, msg] });
+            set((state) => ({
+              messages: [...state.messages, msg],
+            }));
+
+            // 🔵 THIS IS THE KEY LINE
+            axiosInstance.put(`/messages/mark-seen/${chatUserId}`);
           } else {
-            set({
+            // ✅ increment unread count
+            set((state) => ({
               unreadCounts: {
-                ...unreadCounts,
-                [chatUserId]: (unreadCounts[chatUserId] || 0) + 1,
+                ...state.unreadCounts,
+                [chatUserId]: (state.unreadCounts[chatUserId] || 0) + 1,
               },
-            });
+            }));
           }
         });
 
+        /* ---------- GROUP MESSAGE ---------- */
         socket.on("newGroupMessage", (msg) => {
-          const { selectedGroup, selectedChatType, messages, unreadCounts } =
-            get();
+          const { selectedGroup, selectedChatType } = get();
 
           if (
             selectedChatType === "group" &&
             selectedGroup?._id === msg.groupId
           ) {
-            set({ messages: [...messages, msg] });
+            set((state) => ({
+              messages: [...state.messages, msg],
+            }));
           } else {
-            set({
+            set((state) => ({
               unreadCounts: {
-                ...unreadCounts,
-                [msg.groupId]: (unreadCounts[msg.groupId] || 0) + 1,
+                ...state.unreadCounts,
+                [msg.groupId]: (state.unreadCounts[msg.groupId] || 0) + 1,
               },
-            });
+            }));
           }
+        });
+
+        /* ---------- TYPING ---------- */
+        socket.on("typing", ({ from }) => {
+          set((state) => ({
+            typingUsers: { ...state.typingUsers, [from]: true },
+          }));
+        });
+
+        socket.on("stopTyping", ({ from }) => {
+          set((state) => {
+            const t = { ...state.typingUsers };
+            delete t[from];
+            return { typingUsers: t };
+          });
+        });
+
+        /* ---------- DELETE FOR EVERYONE ---------- */
+        socket.on("messageDeletedEveryone", ({ messageId }) => {
+          set((state) => ({
+            messages: state.messages.filter((m) => m._id !== messageId),
+          }));
+        });
+
+        /* ---------- SEEN (BLUE TICK) ---------- */
+        socket.on("messageStatusUpdateBulk", ({ messageIds, status }) => {
+          set((state) => ({
+            messages: state.messages.map((m) =>
+              messageIds.includes(m._id) ? { ...m, status } : m,
+            ),
+          }));
         });
       },
 
@@ -279,18 +338,33 @@ export const useChatStore = create(
         socket.off("messageDeletedEveryone");
       },
 
+      deleteGroup: async (groupId) => {
+        try {
+          await axiosInstance.delete(`/groups/${groupId}`);
+          set((state) => ({
+            groups: state.groups.filter((g) => g._id !== groupId),
+          }));
+          toast.success("Group deleted");
+        } catch {
+          toast.error("Failed to delete group");
+        }
+      },
+
       setSelectedUser: (user) =>
-        set((state) => ({
-          selectedUser: user,
-          selectedGroup: null,
-          selectedChatType: "private",
-          messages: [],
-          typingUsers: {},
-          unreadCounts: {
-            ...state.unreadCounts,
-            [user?._id]: 0,
-          },
-        })),
+        set((state) => {
+          axiosInstance.put(`/messages/mark-seen/${user._id}`);
+          return {
+            selectedUser: user,
+            selectedGroup: null,
+            selectedChatType: "private",
+            messages: [],
+            typingUsers: {},
+            unreadCounts: {
+              ...state.unreadCounts,
+              [user._id]: 0,
+            },
+          };
+        }),
 
       setSelectedGroup: (group) =>
         set((state) => ({

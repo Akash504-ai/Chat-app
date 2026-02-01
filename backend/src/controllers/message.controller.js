@@ -5,9 +5,6 @@ import Group from "../models/group.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 
-/* =========================
-   USERS FOR SIDEBAR
-========================= */
 export const getUsersForSidebar = async (req, res) => {
   try {
     const users = await User.find({ _id: { $ne: req.user._id } }).select(
@@ -20,9 +17,6 @@ export const getUsersForSidebar = async (req, res) => {
   }
 };
 
-/* =========================
-   PRIVATE CHAT (1–1)
-========================= */
 export const getMessages = async (req, res) => {
   try {
     const { id } = req.params;
@@ -146,9 +140,6 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-/* =========================
-   GROUP CHAT
-========================= */
 export const getGroupMessages = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -247,9 +238,6 @@ export const sendGroupMessage = async (req, res) => {
   }
 };
 
-/* =========================
-   DELETE MESSAGE
-========================= */
 export const deleteMessageForMe = async (req, res) => {
   try {
     const { messageId } = req.params;
@@ -293,4 +281,35 @@ export const deleteMessageForEveryone = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
+};
+
+// PUT /messages/mark-seen/:userId
+export const markMessagesSeen = async (req, res) => {
+  const myId = req.user._id;
+  const otherUserId = req.params.userId;
+
+  await Message.updateMany(
+    {
+      senderId: otherUserId,
+      receiverId: myId,
+      status: { $ne: "seen" },
+    },
+    { status: "seen" }
+  );
+
+  const senderSocketId = getReceiverSocketId(otherUserId);
+  if (senderSocketId) {
+    const messages = await Message.find({
+      senderId: otherUserId,
+      receiverId: myId,
+      status: "seen",
+    }).select("_id");
+
+    io.to(senderSocketId).emit("messageStatusUpdateBulk", {
+      messageIds: messages.map(m => m._id),
+      status: "seen",
+    });
+  }
+
+  res.sendStatus(200);
 };

@@ -7,10 +7,9 @@ const GroupMembersList = ({ group, isAdmin, onUpdateGroup }) => {
 
   const handleRemoveUser = async (userId) => {
     try {
-      const res = await axiosInstance.post(
-        `/groups/${group._id}/remove-user`,
-        { userId }
-      );
+      const res = await axiosInstance.post(`/groups/${group._id}/remove-user`, {
+        userId,
+      });
       onUpdateGroup(res.data);
       toast.success("User removed");
     } catch {
@@ -24,34 +23,32 @@ const GroupMembersList = ({ group, isAdmin, onUpdateGroup }) => {
 
       <ul className="space-y-3">
         {group.members.map((member) => {
-          const isMemberAdmin = group.admins.includes(member._id);
-          const isSelf = member._id === authUser._id;
+          const isMemberAdmin = member.role === "admin";
+          const isSelf = member.userId._id === authUser._id;
 
           return (
             <li
-              key={member._id}
+              key={member.userId._id}
               className="flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
                 <img
-                  src={member.profilePic || "/avatar.png"}
+                  src={member.userId.profilePic || "/avatar.png"}
                   alt="avatar"
                   className="h-9 w-9 rounded-full border"
                 />
 
                 <div>
-                  <p className="font-medium">{member.fullName}</p>
+                  <p className="font-medium">{member.userId.fullName}</p>
                   {isMemberAdmin && (
-                    <span className="text-xs text-primary">
-                      Admin
-                    </span>
+                    <span className="text-xs text-primary">Admin</span>
                   )}
                 </div>
               </div>
 
               {isAdmin && !isMemberAdmin && !isSelf && (
                 <button
-                  onClick={() => handleRemoveUser(member._id)}
+                  onClick={() => handleRemoveUser(member.userId._id)}
                   className="btn btn-xs btn-error btn-outline"
                 >
                   Remove

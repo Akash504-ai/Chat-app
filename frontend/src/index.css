@@ -26,3 +26,22 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--bc) / 0.2);
 }
+
+
+/* Custom Scrollbar Styling */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--bc) / 0.2); /* Uses DaisyUI content color with opacity */
+  border-radius: 20px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--bc) / 0.3);
+}

@@ -33,8 +33,16 @@ export const createGroup = async (req, res) => {
       return res.status(400).json({ message: "Group name is required" });
     }
 
-    // Ensure creator is admin
-    const uniqueMembers = new Set([...members, userId.toString()]);
+    // 🔥 remove AI users from members list
+    const validUsers = await User.find({
+      _id: { $in: members },
+      isAI: { $ne: true },
+    }).select("_id");
+
+    const validMemberIds = validUsers.map((u) => u._id.toString());
+
+    // ensure creator is always included
+    const uniqueMembers = new Set([...validMemberIds, userId.toString()]);
 
     const groupMembers = Array.from(uniqueMembers).map((id) => ({
       userId: id,
@@ -72,7 +80,7 @@ export const getGroupById = async (req, res) => {
     }
 
     const isMember = group.members.some(
-      (m) => m.userId._id.toString() === userId.toString()
+      (m) => m.userId._id.toString() === userId.toString(),
     );
 
     if (!isMember) {
@@ -101,8 +109,7 @@ export const addUserToGroup = async (req, res) => {
   // admin check
   const isAdmin = group.members.some(
     (m) =>
-      m.userId.toString() === req.user._id.toString() &&
-      m.role === "admin"
+      m.userId.toString() === req.user._id.toString() && m.role === "admin",
   );
 
   if (!isAdmin) {
@@ -111,7 +118,7 @@ export const addUserToGroup = async (req, res) => {
 
   // prevent duplicate
   const alreadyMember = group.members.some(
-    (m) => m.userId.toString() === userId
+    (m) => m.userId.toString() === userId,
   );
 
   if (alreadyMember) {
@@ -122,12 +129,13 @@ export const addUserToGroup = async (req, res) => {
   await group.save();
 
   // 🔥 THIS IS THE KEY
-  const populatedGroup = await Group.findById(group._id)
-    .populate("members.userId", "fullName profilePic");
+  const populatedGroup = await Group.findById(group._id).populate(
+    "members.userId",
+    "fullName profilePic",
+  );
 
   res.json(populatedGroup);
 };
-
 
 /**
  * REMOVE USER (ADMIN ONLY)
@@ -144,17 +152,14 @@ export const removeUserFromGroup = async (req, res) => {
     }
 
     const admin = group.members.find(
-      (m) =>
-        m.userId.toString() === adminId.toString() && m.role === "admin"
+      (m) => m.userId.toString() === adminId.toString() && m.role === "admin",
     );
 
     if (!admin) {
       return res.status(403).json({ message: "Admin access required" });
     }
 
-    group.members = group.members.filter(
-      (m) => m.userId.toString() !== userId
-    );
+    group.members = group.members.filter((m) => m.userId.toString() !== userId);
 
     await group.save();
     res.status(200).json(group);
@@ -178,7 +183,7 @@ export const leaveGroup = async (req, res) => {
     }
 
     group.members = group.members.filter(
-      (m) => m.userId.toString() !== userId.toString()
+      (m) => m.userId.toString() !== userId.toString(),
     );
 
     await group.save();
@@ -204,8 +209,7 @@ export const updateGroup = async (req, res) => {
     }
 
     const admin = group.members.find(
-      (m) =>
-        m.userId.toString() === userId.toString() && m.role === "admin"
+      (m) => m.userId.toString() === userId.toString() && m.role === "admin",
     );
 
     if (!admin) {

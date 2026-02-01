@@ -1,9 +1,11 @@
 import { X, Crown, UserMinus, LogOut, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "../store/useAuthStore";
-import { useChatStore } from "../store/useChatStore";
 import AddMemberModal from "./AddMemberModal";
+import { useChatStore } from "../store/useChatStore";
 
 const GroupMembersModal = ({ groupId, onClose }) => {
   const [group, setGroup] = useState(null);
@@ -11,18 +13,15 @@ const GroupMembersModal = ({ groupId, onClose }) => {
   const [showAddMember, setShowAddMember] = useState(false);
 
   const { authUser } = useAuthStore();
-  const { leaveGroup, removeGroupMember } = useChatStore();
+  const { getGroups, clearSelectedChat } = useChatStore();
 
-  // =====================
-  // FETCH GROUP
-  // =====================
   useEffect(() => {
     const fetchGroup = async () => {
       try {
         const res = await axiosInstance.get(`/groups/${groupId}`);
         setGroup(res.data);
       } catch {
-        alert("Failed to load group info");
+        toast.error("Failed to load group info");
       } finally {
         setLoading(false);
       }
@@ -33,102 +32,133 @@ const GroupMembersModal = ({ groupId, onClose }) => {
 
   if (loading || !group) return null;
 
-  // =====================
-  // ROLE CHECK
-  // =====================
-  const myRole = group.members.find(
-    (m) => m.userId._id === authUser._id
-  )?.role;
+  const myMember = group.members.find((m) => m.userId._id === authUser._id);
 
+  const myRole = myMember?.role;
   const isAdmin = myRole === "admin";
   const isCreator = group.createdBy === authUser._id;
 
-  // =====================
-  // HANDLERS
-  // =====================
+  const adminCount = group.members.filter((m) => m.role === "admin").length;
+
+  const canLeave = !isCreator && !(isAdmin && adminCount === 1);
+
   const handleRemove = async (userId) => {
     if (!confirm("Remove this member?")) return;
 
-    await removeGroupMember(group._id, userId);
+    try {
+      await axiosInstance.post(`/groups/${group._id}/remove-user`, { userId });
 
-    setGroup((prev) => ({
-      ...prev,
-      members: prev.members.filter(
-        (m) => m.userId._id !== userId
-      ),
-    }));
+      setGroup((prev) => ({
+        ...prev,
+        members: prev.members.filter((m) => m.userId._id !== userId),
+      }));
+
+      toast.success("Member removed");
+    } catch {
+      toast.error("Failed to remove member");
+    }
   };
 
   const handleLeave = async () => {
     if (!confirm("Leave this group?")) return;
-    await leaveGroup(group._id);
-    onClose();
+
+    try {
+      await axiosInstance.post(`/groups/${group._id}/leave`);
+
+      await getGroups();
+      clearSelectedChat();
+
+      toast.success("Left group");
+      onClose();
+    } catch {
+      toast.error("Failed to leave group");
+    }
   };
 
-  // =====================
-  // UI
-  // =====================
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-md rounded-lg bg-base-100 shadow-lg">
-        {/* HEADER */}
-        <div className="flex items-center justify-between border-b p-4">
-          <h2 className="text-lg font-semibold">
-            {group.name} · {group.members.length}
-          </h2>
-          <button onClick={onClose}>
-            <X />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 mt-[230px]">
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className=""
+      />
+
+      {/* Modal */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="relative w-full max-w-md max-h-[80vh]
+          rounded-3xl bg-base-100 shadow-2xl border border-base-300
+          flex flex-col"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b px-6 py-5">
+          <div>
+            <h2 className="text-xl font-bold">{group.name}</h2>
+            <p className="text-sm opacity-60">{group.members.length} members</p>
+          </div>
+          <button onClick={onClose} className="btn btn-ghost btn-sm btn-circle">
+            <X size={20} />
           </button>
         </div>
 
-        {/* ADMIN ACTIONS */}
+        {/* Admin Actions */}
         {isAdmin && (
-          <div className="border-b p-3">
+          <div className="px-6 py-4">
             <button
               onClick={() => setShowAddMember(true)}
-              className="btn btn-sm btn-primary w-full"
+              className="btn btn-primary w-full gap-2 rounded-xl"
             >
-              <Plus size={16} /> Add member
+              <Plus size={18} /> Add Member
             </button>
           </div>
         )}
 
-        {/* MEMBERS LIST */}
-        <div className="max-h-[60vh] overflow-y-auto">
+        {/* Members */}
+        <div className="flex-1 overflow-y-auto px-2 py-2">
           {group.members.map((m) => {
             const isMe = m.userId._id === authUser._id;
+            const isCreatorMember = m.userId._id === group.createdBy;
 
             return (
               <div
                 key={m.userId._id}
-                className="flex items-center gap-3 p-3 hover:bg-base-200"
+                className="group flex items-center gap-4 rounded-xl p-3 hover:bg-base-200"
               >
-                <img
-                  src={m.userId.profilePic || "/avatar.png"}
-                  className="h-10 w-10 rounded-full"
-                />
-
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">
-                    {m.userId.fullName}
-                    {isMe && " (You)"}
-                  </p>
-                  <p className="text-xs opacity-60">
-                    {m.role}
-                  </p>
+                <div className="relative">
+                  <img
+                    src={m.userId.profilePic || "/avatar.png"}
+                    className="h-11 w-11 rounded-full"
+                  />
+                  {m.role === "admin" && (
+                    <div className="absolute -bottom-1 -right-1 bg-base-100 rounded-full p-0.5">
+                      <Crown size={14} className="text-warning" />
+                    </div>
+                  )}
                 </div>
 
-                {m.role === "admin" && (
-                  <Crown className="text-warning" size={18} />
-                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold truncate flex gap-2 items-center">
+                    {m.userId.fullName}
+                    {isMe && (
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                        You
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs capitalize opacity-60">{m.role}</p>
+                </div>
 
-                {/* REMOVE MEMBER (ADMIN ONLY) */}
-                {isAdmin && !isMe && (
+                {/* Remove */}
+                {isAdmin && !isMe && !isCreatorMember && (
                   <button
                     onClick={() => handleRemove(m.userId._id)}
-                    className="btn btn-ghost btn-xs text-error"
+                    className="btn btn-ghost btn-sm btn-circle text-error opacity-0 group-hover:opacity-100"
                   >
-                    <UserMinus size={16} />
+                    <UserMinus size={18} />
                   </button>
                 )}
               </div>
@@ -136,27 +166,29 @@ const GroupMembersModal = ({ groupId, onClose }) => {
           })}
         </div>
 
-        {/* LEAVE GROUP */}
-        {!isCreator && (
-          <div className="border-t p-3">
+        {/* Leave Group */}
+        {canLeave && (
+          <div className="border-t p-4">
             <button
               onClick={handleLeave}
-              className="btn btn-error btn-sm w-full"
+              className="btn btn-ghost w-full text-error gap-2"
             >
-              <LogOut size={16} /> Leave group
+              <LogOut size={18} /> Leave Group
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
 
-      {/* ADD MEMBER MODAL */}
-      {showAddMember && (
-        <AddMemberModal
-          group={group}
-          onClose={() => setShowAddMember(false)}
-          onAdded={(updatedGroup) => setGroup(updatedGroup)}
-        />
-      )}
+      {/* Add Member Modal */}
+      <AnimatePresence>
+        {showAddMember && (
+          <AddMemberModal
+            group={group}
+            onClose={() => setShowAddMember(false)}
+            onAdded={(updatedGroup) => setGroup(updatedGroup)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

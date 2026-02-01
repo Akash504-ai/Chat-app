@@ -70,7 +70,7 @@ const ChatContainer = () => {
     : messages;
 
   return (
-    <div className="flex flex-1 flex-col h-full min-h-0">
+    <div className="flex flex-1 flex-col min-h-0">
       <ChatHeader />
 
       <PinnedHeader chatId={chatId} />

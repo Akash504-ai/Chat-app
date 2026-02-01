@@ -14,7 +14,7 @@ import {
 const router = express.Router();
 
 router.post("/create", protectRoute, createGroup);
-router.get("/", protectRoute, getMyGroups);
+router.get("/my", protectRoute, getMyGroups);
 router.get("/:id", protectRoute, getGroupById);
 router.post("/:id/add-user", protectRoute, addUserToGroup);
 router.post("/:id/remove-user", protectRoute, removeUserFromGroup);

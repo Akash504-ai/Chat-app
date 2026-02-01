@@ -8,6 +8,7 @@ import {
   sendGroupMessage,
   deleteMessageForMe,
   deleteMessageForEveryone,
+  markMessagesSeen,
 } from "../controllers/message.controller.js";
 
 const router = express.Router();
@@ -22,5 +23,7 @@ router.post("/group/send/:groupId", protectRoute, sendGroupMessage);
 
 router.delete("/:messageId/me", protectRoute, deleteMessageForMe);
 router.delete("/:messageId/everyone", protectRoute, deleteMessageForEveryone);
+
+router.put("/mark-seen/:userId", protectRoute, markMessagesSeen);
 
 export default router;

@@ -18,12 +18,13 @@ const Sidebar = () => {
     unreadCounts,
     setSelectedUser,
     setSelectedGroup,
+    clearSelectedChat,
     deleteGroup,
     isUsersLoading,
     isGroupsLoading,
   } = useChatStore();
 
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers, authUser } = useAuthStore();
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
@@ -34,8 +35,8 @@ const Sidebar = () => {
   }, []);
 
   const filteredUsers = showOnlineOnly
-    ? users.filter((u) => onlineUsers.includes(u._id))
-    : users;
+  ? users.filter((u) => onlineUsers.includes(u._id))
+  : users;
 
   const handleDeleteGroup = (e, groupId) => {
     e.stopPropagation();
@@ -43,7 +44,9 @@ const Sidebar = () => {
     deleteGroup(groupId);
   };
 
-  if (isUsersLoading || isGroupsLoading) return <SidebarSkeleton />;
+  if (isUsersLoading || isGroupsLoading) {
+    return <SidebarSkeleton />;
+  }
 
   return (
     <>
@@ -87,6 +90,7 @@ const Sidebar = () => {
 
             {groups.map((group) => {
               const isActive = selectedGroup?._id === group._id;
+              const isCreator = group.createdBy === authUser._id;
 
               const isTyping =
                 selectedChatType === "group" &&
@@ -97,12 +101,12 @@ const Sidebar = () => {
                 <div
                   key={group._id}
                   onClick={() => {
-                    setSelectedUser(null);
+                    clearSelectedChat();
                     setSelectedGroup(group);
                   }}
-                  className={`flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-base-200
-                    ${isActive ? "bg-base-200" : ""}
-                  `}
+                  className={`flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-base-200 ${
+                    isActive ? "bg-base-200" : ""
+                  }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <UsersRound className="h-10 w-10 rounded-full bg-primary/10 p-2" />
@@ -123,12 +127,14 @@ const Sidebar = () => {
                       </span>
                     )}
 
-                    <button
-                      onClick={(e) => handleDeleteGroup(e, group._id)}
-                      className="btn btn-ghost btn-xs text-error"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {isCreator && (
+                      <button
+                        onClick={(e) => handleDeleteGroup(e, group._id)}
+                        className="btn btn-ghost btn-xs text-error"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -153,10 +159,13 @@ const Sidebar = () => {
             return (
               <button
                 key={user._id}
-                onClick={() => setSelectedUser(user)}
-                className={`flex w-full items-center gap-3 p-3 text-left hover:bg-base-200
-                  ${isSelected ? "bg-base-200" : ""}
-                `}
+                onClick={() => {
+                  clearSelectedChat();
+                  setSelectedUser(user);
+                }}
+                className={`flex w-full items-center gap-3 p-3 text-left hover:bg-base-200 ${
+                  isSelected ? "bg-base-200" : ""
+                }`}
               >
                 <div className="relative">
                   <img
@@ -177,16 +186,18 @@ const Sidebar = () => {
                     {isAI
                       ? "AI Assistant"
                       : isTyping
-                        ? "typing..."
-                        : isOnline
-                          ? "Online"
-                          : "Offline"}
+                      ? "typing..."
+                      : isOnline
+                      ? "Online"
+                      : "Offline"}
                   </p>
                 </div>
 
                 {!isAI && unreadCounts[user._id] > 0 && (
                   <span className="badge badge-error text-xs">
-                    {unreadCounts[user._id] > 9 ? "9+" : unreadCounts[user._id]}
+                    {unreadCounts[user._id] > 9
+                      ? "9+"
+                      : unreadCounts[user._id]}
                   </span>
                 )}
               </button>

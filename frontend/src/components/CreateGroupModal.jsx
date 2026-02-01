@@ -25,8 +25,14 @@ const CreateGroupModal = ({ onClose }) => {
       return;
     }
 
-    if (selectedUsers.length < 1) {
-      toast.error("Select at least 1 member");
+    // 🔒 FINAL SAFETY: ensure only humans go to backend
+    const humanMembers = selectedUsers.filter((id) => {
+      const user = users.find((u) => u._id === id);
+      return user && !user.isAI;
+    });
+
+    if (humanMembers.length < 1) {
+      toast.error("Select at least 1 human member");
       return;
     }
 
@@ -34,14 +40,14 @@ const CreateGroupModal = ({ onClose }) => {
       setIsLoading(true);
 
       const res = await axiosInstance.post("/groups/create", {
-        name: groupName,
-        members: selectedUsers,
+        name: groupName.trim(),
+        members: humanMembers,
       });
 
       toast.success("Group created");
 
-      await getGroups();              // ✅ refresh sidebar
-      setSelectedGroup(res.data);     // ✅ auto-open group
+      await getGroups();          // refresh sidebar
+      setSelectedGroup(res.data); // auto-open group
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to create group");
@@ -68,26 +74,29 @@ const CreateGroupModal = ({ onClose }) => {
           className="input input-bordered mb-4 w-full"
         />
 
+        {/* 🔥 AI HIDDEN HERE */}
         <div className="mb-4 max-h-60 space-y-2 overflow-y-auto">
-          {users.map((user) => (
-            <label
-              key={user._id}
-              className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-base-200"
-            >
-              <input
-                type="checkbox"
-                className="checkbox checkbox-sm"
-                checked={selectedUsers.includes(user._id)}
-                onChange={() => toggleUser(user._id)}
-              />
-              <img
-                src={user.profilePic || "/avatar.png"}
-                alt={user.fullName}
-                className="h-8 w-8 rounded-full"
-              />
-              <span className="truncate">{user.fullName}</span>
-            </label>
-          ))}
+          {users
+            .filter((u) => !u.isAI)
+            .map((user) => (
+              <label
+                key={user._id}
+                className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-base-200"
+              >
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={selectedUsers.includes(user._id)}
+                  onChange={() => toggleUser(user._id)}
+                />
+                <img
+                  src={user.profilePic || "/avatar.png"}
+                  alt={user.fullName}
+                  className="h-8 w-8 rounded-full"
+                />
+                <span className="truncate">{user.fullName}</span>
+              </label>
+            ))}
         </div>
 
         <div className="flex justify-end gap-2">
