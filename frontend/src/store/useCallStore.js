@@ -18,33 +18,33 @@ export const useCallStore = create((set, get) => ({
   groupId: null,
 
   // =====================
-  // Reset
+  // Reset (SAFE)
   // =====================
-  resetCall: () =>
-    set((state) => {
-      if (state.callTimeoutId) clearTimeout(state.callTimeoutId);
+  resetCall: () => {
+    const { callTimeoutId } = get();
+    if (callTimeoutId) clearTimeout(callTimeoutId);
 
-      return {
-        callStatus: "idle",
-        callType: null,
-        caller: null,
-        receiver: null,
-        roomId: null,
-        callTimeoutId: null,
-        isGroupCall: false,
-        groupId: null,
-      };
-    }),
+    set({
+      callStatus: "idle",
+      callType: null,
+      caller: null,
+      receiver: null,
+      roomId: null,
+      callTimeoutId: null,
+      isGroupCall: false,
+      groupId: null,
+    });
+  },
 
   // =====================
-  // 1–1 OUTGOING CALL
+  // 📞 1–1 OUTGOING CALL
   // =====================
   startCall: ({ receiver, callType }) => {
     const socket = useAuthStore.getState().socket;
     const authUser = useAuthStore.getState().authUser;
-
     if (!socket || !authUser) return;
 
+    // ✅ STABLE ROOM ID
     const ids = [authUser._id, receiver._id].sort();
     const roomId = `call_${ids[0]}_${ids[1]}`;
 
@@ -64,17 +64,19 @@ export const useCallStore = create((set, get) => ({
       roomId,
     });
 
-    // ⏱️ Timeout (30s)
+    // ⏱️ timeout ONLY while ringing
     const timeoutId = setTimeout(() => {
-      toast.error("No answer");
-      get().endCall();
+      if (get().callStatus !== "in-call") {
+        toast.error("No answer");
+        get().endCall(true);
+      }
     }, 30000);
 
     set({ callTimeoutId: timeoutId });
   },
 
   // =====================
-  // INCOMING 1–1 CALL
+  // 📲 INCOMING CALL
   // =====================
   receiveCall: ({ caller, callType, roomId }) => {
     const authUser = useAuthStore.getState().authUser;
@@ -91,14 +93,14 @@ export const useCallStore = create((set, get) => ({
   },
 
   // =====================
-  // ACCEPT CALL
+  // ✅ ACCEPT CALL
   // =====================
   acceptCall: () => {
     const socket = useAuthStore.getState().socket;
     const { caller, roomId, callTimeoutId, isGroupCall, groupId } = get();
-
     if (!socket) return;
 
+    // 🔥 CRITICAL FIX
     if (callTimeoutId) clearTimeout(callTimeoutId);
 
     if (isGroupCall) {
@@ -117,7 +119,7 @@ export const useCallStore = create((set, get) => ({
   },
 
   // =====================
-  // REJECT CALL
+  // ❌ REJECT CALL
   // =====================
   rejectCall: () => {
     const socket = useAuthStore.getState().socket;
@@ -135,13 +137,13 @@ export const useCallStore = create((set, get) => ({
   },
 
   // =====================
-  // END CALL
+  // 🔚 END CALL (SAFE)
   // =====================
-  endCall: () => {
+  endCall: (silent = false) => {
     const socket = useAuthStore.getState().socket;
-    const { caller, receiver, isGroupCall, groupId } = get();
+    const { caller, receiver, isGroupCall, groupId, callStatus } = get();
 
-    if (socket) {
+    if (!silent && socket && callStatus !== "idle") {
       if (isGroupCall) {
         socket.emit("group:call:end", { groupId });
       } else {
@@ -160,13 +162,12 @@ export const useCallStore = create((set, get) => ({
   startGroupCall: ({ groupId, callType }) => {
     const socket = useAuthStore.getState().socket;
     const authUser = useAuthStore.getState().authUser;
-
     if (!socket || !authUser) return;
 
-    const roomId = `group_call_${groupId}`;
+    const roomId = `group_${groupId}`;
 
     set({
-      callStatus: "in-call", 
+      callStatus: "in-call",
       callType,
       caller: authUser,
       receiver: null,

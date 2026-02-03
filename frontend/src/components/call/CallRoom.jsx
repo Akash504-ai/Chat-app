@@ -7,28 +7,23 @@ const CallRoom = () => {
   const containerRef = useRef(null);
   const zegoRef = useRef(null);
 
-  const {
-    callStatus,
-    callType,
-    roomId,
-    endCall,
-    isGroupCall,
-  } = useCallStore();
-
+  const { callStatus, callType, roomId, endCall, isGroupCall } =
+    useCallStore();
   const { authUser } = useAuthStore();
 
   useEffect(() => {
     if (callStatus !== "in-call") return;
     if (!containerRef.current || !roomId || !authUser) return;
+    if (zegoRef.current) return; // 🔒 BLOCK re-init
 
     const appID = Number(import.meta.env.VITE_ZEGO_APP_ID);
-    const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET; // ⚠️ dev only
+    const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET;
 
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
       serverSecret,
       roomId,
-      authUser._id,
+      String(authUser._id),
       authUser.fullName || "User"
     );
 
@@ -47,20 +42,18 @@ const CallRoom = () => {
       showPreJoinView: false,
       showLeavingView: false,
       onLeaveRoom: () => {
-        endCall();
+        handleEndCall();
       },
     });
+  }, [callStatus]);
 
-    // 🧹 Cleanup (IMPORTANT to avoid Zego crashes)
-    return () => {
-      try {
-        zegoRef.current?.destroy();
-        zegoRef.current = null;
-      } catch (err) {
-        console.warn("Zego cleanup error:", err);
-      }
-    };
-  }, [callStatus, roomId, isGroupCall, callType, authUser, endCall]);
+  const handleEndCall = () => {
+    try {
+      zegoRef.current?.leaveRoom();
+    } catch {}
+    zegoRef.current = null;
+    endCall();
+  };
 
   if (callStatus !== "in-call") return null;
 
