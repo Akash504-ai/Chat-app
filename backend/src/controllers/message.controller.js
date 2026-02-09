@@ -8,7 +8,7 @@ import { getReceiverSocketId, io } from "../lib/socket.js";
 export const getUsersForSidebar = async (req, res) => {
   try {
     const users = await User.find({ _id: { $ne: req.user._id } }).select(
-      "_id fullName email profilePic isAI",
+      "_id fullName email profilePic isAI isOnline lastSeen",
     );
 
     res.status(200).json(users);
@@ -294,7 +294,7 @@ export const markMessagesSeen = async (req, res) => {
       receiverId: myId,
       status: { $ne: "seen" },
     },
-    { status: "seen" }
+    { status: "seen" },
   );
 
   const senderSocketId = getReceiverSocketId(otherUserId);
@@ -306,7 +306,7 @@ export const markMessagesSeen = async (req, res) => {
     }).select("_id");
 
     io.to(senderSocketId).emit("messageStatusUpdateBulk", {
-      messageIds: messages.map(m => m._id),
+      messageIds: messages.map((m) => m._id),
       status: "seen",
     });
   }

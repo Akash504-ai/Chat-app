@@ -30,12 +30,20 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // 🔹 Last seen & presence
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
+    lastSeen: {
+      type: Date,
+      default: null,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const User =
-  mongoose.models.User ||
-  mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;

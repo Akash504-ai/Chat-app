@@ -35,8 +35,8 @@ const Sidebar = () => {
   }, []);
 
   const filteredUsers = showOnlineOnly
-  ? users.filter((u) => onlineUsers.includes(u._id))
-  : users;
+    ? users.filter((u) => onlineUsers.includes(u._id))
+    : users;
 
   const handleDeleteGroup = (e, groupId) => {
     e.stopPropagation();
@@ -50,24 +50,33 @@ const Sidebar = () => {
 
   return (
     <>
-      <aside className="flex h-full w-20 flex-col border-r border-base-300 lg:w-72">
+      <aside
+        className="
+          flex h-full min-h-0 flex-col
+          border-r border-base-300 bg-base-100
+          w-full md:w-20 lg:w-72
+        "
+      >
         {/* HEADER */}
-        <div className="border-b border-base-300 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Users className="h-6 w-6" />
-              <span className="hidden font-medium lg:block">Chats</span>
+        <div className="border-b border-base-300 p-3 sm:p-4 shrink-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Users className="h-6 w-6 shrink-0" />
+              <span className="font-medium truncate md:hidden lg:block">
+                Chats
+              </span>
             </div>
 
             <button
               onClick={() => setShowCreateGroup(true)}
-              className="btn btn-sm btn-ghost"
+              className="btn btn-sm btn-ghost shrink-0"
             >
               <Plus className="h-5 w-5" />
             </button>
           </div>
 
-          <div className="mt-3 hidden items-center gap-2 lg:flex">
+          {/* Online filter — desktop only */}
+          <div className="mt-3 hidden lg:flex items-center gap-2">
             <label className="flex cursor-pointer items-center gap-2">
               <input
                 type="checkbox"
@@ -85,7 +94,7 @@ const Sidebar = () => {
 
         {/* GROUPS */}
         {groups.length > 0 && (
-          <div className="border-b border-base-300 py-2">
+          <div className="border-b border-base-300 py-2 shrink-0">
             <p className="px-4 text-xs font-semibold opacity-60">GROUPS</p>
 
             {groups.map((group) => {
@@ -98,19 +107,21 @@ const Sidebar = () => {
                 Object.keys(typingUsers).length > 0;
 
               return (
-                <div
+                <button
                   key={group._id}
                   onClick={() => {
                     clearSelectedChat();
                     setSelectedGroup(group);
                   }}
-                  className={`flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-base-200 ${
+                  className={`flex w-full items-center justify-between px-3 py-2 hover:bg-base-200 ${
                     isActive ? "bg-base-200" : ""
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <UsersRound className="h-10 w-10 rounded-full bg-primary/10 p-2" />
-                    <div className="hidden lg:block min-w-0">
+                    <UsersRound className="h-10 w-10 rounded-full bg-primary/10 p-2 shrink-0" />
+
+                    {/* MOBILE + DESKTOP TEXT */}
+                    <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{group.name}</p>
                       <p className="text-xs opacity-60">
                         {isTyping ? "Someone typing..." : "Group chat"}
@@ -118,7 +129,7 @@ const Sidebar = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     {unreadCounts[group._id] > 0 && (
                       <span className="badge badge-error text-xs">
                         {unreadCounts[group._id] > 9
@@ -136,14 +147,14 @@ const Sidebar = () => {
                       </button>
                     )}
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
         )}
 
         {/* USERS */}
-        <div className="flex-1 overflow-y-auto py-2">
+        <div className="flex-1 min-h-0 overflow-y-auto py-2">
           <p className="px-4 text-xs font-semibold opacity-60">USERS</p>
 
           {filteredUsers.map((user) => {
@@ -163,11 +174,11 @@ const Sidebar = () => {
                   clearSelectedChat();
                   setSelectedUser(user);
                 }}
-                className={`flex w-full items-center gap-3 p-3 text-left hover:bg-base-200 ${
+                className={`flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-base-200 ${
                   isSelected ? "bg-base-200" : ""
                 }`}
               >
-                <div className="relative">
+                <div className="relative shrink-0">
                   <img
                     src={user.profilePic || "/avatar.png"}
                     alt={user.fullName}
@@ -178,7 +189,8 @@ const Sidebar = () => {
                   )}
                 </div>
 
-                <div className="hidden lg:block min-w-0 flex-1">
+                {/* NAME — VISIBLE ON MOBILE + DESKTOP */}
+                <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">
                     {isAI ? "AI Assistant" : user.fullName}
                   </p>
@@ -186,18 +198,23 @@ const Sidebar = () => {
                     {isAI
                       ? "AI Assistant"
                       : isTyping
-                      ? "typing..."
-                      : isOnline
-                      ? "Online"
-                      : "Offline"}
+                        ? "typing..."
+                        : isOnline
+                          ? "Online"
+                          : user.lastSeen
+                            ? `Last seen ${new Date(
+                                user.lastSeen,
+                              ).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}`
+                            : "Offline"}
                   </p>
                 </div>
 
                 {!isAI && unreadCounts[user._id] > 0 && (
-                  <span className="badge badge-error text-xs">
-                    {unreadCounts[user._id] > 9
-                      ? "9+"
-                      : unreadCounts[user._id]}
+                  <span className="badge badge-error text-xs shrink-0">
+                    {unreadCounts[user._id] > 9 ? "9+" : unreadCounts[user._id]}
                   </span>
                 )}
               </button>

@@ -8,7 +8,8 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 z-40 w-full border-b border-base-300 bg-base-100/80 backdrop-blur">
+    // 🔥 FIX: sticky instead of fixed
+    <header className="sticky top-0 z-40 w-full border-b border-base-300 bg-base-100/80 backdrop-blur">
       <div className="container mx-auto h-16 px-4">
         <div className="flex h-full items-center justify-between">
           <Link
@@ -18,7 +19,7 @@ const Navbar = () => {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
               <MessageSquare className="h-5 w-5 text-primary" />
             </div>
-            <span>Chatty</span>
+            <span>PASO</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-2">

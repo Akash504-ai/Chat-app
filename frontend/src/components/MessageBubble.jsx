@@ -82,7 +82,7 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
       id={`msg-${message._id}`}
-      className={`chat ${isMe ? "chat-end" : "chat-start"} w-full group mb-6 px-4 transition-all relative`}
+      className={`chat ${isMe ? "chat-end" : "chat-start"} w-full group mb-3 sm:mb-6 px-2 sm:px-4 transition-all relative`}
     >
       {/* Avatar */}
       <div className="chat-image avatar self-end mb-1">
@@ -103,7 +103,7 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
       </div>
 
       <div
-        className={`flex flex-col max-w-[85%] md:max-w-[70%] ${isMe ? "items-end" : "items-start"}`}
+        className={`flex flex-col max-w-[75%] sm:max-w-[85%] md:max-w-[70%] ${isMe ? "items-end" : "items-start"}`}
       >
         <div
           className={`flex items-center gap-2 ${isMe ? "flex-row" : "flex-row-reverse"}`}

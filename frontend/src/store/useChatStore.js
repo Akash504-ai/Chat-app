@@ -7,6 +7,7 @@ import { persist } from "zustand/middleware";
 export const useChatStore = create(
   persist(
     (set, get) => ({
+      onlineUsers: [],
       messages: [],
       users: [],
       groups: [],
@@ -65,11 +66,23 @@ export const useChatStore = create(
           },
         })),
 
+      //changing this
       getUsers: async () => {
         set({ isUsersLoading: true });
         try {
           const res = await axiosInstance.get("/messages/users");
-          set({ users: res.data });
+
+          set((state) => {
+            const updatedSelectedUser = state.selectedUser
+              ? res.data.find((u) => u._id === state.selectedUser._id) ||
+                state.selectedUser
+              : null;
+
+            return {
+              users: res.data,
+              selectedUser: updatedSelectedUser,
+            };
+          });
         } catch {
           toast.error("Failed to load users");
         } finally {
@@ -321,6 +334,26 @@ export const useChatStore = create(
             messages: state.messages.map((m) =>
               messageIds.includes(m._id) ? { ...m, status } : m,
             ),
+          }));
+        });
+
+        // ---------- ONLINE USERS ----------
+        socket.off("getOnlineUsers");
+        socket.on("getOnlineUsers", (users) => {
+          set({ onlineUsers: users });
+        });
+
+        // ---------- LAST SEEN UPDATE ----------
+        socket.off("userLastSeenUpdate");
+        socket.on("userLastSeenUpdate", ({ userId, isOnline, lastSeen }) => {
+          set((state) => ({
+            users: state.users.map((u) =>
+              u._id === userId ? { ...u, isOnline, lastSeen } : u,
+            ),
+            selectedUser:
+              state.selectedUser?._id === userId
+                ? { ...state.selectedUser, isOnline, lastSeen }
+                : state.selectedUser,
           }));
         });
       },

@@ -3,6 +3,7 @@ import http from "http";
 import express from "express";
 import Group from "../models/group.model.js";
 import Message from "../models/message.model.js";
+import User from "../models/user.model.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -34,6 +35,10 @@ io.on("connection", async (socket) => {
   if (userId) {
     userSocketMap[userId] = socket.id;
     socket.join(userId);
+
+    await User.findByIdAndUpdate(userId, {
+      isOnline: true,
+    });
 
     const groups = await Group.find({
       "members.userId": userId,
@@ -152,10 +157,23 @@ io.on("connection", async (socket) => {
   // =====================
   // Disconnect
   // =====================
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     if (userId) {
       delete userSocketMap[userId];
-      activeCalls.delete(userId); // 🧹 safety cleanup
+      activeCalls.delete(userId);
+
+      // ✅ ADD THIS
+      await User.findByIdAndUpdate(userId, {
+        isOnline: false,
+        lastSeen: new Date(),
+      });
+
+      // 🔁 Optional real-time broadcast
+      socket.broadcast.emit("userLastSeenUpdate", {
+        userId,
+        isOnline: false,
+        lastSeen: new Date(),
+      });
     }
 
     io.emit("getOnlineUsers", Object.keys(userSocketMap));

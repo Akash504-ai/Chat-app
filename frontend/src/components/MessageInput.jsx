@@ -67,35 +67,39 @@ const MessageInput = () => {
 
   const startRecording = async () => {
     if (isAI) return;
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorderRef.current = mediaRecorder;
-    audioChunksRef.current = [];
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
 
-    mediaRecorder.ondataavailable = (e) => {
-      audioChunksRef.current.push(e.data);
-    };
+      mediaRecorder.ondataavailable = (e) => {
+        audioChunksRef.current.push(e.data);
+      };
 
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-      const reader = new FileReader();
-      reader.onload = () => setAudioData(reader.result);
-      reader.readAsDataURL(blob);
-    };
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const reader = new FileReader();
+        reader.onload = () => setAudioData(reader.result);
+        reader.readAsDataURL(blob);
+        stream.getTracks().forEach(track => track.stop()); // Clean up hardware use
+      };
 
-    mediaRecorder.start();
-    setRecording(true);
+      mediaRecorder.start();
+      setRecording(true);
+    } catch (err) {
+      toast.error("Could not access microphone");
+    }
   };
 
   const stopRecording = () => {
-    mediaRecorderRef.current.stop();
+    mediaRecorderRef.current?.stop();
     setRecording(false);
   };
 
   const handleTyping = (value) => {
     setText(value);
-
     if (isAI) return;
 
     if (!value.trim()) {
@@ -104,16 +108,13 @@ const MessageInput = () => {
     }
 
     startTyping();
-
     clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      stopTyping();
-    }, 1200);
+    typingTimeoutRef.current = setTimeout(stopTyping, 1200);
   };
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!text && !imagePreview && !fileData && !audioData) return;
+    if (!text.trim() && !imagePreview && !fileData && !audioData) return;
 
     stopTyping();
 
@@ -127,13 +128,12 @@ const MessageInput = () => {
         file: fileData,
       };
 
-      if (selectedChatType === "group") {
-        await sendGroupMessage(payload);
-      } else {
-        await sendMessage(payload);
-      }
+      selectedChatType === "group"
+        ? await sendGroupMessage(payload)
+        : await sendMessage(payload);
     }
 
+    // Reset all states
     setText("");
     setImagePreview(null);
     setFileData(null);
@@ -141,99 +141,152 @@ const MessageInput = () => {
   };
 
   return (
-    <div className="border-t border-base-300 p-3">
-      <div className="mb-2 flex flex-wrap gap-2">
-        {imagePreview && (
-          <Preview onRemove={() => setImagePreview(null)}>
-            <img src={imagePreview} className="h-16 w-16 rounded" />
-          </Preview>
-        )}
+    <div className="border-t border-base-300 p-2 sm:p-4 w-full shrink-0 bg-base-100">
+      {/* PREVIEWS SECTION */}
+      {(imagePreview || fileData || audioData) && (
+        <div className="mb-3 flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-2">
+          {imagePreview && (
+            <Preview onRemove={() => setImagePreview(null)}>
+              <div className="relative group">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="h-14 w-14 sm:h-20 sm:w-20 rounded-lg object-cover border border-base-300"
+                />
+              </div>
+            </Preview>
+          )}
 
-        {fileData && (
-          <Preview onRemove={() => setFileData(null)}>
-            📄 {fileData.name}
-          </Preview>
-        )}
+          {fileData && (
+            <Preview onRemove={() => setFileData(null)}>
+              <div className="flex items-center gap-2 text-xs sm:text-sm bg-base-300/50 p-2 rounded-lg">
+                <Paperclip size={14} className="text-primary" />
+                <span className="truncate max-w-[120px] sm:max-w-[200px] font-medium">
+                  {fileData.name}
+                </span>
+              </div>
+            </Preview>
+          )}
 
-        {audioData && (
-          <Preview onRemove={() => setAudioData(null)}>
-            🔊 Voice message
-          </Preview>
-        )}
-      </div>
+          {audioData && (
+            <Preview onRemove={() => setAudioData(null)}>
+              <div className="flex items-center gap-2 text-xs sm:text-sm bg-primary/10 text-primary p-2 rounded-lg">
+                <Mic size={14} />
+                <span className="font-medium">Voice message</span>
+              </div>
+            </Preview>
+          )}
+        </div>
+      )}
 
-      <form onSubmit={handleSend} className="flex items-center gap-2">
-        <input
-          value={text}
-          onChange={(e) => handleTyping(e.target.value)}
-          onBlur={stopTyping}
-          className="input input-bordered flex-1"
-          placeholder={
-            isAI ? "Ask something to AI..." : "Type a message..."
-          }
-        />
+      {/* INPUT ROW */}
+      <form onSubmit={handleSend} className="flex items-end gap-2">
+        <div className="flex-1 flex flex-col gap-2 min-w-0">
+          <div className="relative flex items-center bg-base-200 rounded-xl px-3 py-1 sm:py-2">
+            <input
+  type="text"
+  value={text}
+  onChange={(e) => handleTyping(e.target.value)}
+  onBlur={stopTyping}
+  placeholder={isAI ? "Ask AI assistant…" : "Message"}
+  disabled={recording}
+  className="
+    w-full min-w-0
+    h-11 sm:h-12
+    px-3 sm:px-4
+    text-sm sm:text-base
+    rounded-full
+    bg-base-200/70
+    placeholder:text-base-content/40
+    focus:outline-none
+    focus:bg-base-100
+    focus:ring-2
+    focus:ring-primary/30
+    transition-all
+    disabled:opacity-50
+    disabled:cursor-not-allowed
+  "
+/>
 
-        <input
-          ref={imageRef}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handleImageChange}
-        />
+            
+            {/* Action Buttons inside/beside input for a cleaner look */}
+            {!isAI && (
+              <div className="flex items-center gap-0.5 sm:gap-1 ml-2">
+                <input
+                  ref={imageRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={handleImageChange}
+                />
+                <input ref={fileRef} type="file" hidden onChange={handleFileChange} />
 
-        <input ref={fileRef} type="file" hidden onChange={handleFileChange} />
+                <button
+                  type="button"
+                  onClick={() => imageRef.current.click()}
+                  className="btn btn-ghost btn-circle btn-xs sm:btn-sm"
+                >
+                  <Image size={18} />
+                </button>
 
-        {!isAI && (
-          <>
-            <button
-              type="button"
-              onClick={() => imageRef.current.click()}
-              className="btn btn-ghost"
-            >
-              <Image size={20} />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => fileRef.current.click()}
-              className="btn btn-ghost"
-            >
-              <Paperclip size={20} />
-            </button>
-
-            {!recording ? (
-              <button
-                type="button"
-                onClick={startRecording}
-                className="btn btn-ghost"
-              >
-                <Mic size={20} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={stopRecording}
-                className="btn btn-error"
-              >
-                <StopCircle size={20} />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current.click()}
+                  className="btn btn-ghost btn-circle btn-xs sm:btn-sm"
+                >
+                  <Paperclip size={18} />
+                </button>
+              </div>
             )}
-          </>
-        )}
+          </div>
+        </div>
 
-        <button type="submit" className="btn btn-primary">
-          <Send size={20} />
-        </button>
+        <div className="flex items-center gap-2 mb-[7px]">
+          {!isAI && (
+            <div className="flex items-center">
+              {!recording ? (
+                <button
+                  type="button"
+                  onClick={startRecording}
+                  className="btn btn-ghost btn-circle btn-sm sm:btn-md"
+                >
+                  <Mic size={22} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={stopRecording}
+                  className="btn btn-error btn-circle btn-sm sm:btn-md animate-pulse"
+                >
+                  <StopCircle size={22} />
+                </button>
+              )}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={!text.trim() && !imagePreview && !fileData && !audioData}
+            className={`btn btn-primary btn-circle btn-sm sm:btn-md ${
+              !text.trim() && !imagePreview && !fileData && !audioData ? "btn-disabled opacity-50" : ""
+            }`}
+          >
+            <Send size={20} />
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
 const Preview = ({ children, onRemove }) => (
-  <div className="flex items-center gap-2 rounded bg-base-200 px-2 py-1">
+  <div className="relative inline-flex items-center">
     {children}
-    <button onClick={onRemove}>
-      <X size={14} />
+    <button
+      onClick={onRemove}
+      className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-base-300 flex items-center justify-center border border-base-100 shadow-sm hover:bg-error hover:text-white transition-colors"
+    >
+      <X size={12} />
     </button>
   </div>
 );

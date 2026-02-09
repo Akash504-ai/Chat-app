@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
-import { motion, AnimatePresence } from "framer-motion"; // Added for animation
+import { motion, AnimatePresence } from "framer-motion";
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -22,7 +22,7 @@ const ChatContainer = () => {
     unsubscribeFromMessages,
     typingUsers,
     clearedChats,
-    isAILoading, // Ensure this is in your useChatStore
+    isAILoading,
   } = useChatStore();
 
   const { authUser } = useAuthStore();
@@ -33,11 +33,13 @@ const ChatContainer = () => {
 
   const clearedAt = clearedChats?.[chatId];
 
+  // subscribe / unsubscribe
   useEffect(() => {
     subscribeToMessages();
     return () => unsubscribeFromMessages();
   }, [selectedUser?._id, selectedGroup?._id, selectedChatType]);
 
+  // fetch messages
   useEffect(() => {
     if (selectedChatType === "private" && selectedUser?._id) {
       getMessages(selectedUser._id);
@@ -47,35 +49,51 @@ const ChatContainer = () => {
     }
   }, [selectedUser?._id, selectedGroup?._id, selectedChatType]);
 
+  // auto scroll (mobile-safe)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, typingUsers, isAILoading]); // Trigger scroll on AI loading
+    bottomRef.current?.scrollIntoView({
+      behavior: window.innerWidth < 640 ? "auto" : "smooth",
+    });
+  }, [messages, typingUsers, isAILoading]);
 
   if (!selectedUser && !selectedGroup) return null;
 
   if (isMessagesLoading) {
     return (
-      <div className="flex flex-1 flex-col h-full min-h-0">
+      <div className="flex flex-1 flex-col h-full min-h-0 w-full">
         <ChatHeader />
         <MessageSkeleton />
-        <div className="shrink-0">
-          <MessageInput />
-        </div>
+        <MessageInput />
       </div>
     );
   }
 
   const visibleMessages = clearedAt
-    ? messages.filter((msg) => new Date(msg.createdAt).getTime() > clearedAt)
+    ? messages.filter(
+        (msg) => new Date(msg.createdAt).getTime() > clearedAt
+      )
     : messages;
 
   return (
-    <div className="flex flex-1 flex-col min-h-0">
-      <ChatHeader />
+    <div className="flex flex-1 flex-col h-full min-h-0 w-full bg-base-100">
+      {/* HEADER */}
+      <div className="shrink-0">
+        <ChatHeader />
+      </div>
 
-      <PinnedHeader chatId={chatId} />
+      {/* PINNED (compact on mobile) */}
+      <div className="shrink-0">
+        <PinnedHeader chatId={chatId} />
+      </div>
 
-      <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-3 space-y-3 sm:space-y-4">
+      {/* MESSAGES */}
+      <div
+        className="
+          flex-1 min-h-0 overflow-y-auto overscroll-contain
+          px-2 py-2 space-y-2
+          sm:px-4 sm:py-3 sm:space-y-4
+        "
+      >
         {visibleMessages.map((message, idx) => {
           const isMe =
             typeof message.senderId === "string"
@@ -88,8 +106,8 @@ const ChatContainer = () => {
             selectedChatType === "group"
               ? message.senderId
               : isMe
-                ? authUser
-                : selectedUser;
+              ? authUser
+              : selectedUser;
 
           return (
             <div key={message._id} ref={isLast ? bottomRef : null}>
@@ -104,44 +122,37 @@ const ChatContainer = () => {
           );
         })}
 
-        {/* AI THINKING ANIMATION */}
+        {/* AI THINKING (compact on mobile) */}
         <AnimatePresence>
           {isAILoading && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="chat chat-start mb-4"
+              exit={{ opacity: 0, y: -6 }}
+              className="chat chat-start mb-2 sm:mb-4"
             >
               <div className="chat-image avatar">
-                <div className="w-8 h-8 rounded-full ring-1 ring-primary animate-pulse">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full ring-1 ring-primary animate-pulse">
                   <img src="/ai-avatar.png" alt="AI" />
                 </div>
               </div>
-              <div className="chat-bubble bg-base-200 text-primary flex items-center gap-1 py-3 px-4 rounded-2xl rounded-tl-none border border-primary/10 shadow-sm">
-                <motion.span
-                  animate={{ scale: [1, 1.5, 1] }}
-                  transition={{ repeat: Infinity, duration: 1 }}
-                  className="w-1.5 h-1.5 bg-primary rounded-full"
-                />
-                <motion.span
-                  animate={{ scale: [1, 1.5, 1] }}
-                  transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}
-                  className="w-1.5 h-1.5 bg-primary rounded-full"
-                />
-                <motion.span
-                  animate={{ scale: [1, 1.5, 1] }}
-                  transition={{ repeat: Infinity, duration: 1, delay: 0.4 }}
-                  className="w-1.5 h-1.5 bg-primary rounded-full"
-                />
+
+              <div className="chat-bubble bg-base-200 text-primary flex items-center gap-1 py-2 px-3 sm:py-3 sm:px-4 rounded-2xl rounded-tl-none border border-primary/10">
+                {[0, 0.2, 0.4].map((delay, i) => (
+                  <motion.span
+                    key={i}
+                    animate={{ scale: [1, 1.5, 1] }}
+                    transition={{ repeat: Infinity, duration: 1, delay }}
+                    className="w-1.5 h-1.5 bg-primary rounded-full"
+                  />
+                ))}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        <div ref={bottomRef} />
       </div>
 
+      {/* INPUT */}
       <div className="shrink-0">
         <MessageInput />
       </div>
