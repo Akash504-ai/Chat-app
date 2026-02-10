@@ -380,3 +380,64 @@ export const markMessagesSeen = async (req, res) => {
 
   res.sendStatus(200);
 };
+
+// GET /messages/search/:userId?query=hello
+export const searchMessages = async (req, res) => {
+  try {
+    const myId = req.user._id;
+    const otherUserId = req.params.userId;
+    const { query } = req.query;
+
+    if (!query?.trim()) {
+      return res.status(200).json([]);
+    }
+
+    const messages = await Message.find({
+      $or: [
+        { senderId: myId, receiverId: otherUserId },
+        { senderId: otherUserId, receiverId: myId },
+      ],
+      text: { $regex: query, $options: "i" },
+      deletedForEveryone: false,
+      deletedFor: { $ne: myId },
+    })
+      .select("_id text createdAt")
+      .sort({ createdAt: 1 });
+
+    res.status(200).json(messages);
+  } catch {
+    res.status(500).json({ message: "Search failed" });
+  }
+};
+
+// GET /groups/messages/search/:groupId?query=hello
+export const searchGroupMessages = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { groupId } = req.params;
+    const { query } = req.query;
+
+    if (!query?.trim()) return res.status(200).json([]);
+
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    const isMember = group.members.some(
+      (m) => m.userId.toString() === userId.toString(),
+    );
+    if (!isMember) return res.status(403).json({ message: "Access denied" });
+
+    const messages = await Message.find({
+      groupId,
+      text: { $regex: query, $options: "i" },
+      deletedForEveryone: false,
+      deletedFor: { $ne: userId },
+    })
+      .select("_id text senderId createdAt")
+      .sort({ createdAt: 1 });
+
+    res.status(200).json(messages);
+  } catch {
+    res.status(500).json({ message: "Search failed" });
+  }
+};

@@ -9,6 +9,7 @@ import {
   Video,
   Image,
   Trash,
+  Search,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,6 +30,10 @@ const ChatHeader = () => {
     onlineUsers,
     setChatWallpaper,
     removeChatWallpaper,
+    searchQuery,
+    setSearchQuery,
+    clearSearch,
+    runSearch,
   } = useChatStore();
 
   const { authUser } = useAuthStore();
@@ -36,6 +41,7 @@ const ChatHeader = () => {
 
   const [showMembers, setShowMembers] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -266,6 +272,44 @@ const ChatHeader = () => {
                     </IconBtn>
                   </>
                 )
+              )}
+            </div>
+
+            {/* 🔍 SEARCH */}
+            <div className="relative">
+              <IconBtn onClick={() => setShowSearch((s) => !s)}>
+                <Search size={18} />
+              </IconBtn>
+
+              {showSearch && (
+                <div className="absolute right-0 top-10 z-[70] bg-base-100 border border-base-300 rounded-lg shadow-lg p-2 w-56">
+                  <input
+                    autoFocus
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                    placeholder="Search messages…"
+                    className="input input-sm w-full"
+                  />
+
+                  <div className="flex justify-between mt-2">
+                    <button
+                      onClick={runSearch}
+                      className="btn btn-sm btn-primary"
+                    >
+                      Search
+                    </button>
+                    <button
+                      onClick={() => {
+                        clearSearch();
+                        setShowSearch(false);
+                      }}
+                      className="btn btn-sm btn-ghost"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
 

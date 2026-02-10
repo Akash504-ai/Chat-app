@@ -24,10 +24,12 @@ const ChatContainer = () => {
     clearedChats,
     isAILoading,
     chatWallpapers,
+    highlightedMessageId,
   } = useChatStore();
 
   const { authUser } = useAuthStore();
   const bottomRef = useRef(null);
+  const messageRefs = useRef({});
 
   const chatId =
     selectedChatType === "private" ? selectedUser?._id : selectedGroup?._id;
@@ -50,6 +52,18 @@ const ChatContainer = () => {
       getGroupMessages(selectedGroup._id);
     }
   }, [selectedUser?._id, selectedGroup?._id, selectedChatType]);
+
+  useEffect(() => {
+    if (!highlightedMessageId) return;
+
+    const el = messageRefs.current[highlightedMessageId];
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [highlightedMessageId]);
 
   // auto scroll
   useEffect(() => {
@@ -88,10 +102,9 @@ const ChatContainer = () => {
 
       {/* MESSAGES AREA */}
       <div className="relative flex-1 min-h-0 overflow-hidden">
-        
         {/* 🖼️ WALLPAPER LAYER (Fixed inside this container) */}
         {wallpaper && (
-          <div 
+          <div
             className="absolute inset-0 z-0"
             style={{
               backgroundImage: `url(${wallpaper})`,
@@ -107,9 +120,7 @@ const ChatContainer = () => {
         )}
 
         {/* 📜 SCROLLABLE CONTENT LAYER */}
-        <div 
-          className="relative z-10 h-full overflow-y-auto overscroll-contain px-2 py-2 sm:px-4 sm:py-3"
-        >
+        <div className="relative z-10 h-full overflow-y-auto overscroll-contain px-2 py-2 sm:px-4 sm:py-3">
           <div className="space-y-2 sm:space-y-4">
             {visibleMessages.map((message, idx) => {
               const isMe =
@@ -127,7 +138,13 @@ const ChatContainer = () => {
                     : selectedUser;
 
               return (
-                <div key={message._id} ref={isLast ? bottomRef : null}>
+                <div
+                  key={message._id}
+                  ref={(el) => {
+                    if (el) messageRefs.current[message._id] = el;
+                    if (isLast) bottomRef.current = el;
+                  }}
+                >
                   <MessageBubble
                     message={message}
                     sender={sender}

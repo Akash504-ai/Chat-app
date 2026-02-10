@@ -25,6 +25,10 @@ export const useChatStore = create(
       clearedChats: {},
       replyingTo: null,
       highlightedMessageId: null,
+      searchQuery: "",
+      searchResults: [],
+      currentSearchIndex: 0,
+      isSearching: false,
 
       setHighlightedMessage: (id) => set({ highlightedMessageId: id }),
 
@@ -32,6 +36,92 @@ export const useChatStore = create(
 
       setReplyingTo: (message) => set({ replyingTo: message }),
       clearReplyingTo: () => set({ replyingTo: null }),
+
+      setSearchQuery: (q) =>
+        set({
+          searchQuery: q,
+          currentSearchIndex: 0,
+        }),
+
+      searchMessages: async () => {
+        const { selectedUser, searchQuery } = get();
+        if (!selectedUser || !searchQuery.trim()) return;
+
+        set({ isSearching: true });
+
+        try {
+          const res = await axiosInstance.get(
+            `/messages/search/${selectedUser._id}?query=${searchQuery}`,
+          );
+
+          set({
+            searchResults: res.data,
+            highlightedMessageId: res.data[0]?._id || null,
+            currentSearchIndex: 0,
+          });
+        } catch {
+          toast.error("Search failed");
+        } finally {
+          set({ isSearching: false });
+        }
+      },
+
+      searchGroupMessages: async () => {
+        const { selectedGroup, searchQuery } = get();
+        if (!selectedGroup || !searchQuery.trim()) return;
+
+        set({ isSearching: true });
+
+        try {
+          const res = await axiosInstance.get(
+            `/messages/group/search/${selectedGroup._id}?query=${searchQuery}`,
+          );
+
+          set({
+            searchResults: res.data,
+            highlightedMessageId: res.data[0]?._id || null,
+            currentSearchIndex: 0,
+          });
+        } catch {
+          toast.error("Search failed");
+        } finally {
+          set({ isSearching: false });
+        }
+      },
+
+      nextSearchResult: () => {
+        const { searchResults, currentSearchIndex } = get();
+        if (!searchResults.length) return;
+
+        const next = (currentSearchIndex + 1) % searchResults.length;
+
+        set({
+          currentSearchIndex: next,
+          highlightedMessageId: searchResults[next]._id,
+        });
+      },
+
+      prevSearchResult: () => {
+        const { searchResults, currentSearchIndex } = get();
+        if (!searchResults.length) return;
+
+        const prev =
+          (currentSearchIndex - 1 + searchResults.length) %
+          searchResults.length;
+
+        set({
+          currentSearchIndex: prev,
+          highlightedMessageId: searchResults[prev]._id,
+        });
+      },
+
+      clearSearch: () =>
+        set({
+          searchQuery: "",
+          searchResults: [],
+          currentSearchIndex: 0,
+          highlightedMessageId: null,
+        }),
 
       setChatWallpaper: async (chatId, image) => {
         try {
@@ -446,6 +536,9 @@ export const useChatStore = create(
               ...state.unreadCounts,
               [user._id]: 0,
             },
+            searchQuery: "",
+            searchResults: [],
+            highlightedMessageId: null,
           };
         }),
 
@@ -460,6 +553,9 @@ export const useChatStore = create(
             ...state.unreadCounts,
             [group?._id]: 0,
           },
+          searchQuery: "",
+          searchResults: [],
+          highlightedMessageId: null,
         })),
     }),
     {

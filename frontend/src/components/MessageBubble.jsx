@@ -37,6 +37,7 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
     setReplyingTo,
     setHighlightedMessage,
     highlightedMessageId,
+    searchQuery,
   } = useChatStore();
 
   const isPinned = pinnedMessages?.[chatId]?.[message._id];
@@ -45,6 +46,13 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
 
   // AI Detection
   const isAI = sender?.isAI;
+
+  const highlightedText = useMemo(() => {
+    if (!searchQuery || !message.text) return message.text;
+
+    const regex = new RegExp(`(${searchQuery})`, "ig");
+    return message.text.split(regex);
+  }, [message.text, searchQuery]);
 
   const renderStatusTick = () => {
     if (!isMe || message.isTemp || message.deletedForEveryone) return null;
@@ -340,7 +348,20 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
 
                   {message.text && (
                     <p className="text-[14.5px] leading-relaxed whitespace-pre-wrap break-words">
-                      {message.text}
+                      {Array.isArray(highlightedText)
+                        ? highlightedText.map((part, i) =>
+                            part.toLowerCase() === searchQuery.toLowerCase() ? (
+                              <mark
+                                key={i}
+                                className="bg-yellow-300 text-black px-0.5 rounded-sm"
+                              >
+                                {part}
+                              </mark>
+                            ) : (
+                              <span key={i}>{part}</span>
+                            ),
+                          )
+                        : highlightedText}
                     </p>
                   )}
                 </>

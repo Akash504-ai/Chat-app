@@ -11,11 +11,17 @@ import {
   markMessagesSeen,
   updateChatWallpaper,
   removeChatWallpaper,
+  searchMessages,
+  searchGroupMessages,
 } from "../controllers/message.controller.js";
 
 const router = express.Router();
 
 router.get("/users", protectRoute, getUsersForSidebar);
+
+// 🔍 Search messages
+router.get("/search/:userId", protectRoute, searchMessages);
+router.get("/group/search/:groupId", protectRoute, searchGroupMessages);
 
 router.get("/:id", protectRoute, getMessages);
 router.post("/send/:id", protectRoute, sendMessage);
