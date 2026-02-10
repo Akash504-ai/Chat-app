@@ -3,27 +3,33 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useChatStore } from "../store/useChatStore";
 
 const PinnedHeader = ({ chatId }) => {
-  const { pinnedMessages, messages, togglePin } = useChatStore();
+  const { pinnedMessages, messages, togglePin, setHighlightedMessage } =
+    useChatStore();
 
-  // Get active pinned IDs
   const pinnedIds = Object.keys(pinnedMessages?.[chatId] || {}).filter(
     (id) => pinnedMessages[chatId]?.[id],
   );
 
   if (pinnedIds.length === 0) return null;
 
-  // Get the actual message object to show a preview of the text
-  const pinnedId = pinnedIds[pinnedIds.length - 1]; // Show most recently pinned
+  const pinnedId = pinnedIds[pinnedIds.length - 1];    
   const pinnedMsg = messages?.find((m) => m._id === pinnedId);
 
   const scrollToMessage = () => {
     const el = document.getElementById(`msg-${pinnedId}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      // Brief highlight effect
-      el.classList.add("ring-2", "ring-primary/50", "transition-all");
-      setTimeout(() => el.classList.remove("ring-2", "ring-primary/50"), 2000);
-    }
+    if (!el) return;
+
+    setHighlightedMessage(pinnedId);
+
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    // auto clear highlight (same as reply)
+    setTimeout(() => {
+      setHighlightedMessage(null);
+    }, 1500);
   };
 
   return (
@@ -34,10 +40,8 @@ const PinnedHeader = ({ chatId }) => {
         exit={{ y: -20, opacity: 0 }}
         className="sticky top-0 z-[45] w-full"
       >
-        {/* Glassmorphism Container */}
         <div className="flex items-center justify-between gap-3 px-4 py-2 bg-base-100/80 backdrop-blur-md border-b border-base-content/5 shadow-sm">
           <div className="flex items-center gap-3 overflow-hidden flex-1">
-            {/* Left Accent Bar */}
             <div className="w-1 h-8 bg-primary rounded-full" />
 
             <button
@@ -51,7 +55,6 @@ const PinnedHeader = ({ chatId }) => {
                 </span>
               </div>
 
-              {/* Message Preview */}
               <p className="text-sm text-base-content/70 truncate w-full max-w-md italic">
                 {pinnedMsg?.text ||
                   (pinnedMsg?.image ? "📷 Image" : "Attachment")}

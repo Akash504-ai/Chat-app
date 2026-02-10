@@ -110,7 +110,6 @@ const Sidebar = () => {
                 <button
                   key={group._id}
                   onClick={() => {
-                    clearSelectedChat();
                     setSelectedGroup(group);
                   }}
                   className={`flex w-full items-center justify-between px-3 py-2 hover:bg-base-200 ${
@@ -120,7 +119,6 @@ const Sidebar = () => {
                   <div className="flex items-center gap-3 min-w-0">
                     <UsersRound className="h-10 w-10 rounded-full bg-primary/10 p-2 shrink-0" />
 
-                    {/* MOBILE + DESKTOP TEXT */}
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{group.name}</p>
                       <p className="text-xs opacity-60">
@@ -172,7 +170,6 @@ const Sidebar = () => {
               <button
                 key={user._id}
                 onClick={() => {
-                  clearSelectedChat();
                   setSelectedUser(user);
                 }}
                 className={`flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-base-200 ${

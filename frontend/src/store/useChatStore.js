@@ -397,12 +397,10 @@ export const useChatStore = create(
           const senderId =
             typeof msg.senderId === "string" ? msg.senderId : msg.senderId?._id;
 
-          const receiverId =
-            typeof msg.receiverId === "string"
-              ? msg.receiverId
-              : msg.receiverId?._id;
+          // ✅ DO NOT count my own messages as unread
+          if (senderId === authUser._id) return;
 
-          const chatUserId = senderId === authUser._id ? receiverId : senderId;
+          const chatUserId = senderId;
 
           if (
             selectedChatType === "private" &&
@@ -412,10 +410,8 @@ export const useChatStore = create(
               messages: [...state.messages, msg],
             }));
 
-            // 🔵 THIS IS THE KEY LINE
             axiosInstance.put(`/messages/mark-seen/${chatUserId}`);
           } else {
-            // ✅ increment unread count
             set((state) => ({
               unreadCounts: {
                 ...state.unreadCounts,
