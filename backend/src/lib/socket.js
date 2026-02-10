@@ -14,28 +14,31 @@ const io = new Server(server, {
   },
 });
 
-const userSocketMap = {};
+const userSocketMap = {}; // userId -> Set(socketIds)
 const activeCalls = new Set();
 const activeGroupCalls = new Map();
 
-export function getReceiverSocketId(userId) {
-  return userSocketMap[userId];
+export function getReceiverSocketIds(userId) {
+  return userSocketMap[userId] ? [...userSocketMap[userId]] : [];
 }
 
 export function emitToUser(userId, event, payload) {
-  const socketId = userSocketMap[userId];
-  if (socketId) {
-    io.to(socketId).emit(event, payload);
-  }
+  const socketIds = getReceiverSocketIds(userId);
+  socketIds.forEach((id) => {
+    io.to(id).emit(event, payload);
+  });
 }
 
 io.on("connection", async (socket) => {
   const userId = socket.handshake.query.userId;
 
   if (userId) {
-    userSocketMap[userId] = socket.id;
-    socket.join(userId);
+    if (!userSocketMap[userId]) {
+      userSocketMap[userId] = new Set();
+    }
 
+    userSocketMap[userId].add(socket.id);
+    socket.join(userId);
     await User.findByIdAndUpdate(userId, {
       isOnline: true,
     });
@@ -68,13 +71,10 @@ io.on("connection", async (socket) => {
   socket.on("messageSeen", async ({ messageIds, senderId }) => {
     await Message.updateMany({ _id: { $in: messageIds } }, { status: "seen" });
 
-    const senderSocketId = getReceiverSocketId(senderId);
-    if (senderSocketId) {
-      io.to(senderSocketId).emit("messageStatusUpdateBulk", {
-        messageIds,
-        status: "seen",
-      });
-    }
+    emitToUser(senderId, "messageStatusUpdateBulk", {
+      messageIds,
+      status: "seen",
+    });
   });
 
   socket.on("groupMessageSeen", async ({ messageId, groupId }) => {
@@ -158,17 +158,20 @@ io.on("connection", async (socket) => {
   // Disconnect
   // =====================
   socket.on("disconnect", async () => {
-    if (userId) {
+    if (!userId || !userSocketMap[userId]) return;
+
+    userSocketMap[userId].delete(socket.id);
+
+    // only offline if no sockets left
+    if (userSocketMap[userId].size === 0) {
       delete userSocketMap[userId];
       activeCalls.delete(userId);
 
-      // ✅ ADD THIS
       await User.findByIdAndUpdate(userId, {
         isOnline: false,
         lastSeen: new Date(),
       });
 
-      // 🔁 Optional real-time broadcast
       socket.broadcast.emit("userLastSeenUpdate", {
         userId,
         isOnline: false,

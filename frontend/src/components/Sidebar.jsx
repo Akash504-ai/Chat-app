@@ -139,12 +139,13 @@ const Sidebar = () => {
                     )}
 
                     {isCreator && (
-                      <button
+                      <div
                         onClick={(e) => handleDeleteGroup(e, group._id)}
                         className="btn btn-ghost btn-xs text-error"
+                        role="button"
                       >
                         <Trash2 size={16} />
-                      </button>
+                      </div>
                     )}
                   </div>
                 </button>

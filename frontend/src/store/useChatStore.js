@@ -14,6 +14,7 @@ export const useChatStore = create(
       selectedUser: null,
       selectedGroup: null,
       selectedChatType: "private",
+      chatWallpapers: {},
       typingUsers: {},
       unreadCounts: {},
       isUsersLoading: false,
@@ -22,6 +23,40 @@ export const useChatStore = create(
       reactions: {},
       pinnedMessages: {},
       clearedChats: {},
+
+      setChatWallpaper: async (chatId, image) => {
+        try {
+          const res = await axiosInstance.put("/messages/chat-wallpaper", {
+            chatId,
+            image,
+          });
+
+          set((state) => ({
+            chatWallpapers: {
+              ...state.chatWallpapers,
+              [chatId]: res.data.wallpaper,
+            },
+          }));
+        } catch {
+          toast.error("Failed to set wallpaper");
+        }
+      },
+
+      removeChatWallpaper: async (chatId) => {
+        try {
+          await axiosInstance.delete("/messages/chat-wallpaper", {
+            data: { chatId },
+          });
+
+          set((state) => {
+            const updated = { ...state.chatWallpapers };
+            delete updated[chatId];
+            return { chatWallpapers: updated };
+          });
+        } catch {
+          toast.error("Failed to remove wallpaper");
+        }
+      },
 
       clearSelectedChat: () =>
         set({
@@ -418,6 +453,7 @@ export const useChatStore = create(
         reactions: state.reactions,
         pinnedMessages: state.pinnedMessages,
         clearedChats: state.clearedChats,
+        chatWallpapers: state.chatWallpapers, 
       }),
     },
   ),

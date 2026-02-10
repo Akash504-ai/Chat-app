@@ -7,6 +7,8 @@ import {
   Sparkles,
   Phone,
   Video,
+  Image,
+  Trash,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,6 +27,8 @@ const ChatHeader = () => {
     clearSelectedChat,
     isAILoading,
     onlineUsers,
+    setChatWallpaper,
+    removeChatWallpaper,
   } = useChatStore();
 
   const { authUser } = useAuthStore();
@@ -72,6 +76,33 @@ const ChatHeader = () => {
       clearChatForMe(chatId);
       setOpenMenu(false);
     }
+  };
+
+  const handleWallpaperChange = () => {
+    if (!chatId) return;
+
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        await setChatWallpaper(chatId, reader.result);
+      };
+      reader.readAsDataURL(file);
+    };
+
+    input.click();
+  };
+
+  const handleRemoveWallpaper = async () => {
+    if (!chatId) return;
+    await removeChatWallpaper(chatId);
+    setOpenMenu(false);
   };
 
   return (
@@ -261,6 +292,21 @@ const ChatHeader = () => {
                     >
                       <Trash2 size={18} />
                       Clear Conversation
+                    </button>
+                    <button
+                      onClick={handleWallpaperChange}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-sm hover:bg-base-200"
+                    >
+                      <Image size={18} />
+                      Change Wallpaper
+                    </button>
+
+                    <button
+                      onClick={handleRemoveWallpaper}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-sm text-error hover:bg-error/10"
+                    >
+                      <Trash size={18} />
+                      Remove Wallpaper
                     </button>
                   </motion.div>
                 )}

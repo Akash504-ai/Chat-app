@@ -3,7 +3,62 @@ import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
 import Group from "../models/group.model.js";
 import cloudinary from "../lib/cloudinary.js";
-import { getReceiverSocketId, io } from "../lib/socket.js";
+import { emitToUser, io } from "../lib/socket.js";
+
+export const updateChatWallpaper = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { chatId, image } = req.body;
+
+    if (!chatId || !image) {
+      return res.status(400).json({ message: "Missing data" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ message: "Invalid chatId" });
+    }
+
+    // Upload to Cloudinary
+    const upload = await cloudinary.uploader.upload(image, {
+      folder: "chat-wallpapers",
+    });
+
+    // Save URL
+    await User.findByIdAndUpdate(userId, {
+      $set: {
+        [`chatWallpapers.${chatId}`]: upload.secure_url,
+      },
+    });
+
+    res.status(200).json({
+      chatId,
+      wallpaper: upload.secure_url,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update wallpaper" });
+  }
+};
+
+export const removeChatWallpaper = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { chatId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      return res.status(400).json({ message: "Invalid chatId" });
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      $unset: {
+        [`chatWallpapers.${chatId}`]: "",
+      },
+    });
+
+    res.sendStatus(200);
+  } catch {
+    res.status(500).json({ message: "Failed to remove wallpaper" });
+  }
+};
 
 export const getUsersForSidebar = async (req, res) => {
   try {
@@ -40,19 +95,16 @@ export const getMessages = async (req, res) => {
       { status: "seen" },
     );
 
-    const senderSocketId = getReceiverSocketId(id);
-    if (senderSocketId) {
-      const seenMessages = await Message.find({
-        senderId: id,
-        receiverId: myId,
-        status: "seen",
-      }).select("_id");
+    const seenMessages = await Message.find({
+      senderId: id,
+      receiverId: myId,
+      status: "seen",
+    }).select("_id");
 
-      io.to(senderSocketId).emit("messageStatusUpdateBulk", {
-        messageIds: seenMessages.map((m) => m._id),
-        status: "seen",
-      });
-    }
+    emitToUser(id, "messageStatusUpdateBulk", {
+      messageIds: seenMessages.map((m) => m._id),
+      status: "seen",
+    });
 
     res.status(200).json(messages);
   } catch (err) {
@@ -114,25 +166,12 @@ export const sendMessage = async (req, res) => {
       status: "sent",
     });
 
-    const receiverSocketId = getReceiverSocketId(receiverId);
-    const senderSocketId = getReceiverSocketId(senderId);
+    emitToUser(receiverId, "newMessage", message);
 
-    if (receiverSocketId) {
-      message = await Message.findByIdAndUpdate(
-        message._id,
-        { status: "delivered" },
-        { new: true },
-      );
-
-      io.to(receiverSocketId).emit("newMessage", message);
-
-      if (senderSocketId) {
-        io.to(senderSocketId).emit("messageStatusUpdate", {
-          messageId: message._id,
-          status: "delivered",
-        });
-      }
-    }
+    emitToUser(senderId, "messageStatusUpdate", {
+      messageId: message._id,
+      status: "delivered",
+    });
 
     res.status(201).json(message);
   } catch (err) {
@@ -294,22 +333,20 @@ export const markMessagesSeen = async (req, res) => {
       receiverId: myId,
       status: { $ne: "seen" },
     },
-    { status: "seen" },
+    { status: "seen" }
   );
 
-  const senderSocketId = getReceiverSocketId(otherUserId);
-  if (senderSocketId) {
-    const messages = await Message.find({
-      senderId: otherUserId,
-      receiverId: myId,
-      status: "seen",
-    }).select("_id");
+  const messages = await Message.find({
+    senderId: otherUserId,
+    receiverId: myId,
+    status: "seen",
+  }).select("_id");
 
-    io.to(senderSocketId).emit("messageStatusUpdateBulk", {
-      messageIds: messages.map((m) => m._id),
-      status: "seen",
-    });
-  }
+  emitToUser(otherUserId, "messageStatusUpdateBulk", {
+    messageIds: messages.map((m) => m._id),
+    status: "seen",
+  });
 
   res.sendStatus(200);
 };
+

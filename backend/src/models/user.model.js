@@ -40,6 +40,12 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    chatWallpapers: {
+      type: Map,
+      of: String, // Cloudinary URL
+      default: {},
+    },
   },
   { timestamps: true },
 );
