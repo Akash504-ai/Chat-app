@@ -23,6 +23,15 @@ export const useChatStore = create(
       reactions: {},
       pinnedMessages: {},
       clearedChats: {},
+      replyingTo: null,
+      highlightedMessageId: null,
+
+      setHighlightedMessage: (id) => set({ highlightedMessageId: id }),
+
+      clearHighlightedMessage: () => set({ highlightedMessageId: null }),
+
+      setReplyingTo: (message) => set({ replyingTo: message }),
+      clearReplyingTo: () => set({ replyingTo: null }),
 
       setChatWallpaper: async (chatId, image) => {
         try {
@@ -154,7 +163,10 @@ export const useChatStore = create(
           messageData,
         );
 
-        set({ messages: [...messages, res.data] });
+        set({
+          messages: [...messages, res.data],
+          replyingTo: null,
+        });
       },
 
       getGroups: async () => {
@@ -198,7 +210,10 @@ export const useChatStore = create(
           messageData,
         );
 
-        set({ messages: [...messages, res.data] });
+        set({
+          messages: [...messages, res.data],
+          replyingTo: null,
+        });
       },
 
       deleteMessageForMe: async (messageId) => {
@@ -453,7 +468,7 @@ export const useChatStore = create(
         reactions: state.reactions,
         pinnedMessages: state.pinnedMessages,
         clearedChats: state.clearedChats,
-        chatWallpapers: state.chatWallpapers, 
+        chatWallpapers: state.chatWallpapers,
       }),
     },
   ),

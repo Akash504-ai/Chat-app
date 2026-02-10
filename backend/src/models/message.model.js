@@ -41,6 +41,14 @@ const messageSchema = new mongoose.Schema(
       default: "",
     },
 
+    // Reply to message
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+      index: true,
+    },
+
     file: {
       url: { type: String, default: "" },
       name: { type: String, default: "" },
@@ -91,7 +99,6 @@ messageSchema.pre("validate", function (next) {
 });
 
 const Message =
-  mongoose.models.Message ||
-  mongoose.model("Message", messageSchema);
+  mongoose.models.Message || mongoose.model("Message", messageSchema);
 
 export default Message;

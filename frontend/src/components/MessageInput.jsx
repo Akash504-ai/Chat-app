@@ -24,6 +24,8 @@ const MessageInput = () => {
     selectedUser,
     startTyping,
     stopTyping,
+    replyingTo,
+    clearReplyingTo,
   } = useChatStore();
 
   const isAI = selectedChatType === "private" && selectedUser?.isAI;
@@ -83,7 +85,7 @@ const MessageInput = () => {
         const reader = new FileReader();
         reader.onload = () => setAudioData(reader.result);
         reader.readAsDataURL(blob);
-        stream.getTracks().forEach(track => track.stop()); // Clean up hardware use
+        stream.getTracks().forEach((track) => track.stop()); // Clean up hardware use
       };
 
       mediaRecorder.start();
@@ -126,6 +128,7 @@ const MessageInput = () => {
         image: imagePreview,
         audio: audioData,
         file: fileData,
+        replyTo: replyingTo?._id || null,
       };
 
       selectedChatType === "group"
@@ -142,6 +145,22 @@ const MessageInput = () => {
 
   return (
     <div className="border-t border-base-300 p-2 sm:p-4 w-full shrink-0 bg-base-100">
+      {replyingTo && (
+        <div className="mb-2 flex items-center justify-between rounded-lg bg-base-200 px-3 py-2 text-sm">
+          <div className="truncate">
+            <span className="text-primary font-medium mr-1">Replying to</span>
+            {replyingTo.text || "Media message"}
+          </div>
+          <button
+            onClick={clearReplyingTo}
+            className="btn btn-ghost btn-xs"
+            type="button"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* PREVIEWS SECTION */}
       {(imagePreview || fileData || audioData) && (
         <div className="mb-3 flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-2">
@@ -184,13 +203,13 @@ const MessageInput = () => {
         <div className="flex-1 flex flex-col gap-2 min-w-0">
           <div className="relative flex items-center bg-base-200 rounded-xl px-3 py-1 sm:py-2">
             <input
-  type="text"
-  value={text}
-  onChange={(e) => handleTyping(e.target.value)}
-  onBlur={stopTyping}
-  placeholder={isAI ? "Ask AI assistant…" : "Message"}
-  disabled={recording}
-  className="
+              type="text"
+              value={text}
+              onChange={(e) => handleTyping(e.target.value)}
+              onBlur={stopTyping}
+              placeholder={isAI ? "Ask AI assistant…" : "Message"}
+              disabled={recording}
+              className="
     w-full min-w-0
     h-11 sm:h-12
     px-3 sm:px-4
@@ -206,9 +225,8 @@ const MessageInput = () => {
     disabled:opacity-50
     disabled:cursor-not-allowed
   "
-/>
+            />
 
-            
             {/* Action Buttons inside/beside input for a cleaner look */}
             {!isAI && (
               <div className="flex items-center gap-0.5 sm:gap-1 ml-2">
@@ -219,7 +237,12 @@ const MessageInput = () => {
                   hidden
                   onChange={handleImageChange}
                 />
-                <input ref={fileRef} type="file" hidden onChange={handleFileChange} />
+                <input
+                  ref={fileRef}
+                  type="file"
+                  hidden
+                  onChange={handleFileChange}
+                />
 
                 <button
                   type="button"
@@ -268,7 +291,9 @@ const MessageInput = () => {
             type="submit"
             disabled={!text.trim() && !imagePreview && !fileData && !audioData}
             className={`btn btn-primary btn-circle btn-sm sm:btn-md ${
-              !text.trim() && !imagePreview && !fileData && !audioData ? "btn-disabled opacity-50" : ""
+              !text.trim() && !imagePreview && !fileData && !audioData
+                ? "btn-disabled opacity-50"
+                : ""
             }`}
           >
             <Send size={20} />

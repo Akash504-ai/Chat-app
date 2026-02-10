@@ -88,7 +88,9 @@ export const getMessages = async (req, res) => {
       ],
       deletedForEveryone: false,
       deletedFor: { $ne: myId },
-    }).sort({ createdAt: 1 });
+    })
+      .populate("replyTo", "text image senderId")
+      .sort({ createdAt: 1 });
 
     await Message.updateMany(
       { senderId: id, receiverId: myId, status: { $ne: "seen" } },
@@ -114,9 +116,13 @@ export const getMessages = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image, audio, file } = req.body;
+    const { text, image, audio, file, replyTo } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
+
+    if (replyTo && !mongoose.Types.ObjectId.isValid(replyTo)) {
+      return res.status(400).json({ message: "Invalid reply message id" });
+    }
 
     if (!mongoose.Types.ObjectId.isValid(receiverId)) {
       return res.status(400).json({ message: "Invalid receiver id" });
@@ -163,7 +169,17 @@ export const sendMessage = async (req, res) => {
       image: imageUrl,
       audio: audioUrl,
       file: fileData,
+      replyTo: replyTo || null,
       status: "sent",
+    });
+
+    message = await message.populate({
+      path: "replyTo",
+      select: "text image senderId",
+      populate: {
+        path: "senderId",
+        select: "fullName profilePic",
+      },
     });
 
     emitToUser(receiverId, "newMessage", message);
@@ -202,6 +218,7 @@ export const getGroupMessages = async (req, res) => {
       deletedFor: { $ne: userId },
     })
       .populate("senderId", "fullName profilePic")
+      .populate("replyTo", "text image senderId")
       .sort({ createdAt: 1 });
 
     res.status(200).json(messages);
@@ -214,10 +231,14 @@ export const sendGroupMessage = async (req, res) => {
   try {
     const { groupId } = req.params;
     const senderId = req.user._id;
-    const { text, image, audio, file } = req.body;
+    const { text, image, audio, file, replyTo } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(groupId)) {
       return res.status(400).json({ message: "Invalid group id" });
+    }
+
+    if (replyTo && !mongoose.Types.ObjectId.isValid(replyTo)) {
+      return res.status(400).json({ message: "Invalid reply message id" });
     }
 
     const group = await Group.findById(groupId);
@@ -266,10 +287,20 @@ export const sendGroupMessage = async (req, res) => {
       image: imageUrl,
       audio: audioUrl,
       file: fileData,
+      replyTo: replyTo || null,
       status: "sent",
     });
 
-    io.to(groupId.toString()).emit("newGroupMessage", message);
+    const populatedMessage = await message.populate({
+      path: "replyTo",
+      select: "text image senderId",
+      populate: {
+        path: "senderId",
+        select: "fullName profilePic",
+      },
+    });
+
+    io.to(groupId.toString()).emit("newGroupMessage", populatedMessage);
 
     res.status(201).json(message);
   } catch (err) {
@@ -333,7 +364,7 @@ export const markMessagesSeen = async (req, res) => {
       receiverId: myId,
       status: { $ne: "seen" },
     },
-    { status: "seen" }
+    { status: "seen" },
   );
 
   const messages = await Message.find({
@@ -349,4 +380,3 @@ export const markMessagesSeen = async (req, res) => {
 
   res.sendStatus(200);
 };
-

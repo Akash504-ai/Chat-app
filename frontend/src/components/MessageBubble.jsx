@@ -10,6 +10,7 @@ import {
   Check,
   CheckCheck,
   Sparkles,
+  Reply,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChatStore } from "../store/useChatStore";
@@ -33,6 +34,9 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
     addReaction,
     pinnedMessages,
     togglePin,
+    setReplyingTo,
+    setHighlightedMessage,
+    highlightedMessageId,
   } = useChatStore();
 
   const isPinned = pinnedMessages?.[chatId]?.[message._id];
@@ -199,6 +203,17 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                     )}
                     <button
                       onClick={() => {
+                        setReplyingTo(message);
+                        setOpen(false);
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200"
+                    >
+                      <Reply size={14} className="opacity-50" />
+                      <span>Reply</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
                         deleteMessageForMe(message._id);
                         setOpen(false);
                       }}
@@ -250,7 +265,13 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                   : {}
               }
               transition={{ repeat: Infinity, duration: 3 }}
-              className={`relative px-4 py-2.5 shadow-sm transition-all duration-300 ${
+              className={`relative px-4 py-2.5 shadow-sm transition-all duration-300
+              ${
+                highlightedMessageId === message._id
+                  ? "ring-2 ring-primary ring-offset-2 bg-primary/10"
+                  : ""
+              }
+              ${
                 message.deletedForEveryone
                   ? "bg-base-200/50 border border-base-300 text-base-content/40 italic rounded-2xl"
                   : isMe
@@ -258,7 +279,8 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                     : isAI
                       ? "bg-base-100 border-2 border-primary/20 text-base-content rounded-2xl rounded-tl-none shadow-lg shadow-primary/5"
                       : "bg-base-100 border border-base-200 text-base-content rounded-2xl rounded-tl-none shadow-sm"
-              }`}
+              }
+            `}
             >
               {message.deletedForEveryone ? (
                 <div className="flex items-center gap-2 text-[13px]">
@@ -272,6 +294,32 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                     </div>
                   )}
 
+                  {/* REPLY PREVIEW */}
+                  {message.replyTo && (
+                    <div
+                      onClick={() => {
+                        const id = message.replyTo._id;
+                        setHighlightedMessage(id);
+
+                        document.getElementById(`msg-${id}`)?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "center",
+                        });
+
+                        setTimeout(() => setHighlightedMessage(null), 1200);
+                      }}
+                      className="mb-1.5 px-2 py-1 rounded-md bg-black/5 text-[12px] border-l-4 border-primary cursor-pointer hover:bg-black/10 transition"
+                    >
+                      <div className="font-medium text-primary">
+                        {message.replyTo.senderId?.fullName || "User"}
+                      </div>
+                      <div className="truncate opacity-80">
+                        {message.replyTo.text || "Media message"}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ATTACHMENTS */}
                   {(message.image || message.audio || message.file?.url) && (
                     <div className="flex flex-col gap-2 mb-1.5">
                       {message.image && (
@@ -281,9 +329,11 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                           alt="attachment"
                         />
                       )}
+
                       {message.audio && (
                         <AudioMessage audioUrl={message.audio} isMe={isMe} />
                       )}
+
                       {message.file?.url && <FileMessage file={message.file} />}
                     </div>
                   )}
