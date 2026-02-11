@@ -11,6 +11,8 @@ import groupRoutes from "./routes/group.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
 import seedAIUser from "./seeds/seedAIUser.js";
 import statusRoutes from "./routes/status.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
+import reportRoutes from "./routes/report.routes.js";
 // import callRoutes from "./routes/call.routes.js";
 
 dotenv.config();
@@ -33,6 +35,8 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/status", statusRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/reports", reportRoutes);
 // app.use("/api/call", callRoutes);
 
 if (process.env.NODE_ENV === "production") {

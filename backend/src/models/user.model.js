@@ -9,45 +9,68 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+
     fullName: {
       type: String,
       required: true,
       trim: true,
     },
+
     password: {
       type: String,
       required: true,
       minlength: 6,
       select: false,
     },
+
     profilePic: {
       type: String,
       default: "",
     },
 
-    // 🔹 ADD THIS
+    // 🔹 Role system (Admin Panel ready)
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+
+    // 🔹 Ban system
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
+
+    banReason: {
+      type: String,
+      default: "",
+    },
+
+    // 🔹 AI bot account
     isAI: {
       type: Boolean,
       default: false,
     },
 
-    // 🔹 Last seen & presence
+    // 🔹 Presence
     isOnline: {
       type: Boolean,
       default: false,
     },
+
     lastSeen: {
       type: Date,
       default: null,
     },
 
+    // 🔹 Custom wallpapers per chat
     chatWallpapers: {
       type: Map,
-      of: String, // Cloudinary URL
+      of: String,
       default: {},
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);

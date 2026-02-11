@@ -8,7 +8,6 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    // 🔥 FIX: sticky instead of fixed
     <header className="sticky top-0 z-40 w-full border-b border-base-300 bg-base-100/80 backdrop-blur">
       <div className="container mx-auto h-16 px-4">
         <div className="flex h-full items-center justify-between">

@@ -19,10 +19,20 @@ import IncomingCallModal from "./components/call/IncomingCallModal.jsx";
 import CallRoom from "./components/call/CallRoom";
 import OutgoingCallModal from "./components/call/OutgoingCallModal";
 
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminReports from "./pages/AdminReports";
+import AdminRoute from "./components/admin/AdminRoute";
+import AdminLayout from "./components/admin/AdminLayout";
+
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
   const { subscribeToMessages, unsubscribeFromMessages } = useChatStore();
   const { theme } = useThemeStore();
+
+  useEffect(() => {
+    console.log("AUTH USER:", authUser);
+  }, [authUser]);
 
   useEffect(() => {
     checkAuth();
@@ -47,15 +57,26 @@ const App = () => {
       {authUser && <IncomingCallModal />}
       {authUser && <OutgoingCallModal />}
       {authUser && <CallRoom />}
-      {authUser && <Navbar />}
+      {authUser && authUser.role !== "admin" && <Navbar />}
 
       {/* MAIN CONTENT */}
       <div className="flex-1 overflow-hidden">
         <Routes>
           <Route
             path="/"
-            element={authUser ? <HomePage /> : <Navigate to="/login" />}
+            element={
+              authUser ? (
+                authUser.role === "admin" ? (
+                  <Navigate to="/admin" />
+                ) : (
+                  <HomePage />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
+
           <Route
             path="/signup"
             element={!authUser ? <SignUpPage /> : <Navigate to="/" />}
@@ -71,6 +92,38 @@ const App = () => {
           <Route
             path="/profile"
             element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <AdminLayout>
+                  <AdminUsers />
+                </AdminLayout>
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/reports"
+            element={
+              <AdminRoute>
+                <AdminLayout>
+                  <AdminReports />
+                </AdminLayout>
+              </AdminRoute>
+            }
           />
         </Routes>
       </div>

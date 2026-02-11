@@ -22,7 +22,9 @@ export const signup = async (req, res) => {
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
     }
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -36,6 +38,7 @@ export const signup = async (req, res) => {
       fullName,
       email: email.toLowerCase(),
       password: hashedPassword,
+      role: "user",
     });
 
     generateToken(newUser._id, res);
@@ -45,6 +48,7 @@ export const signup = async (req, res) => {
       fullName: newUser.fullName,
       email: newUser.email,
       profilePic: newUser.profilePic,
+      role: newUser.role, 
     });
   } catch (error) {
     console.error("Signup error:", error.message);
@@ -65,9 +69,18 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+    const user = await User.findOne({ email: email.toLowerCase() }).select(
+      "+password",
+    );
+
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    if (user.isBanned) {
+      return res.status(403).json({
+        message: "Your account has been banned",
+      });
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
@@ -82,6 +95,7 @@ export const login = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profilePic: user.profilePic,
+      role: user.role,
     });
   } catch (error) {
     console.error("Login error:", error.message);
@@ -131,11 +145,9 @@ export const updateProfile = async (req, res) => {
       return res.status(400).json({ message: "No data provided to update" });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      updateData,
-      { new: true }
-    ).select("-password");
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    }).select("-password");
 
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -144,13 +156,22 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// CHECK AUTH 
+// CHECK AUTH
 // Middleware validates JWT
 // Middleware attaches user to req.user
 // Return req.user in response
 export const checkAuth = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    if (user.isBanned) {
+      return res.status(403).json({ message: "Account banned" });
+    }
+
     res.status(200).json(user);
   } catch (error) {
     console.error("Check auth error:", error.message);
