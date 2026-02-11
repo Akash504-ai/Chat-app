@@ -150,7 +150,8 @@ const AdminUsers = () => {
                           <Eye size={16} />
                         </button>
 
-                        {/* 🚀 3. Prevent Admin/AI Banning */}
+                        {/* for now removing the ban...............[FUTURE FEATURE...]*/}
+                        {/* 🚀 3. Prevent Admin/AI Banning
                         <button
                           className={`btn btn-square btn-sm ${user.isBanned ? "btn-success" : "btn-warning"}`}
                           disabled={isAdmin || isMetaAI}
@@ -158,7 +159,7 @@ const AdminUsers = () => {
                           title={isAdmin ? "Cannot ban admins" : "Toggle Ban"}
                         >
                           {user.isBanned ? <UserCheck size={16} /> : <UserX size={16} />}
-                        </button>
+                        </button> */}
 
                         {/* 🚀 Meta AI Protection */}
                         <button

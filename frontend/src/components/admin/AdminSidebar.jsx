@@ -43,12 +43,12 @@ const AdminSidebar = () => {
       </nav>
 
       {/* Footer / User Section */}
-      <div className="p-4 border-t border-base-300">
-        <button className="btn btn-ghost btn-sm w-full justify-start gap-3 opacity-70 hover:opacity-100">
+      {/* <div > //className="p-4 border-t border-base-300" */}
+        {/* <button className="btn btn-ghost btn-sm w-full justify-start gap-3 opacity-70 hover:opacity-100">
           <Settings size={18} />
           Settings
-        </button>
-      </div>
+        </button> */}
+      {/* </div> */}
     </div>
   );
 };

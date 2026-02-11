@@ -18,6 +18,7 @@ import FileMessage from "./FileMessage";
 import AudioMessage from "./AudioMessage";
 import { formatMessageTime } from "../lib/utils";
 import toast from "react-hot-toast";
+import { axiosInstance } from "../lib/axios";
 
 const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
 
@@ -83,6 +84,27 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
       toast.success("Copied to clipboard");
     } catch (err) {
       toast.error("Failed to copy");
+    } finally {
+      setOpen(false);
+    }
+  };
+
+  const handleReport = async () => {
+    if (!window.confirm("Report this message?")) return;
+
+    try {
+      await axiosInstance.post("/reports", {
+        reportedUserId:
+          typeof message.senderId === "string"
+            ? message.senderId
+            : message.senderId?._id,
+        reportedMessageId: message._id,
+        reason: "Inappropriate content",
+      });
+
+      toast.success("Report submitted successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to submit report");
     } finally {
       setOpen(false);
     }
@@ -219,6 +241,17 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                       <Reply size={14} className="opacity-50" />
                       <span>Reply</span>
                     </button>
+
+                    {/* Report (only if not my message & not deleted) */}
+                    {!isMe && !message.deletedForEveryone && (
+                      <button
+                        onClick={handleReport}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-warning/10 text-warning border-t border-base-200"
+                      >
+                        <ShieldAlert size={14} />
+                        <span>Report</span>
+                      </button>
+                    )}
 
                     <button
                       onClick={() => {
