@@ -71,9 +71,9 @@ const LoginPage = () => {
                 <label className="label py-1">
                   <span className="label-text text-gray-300 font-medium">Password</span>
                 </label>
-                <Link to="/forgot-password" size="sm" className="text-xs text-primary hover:underline">
+                {/* <Link to="/forgot-password" size="sm" className="text-xs text-primary hover:underline">
                   Forgot password?
-                </Link>
+                </Link> */}
               </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-500 group-focus-within:text-primary transition-colors" />
