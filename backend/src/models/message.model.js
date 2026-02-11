@@ -79,6 +79,12 @@ const messageSchema = new mongoose.Schema(
       default: false,
       index: true,
     },
+
+    statusReply: {
+      statusId: { type: mongoose.Schema.Types.ObjectId, ref: "Status" },
+      mediaUrl: String,
+      text: String,
+    },
   },
   { timestamps: true },
 );

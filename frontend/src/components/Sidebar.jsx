@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Users, Plus, UsersRound, Trash2 } from "lucide-react";
+import { Users, Plus, UsersRound, Trash2, CircleDot } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import CreateGroupModal from "./CreateGroupModal";
 
-const Sidebar = () => {
+const Sidebar = ({ setActiveTab }) => {
   const {
     getUsers,
     getGroups,
@@ -18,7 +18,6 @@ const Sidebar = () => {
     unreadCounts,
     setSelectedUser,
     setSelectedGroup,
-    clearSelectedChat,
     deleteGroup,
     isUsersLoading,
     isGroupsLoading,
@@ -67,12 +66,24 @@ const Sidebar = () => {
               </span>
             </div>
 
-            <button
-              onClick={() => setShowCreateGroup(true)}
-              className="btn btn-sm btn-ghost shrink-0"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
+            <div className="flex items-center gap-1">
+              {/* ✅ STATUS BUTTON */}
+              <button
+                onClick={() => setActiveTab("status")}
+                className="btn btn-sm btn-ghost"
+                title="Status"
+              >
+                <CircleDot className="h-5 w-5" />
+              </button>
+
+              {/* CREATE GROUP */}
+              <button
+                onClick={() => setShowCreateGroup(true)}
+                className="btn btn-sm btn-ghost shrink-0"
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           {/* Online filter — desktop only */}
@@ -109,9 +120,7 @@ const Sidebar = () => {
               return (
                 <button
                   key={group._id}
-                  onClick={() => {
-                    setSelectedGroup(group);
-                  }}
+                  onClick={() => setSelectedGroup(group)}
                   className={`flex w-full items-center justify-between px-3 py-2 hover:bg-base-200 ${
                     isActive ? "bg-base-200" : ""
                   }`}
@@ -169,9 +178,7 @@ const Sidebar = () => {
             return (
               <button
                 key={user._id}
-                onClick={() => {
-                  setSelectedUser(user);
-                }}
+                onClick={() => setSelectedUser(user)}
                 className={`flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-base-200 ${
                   isSelected ? "bg-base-200" : ""
                 }`}
@@ -187,7 +194,6 @@ const Sidebar = () => {
                   )}
                 </div>
 
-                {/* NAME — VISIBLE ON MOBILE + DESKTOP */}
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">
                     {isAI ? "AI Assistant" : user.fullName}
@@ -196,23 +202,25 @@ const Sidebar = () => {
                     {isAI
                       ? "AI Assistant"
                       : isTyping
-                        ? "typing..."
-                        : isOnline
-                          ? "Online"
-                          : user.lastSeen
-                            ? `Last seen ${new Date(
-                                user.lastSeen,
-                              ).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}`
-                            : "Offline"}
+                      ? "typing..."
+                      : isOnline
+                      ? "Online"
+                      : user.lastSeen
+                      ? `Last seen ${new Date(
+                          user.lastSeen,
+                        ).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}`
+                      : "Offline"}
                   </p>
                 </div>
 
                 {!isAI && unreadCounts[user._id] > 0 && (
                   <span className="badge badge-error text-xs shrink-0">
-                    {unreadCounts[user._id] > 9 ? "9+" : unreadCounts[user._id]}
+                    {unreadCounts[user._id] > 9
+                      ? "9+"
+                      : unreadCounts[user._id]}
                   </span>
                 )}
               </button>

@@ -10,6 +10,7 @@ import messageRoutes from "./routes/message.route.js";
 import groupRoutes from "./routes/group.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
 import seedAIUser from "./seeds/seedAIUser.js";
+import statusRoutes from "./routes/status.routes.js";
 // import callRoutes from "./routes/call.routes.js";
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/status", statusRoutes);
 // app.use("/api/call", callRoutes);
 
 if (process.env.NODE_ENV === "production") {
