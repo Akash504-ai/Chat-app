@@ -2,13 +2,18 @@ import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { LogOut, Menu, MessageSquare, Settings, User, X } from "lucide-react";
 import { useState } from "react";
+import { useChatStore } from "../store/useChatStore";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
   const [open, setOpen] = useState(false);
+  const { selectedUser, selectedGroup } = useChatStore();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-base-300 bg-base-100/80 backdrop-blur">
+    <header
+      className={`sticky top-0 z-40 w-full border-b border-base-300 bg-base-100/80 backdrop-blur 
+  ${selectedUser || selectedGroup ? "hidden md:block" : "block"}`}
+    >
       <div className="container mx-auto h-16 px-4">
         <div className="flex h-full items-center justify-between">
           <Link
