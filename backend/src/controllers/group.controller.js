@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Group from "../models/group.model.js";
 import User from "../models/user.model.js";
 
@@ -71,6 +72,10 @@ export const getGroupById = async (req, res) => {
     const { id } = req.params;
     const userId = req.user._id;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid group ID" });
+    }
+
     const group = await Group.findById(id)
       .populate("members.userId", "fullName profilePic email")
       .populate("createdBy", "fullName profilePic");
@@ -80,7 +85,7 @@ export const getGroupById = async (req, res) => {
     }
 
     const isMember = group.members.some(
-      (m) => m.userId._id.toString() === userId.toString(),
+      (m) => m.userId && m.userId._id.toString() === userId.toString()
     );
 
     if (!isMember) {
