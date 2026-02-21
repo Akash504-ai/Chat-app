@@ -13,25 +13,11 @@ import seedAIUser from "./seeds/seedAIUser.js";
 import statusRoutes from "./routes/status.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import reportRoutes from "./routes/report.routes.js";
-// import callRoutes from "./routes/call.routes.js";
 
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
-
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
-app.use(cookieParser());
-
-// app.use(
-//   cors({
-//     // origin: "http://localhost:5173",
-//     origin: process.env.CLIENT_URL,
-//     // origin:true,
-//     credentials: true,
-//   })
-// );
 
 app.use(
   cors({
@@ -43,6 +29,12 @@ app.use(
   })
 );
 
+app.options("*", cors());
+
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(cookieParser());
+
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/groups", groupRoutes);
@@ -50,7 +42,6 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/status", statusRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/reports", reportRoutes);
-// app.use("/api/call", callRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
@@ -63,11 +54,11 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const startServer = async () => {
-  await connectDB();     
-  await seedAIUser();   
+  await connectDB();
+  await seedAIUser();
 
   server.listen(PORT, () => {
-    console.log(`🚀 Server running on PORT: ${PORT}`);
+    console.log(`Server running on PORT: ${PORT}`);
   });
 };
 
