@@ -4,10 +4,12 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { useCallStore } from "./useCallStore";
 
-const BASE_URL =
-  import.meta.env.MODE === "development"
-    ? "http://localhost:5001"
-    : import.meta.env.VITE_BACKEND_URL;
+// const BASE_URL =
+//   import.meta.env.MODE === "development"
+//     ? "http://localhost:5001"
+//     : import.meta.env.VITE_BACKEND_URL;
+
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -18,9 +20,7 @@ export const useAuthStore = create((set, get) => ({
   onlineUsers: [],
   socket: null,
 
-  // =====================
   // AUTH
-  // =====================
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");
@@ -87,36 +87,53 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  // =====================
-  // SOCKET
-  // =====================
   connectSocket: () => {
+    console.log("CONNECT SOCKET CALLED");
+
     const { authUser, socket } = get();
     if (!authUser) return;
 
-    // 🧹 Clean old socket
-    if (socket) socket.disconnect();
+    if (socket) {
+      socket.disconnect();
+    }
 
     const newSocket = io(BASE_URL, {
-      query: { userId: authUser._id },
-      transports: ["websocket"],
+      auth: { userId: authUser._id },
+    });
+
+    // 🔥 1️⃣ Attach ALL listeners BEFORE doing anything else
+
+    newSocket.on("getOnlineUsers", (userIds) => {
+      console.log("RAW FROM SERVER:", userIds);
+
+      if (!Array.isArray(userIds)) {
+        set({ onlineUsers: [] });
+        return;
+      }
+
+      // Always force string comparison consistency
+      const normalized = userIds.map((id) => String(id));
+
+      console.log("NORMALIZED:", normalized);
+
+      set({ onlineUsers: normalized });
     });
 
     newSocket.on("connect", () => {
       console.log("✅ Socket connected:", newSocket.id);
+      newSocket.emit("requestOnlineUsers"); // force sync
     });
 
     newSocket.on("disconnect", () => {
       console.log("❌ Socket disconnected");
+      set({ onlineUsers: [] });
     });
 
-    newSocket.on("getOnlineUsers", (userIds) => {
-      set({ onlineUsers: userIds });
+    newSocket.onAny((event, ...args) => {
+      console.log("EVENT:", event);
     });
 
-    // =====================
-    // 📞 1–1 CALL EVENTS
-    // =====================
+    // Call events
     newSocket.on("call:incoming", (data) => {
       useCallStore.getState().receiveCall(data);
     });
@@ -138,9 +155,6 @@ export const useAuthStore = create((set, get) => ({
       useCallStore.getState().resetCall();
     });
 
-    // =====================
-    // 👥 GROUP CALL EVENTS
-    // =====================
     newSocket.on("group:call:incoming", (data) => {
       useCallStore.getState().receiveGroupCall(data);
     });
@@ -154,6 +168,7 @@ export const useAuthStore = create((set, get) => ({
       useCallStore.getState().resetCall();
     });
 
+    // 🔥 2️⃣ Set socket AFTER listeners
     set({ socket: newSocket });
   },
 

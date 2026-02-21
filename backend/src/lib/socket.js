@@ -10,11 +10,15 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173"],
+
+    // origin: "http://localhost:5173",
+
+    origin: process.env.CLIENT_URL,
+    credentials: true,
   },
 });
 
-const userSocketMap = {}; // userId -> Set(socketIds)
+const userSocketMap = {};
 const activeCalls = new Set();
 const activeGroupCalls = new Map();
 
@@ -30,33 +34,35 @@ export function emitToUser(userId, event, payload) {
 }
 
 io.on("connection", async (socket) => {
-  const userId = socket.handshake.query.userId;
+  console.log("🔥 SOCKET FILE LOADED");
+  const userId = socket.handshake.auth.userId;
+  if (!userId) return;
 
-  if (userId) {
-    if (!userSocketMap[userId]) {
-      userSocketMap[userId] = new Set();
-    }
+  socket.on("requestOnlineUsers", () => {
+    const users = Object.keys(userSocketMap);
+    console.log("📤 Sending online users:", users);
+    socket.emit("getOnlineUsers", users);
+  });
 
-    userSocketMap[userId].add(socket.id);
-    socket.join(userId);
-    await User.findByIdAndUpdate(userId, {
-      isOnline: true,
-    });
-
-    const groups = await Group.find({
-      "members.userId": userId,
-    }).select("_id");
-
-    groups.forEach((group) => {
-      socket.join(group._id.toString());
-    });
+  if (!userSocketMap[userId]) {
+    userSocketMap[userId] = new Set();
   }
+
+  userSocketMap[userId].add(socket.id);
+  socket.join(userId);
+
+  await User.findByIdAndUpdate(userId, { isOnline: true });
+
+  const groups = await Group.find({
+    "members.userId": userId,
+  }).select("_id");
+
+  groups.forEach((group) => {
+    socket.join(group._id.toString());
+  });
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
-  // =====================
-  // Typing
-  // =====================
   socket.on("typing", ({ to }) => {
     socket.to(to).emit("typing", { from: userId });
   });
@@ -65,9 +71,6 @@ io.on("connection", async (socket) => {
     socket.to(to).emit("stopTyping", { from: userId });
   });
 
-  // =====================
-  // Message seen
-  // =====================
   socket.on("messageSeen", async ({ messageIds, senderId }) => {
     await Message.updateMany({ _id: { $in: messageIds } }, { status: "seen" });
 
@@ -77,20 +80,14 @@ io.on("connection", async (socket) => {
     });
   });
 
-  socket.on("groupMessageSeen", async ({ messageId, groupId }) => {
+  socket.on("groupMessageSeen", ({ messageId, groupId }) => {
     socket.to(groupId).emit("groupMessageSeen", {
       messageId,
       userId,
     });
   });
 
-  // =====================
-  // 📞 CALL SIGNALING
-  // =====================
-
-  // Invite
   socket.on("call:invite", ({ to, callType, roomId }) => {
-    // 🚫 busy check
     if (activeCalls.has(to)) {
       socket.emit("call:busy");
       return;
@@ -106,32 +103,22 @@ io.on("connection", async (socket) => {
     });
   });
 
-  // Accept
   socket.on("call:accept", ({ to, roomId }) => {
     socket.to(to).emit("call:accepted", { roomId });
   });
 
-  // Reject
   socket.on("call:reject", ({ to }) => {
     activeCalls.delete(userId);
     activeCalls.delete(to);
-
     socket.to(to).emit("call:rejected");
   });
 
-  // End
   socket.on("call:end", ({ to }) => {
     activeCalls.delete(userId);
     activeCalls.delete(to);
-
     socket.to(to).emit("call:ended");
   });
 
-  // =====================
-  // 👥 GROUP CALL
-  // =====================
-
-  // Start group call
   socket.on("group:call:start", ({ groupId, callType, roomId }) => {
     if (activeGroupCalls.has(groupId)) {
       socket.emit("group:call:already-active");
@@ -148,32 +135,21 @@ io.on("connection", async (socket) => {
     });
   });
 
-  // End group call
   socket.on("group:call:end", ({ groupId }) => {
     activeGroupCalls.delete(groupId);
     socket.to(groupId).emit("group:call:ended", { groupId });
   });
 
-  // =====================
-  // Disconnect
-  // =====================
   socket.on("disconnect", async () => {
-    if (!userId || !userSocketMap[userId]) return;
+    if (!userSocketMap[userId]) return;
 
     userSocketMap[userId].delete(socket.id);
 
-    // only offline if no sockets left
     if (userSocketMap[userId].size === 0) {
       delete userSocketMap[userId];
       activeCalls.delete(userId);
 
       await User.findByIdAndUpdate(userId, {
-        isOnline: false,
-        lastSeen: new Date(),
-      });
-
-      socket.broadcast.emit("userLastSeenUpdate", {
-        userId,
         isOnline: false,
         lastSeen: new Date(),
       });
