@@ -2,7 +2,7 @@ import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
-// import { sendWelcomeEmail } from "../lib/sendEmail.js";
+import { sendWelcomeEmail } from "../lib/sendEmail.js";
 
 //signup
 // Get fullName, email, password from req.body
@@ -44,15 +44,17 @@ export const signup = async (req, res) => {
 
     const token = generateToken(newUser._id);
 
-    // await sendWelcomeEmail(newUser.email, newUser.fullName);
+    sendWelcomeEmail(newUser.email, newUser.fullName).catch((err) =>
+      console.log("Email failed:", err.message),
+    );
 
     res.status(201).json({
       _id: newUser._id,
       fullName: newUser.fullName,
       email: newUser.email,
       profilePic: newUser.profilePic,
-      role: newUser.role, 
-      token
+      role: newUser.role,
+      token,
     });
   } catch (error) {
     console.error("Signup error:", error.message);
@@ -100,7 +102,7 @@ export const login = async (req, res) => {
       email: user.email,
       profilePic: user.profilePic,
       role: user.role,
-      token
+      token,
     });
   } catch (error) {
     console.error("Login error:", error.message);
