@@ -34,7 +34,7 @@ export const createGroup = async (req, res) => {
       return res.status(400).json({ message: "Group name is required" });
     }
 
-    // 🔥 remove AI users from members list
+    // remove AI users from members list
     const validUsers = await User.find({
       _id: { $in: members },
       isAI: { $ne: true },
@@ -133,7 +133,7 @@ export const addUserToGroup = async (req, res) => {
   group.members.push({ userId, role: "member" });
   await group.save();
 
-  // 🔥 THIS IS THE KEY
+  // THIS IS THE KEY
   const populatedGroup = await Group.findById(group._id).populate(
     "members.userId",
     "fullName profilePic",
@@ -242,7 +242,7 @@ export const deleteGroup = async (req, res) => {
       return res.status(404).json({ message: "Group not found" });
     }
 
-    // ✅ Only creator can delete
+    // Only creator can delete
     if (group.createdBy.toString() !== userId) {
       return res.status(403).json({ message: "Not authorized" });
     }
