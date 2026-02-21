@@ -32,13 +32,15 @@ const GroupMembersModal = ({ groupId, onClose }) => {
 
   if (loading || !group) return null;
 
-  const myMember = group.members.find((m) => m.userId._id === authUser._id);
+  const safeMembers = group.members.filter((m) => m.userId);
+  const myMember = safeMembers.find((m) => m.userId._id === authUser._id);
 
   const myRole = myMember?.role;
   const isAdmin = myRole === "admin";
-  const isCreator = group.createdBy === authUser._id;
+  const isCreator =
+    (group.createdBy?._id || group.createdBy)?.toString() === authUser._id;
 
-  const adminCount = group.members.filter((m) => m.role === "admin").length;
+  const adminCount = safeMembers.filter((m) => m.role === "admin").length;
 
   const canLeave = !isCreator && !(isAdmin && adminCount === 1);
 
@@ -50,7 +52,7 @@ const GroupMembersModal = ({ groupId, onClose }) => {
 
       setGroup((prev) => ({
         ...prev,
-        members: prev.members.filter((m) => m.userId._id !== userId),
+        members: prev.members.filter((m) => m.userId?._id !== userId),
       }));
 
       toast.success("Member removed");
@@ -119,7 +121,7 @@ const GroupMembersModal = ({ groupId, onClose }) => {
 
         {/* Members */}
         <div className="flex-1 overflow-y-auto px-2 py-2">
-          {group.members.map((m) => {
+          {safeMembers.map((m) => {
             const isMe = m.userId._id === authUser._id;
             const isCreatorMember = m.userId._id === group.createdBy;
 
