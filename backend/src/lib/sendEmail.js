@@ -1,17 +1,11 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail", // if using gmail
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendWelcomeEmail = async (to, name) => {
   try {
-    await transporter.sendMail({
-      from: `"PASO Chat App" <${process.env.EMAIL}>`,
+    await resend.emails.send({
+      from: "PASO <onboarding@resend.dev>", // default testing domain
       to,
       subject: "Welcome to PASO 🚀",
       html: `

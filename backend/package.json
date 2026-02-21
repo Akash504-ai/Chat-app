@@ -24,6 +24,7 @@
     "mongoose": "^8.8.1",
     "multer": "^2.0.2",
     "nodemailer": "^8.0.1",
+    "resend": "^6.9.2",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {

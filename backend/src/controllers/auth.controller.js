@@ -44,6 +44,10 @@ export const signup = async (req, res) => {
 
     const token = generateToken(newUser._id);
 
+    // sendWelcomeEmail(newUser.email, newUser.fullName).catch((err) =>
+    //   console.log("Email failed:", err.message),
+    // );
+
     sendWelcomeEmail(newUser.email, newUser.fullName).catch((err) =>
       console.log("Email failed:", err.message),
     );
