@@ -2,18 +2,14 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 
 export const useAdminStore = create((set, get) => ({
-  // =========================
   // STATE
-  // =========================
   users: [],
   reports: [],
   dashboardStats: null,
   loading: false,
   error: null,
 
-  // =========================
   // DASHBOARD STATS
-  // =========================
   getDashboardStats: async () => {
     try {
       set({ loading: true, error: null });
@@ -29,9 +25,7 @@ export const useAdminStore = create((set, get) => ({
     }
   },
 
-  // =========================
   // USERS
-  // =========================
   getUsers: async (page = 1, search = "", role = "") => {
     try {
       set({ loading: true, error: null });
@@ -72,9 +66,7 @@ export const useAdminStore = create((set, get) => ({
     }
   },
 
-  // =========================
   // REPORTS
-  // =========================
   getReports: async (status = "") => {
     try {
       set({ loading: true, error: null });
