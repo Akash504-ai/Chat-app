@@ -38,6 +38,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/signup", data);
+      localStorage.setItem("token", res.data.token);
       set({ authUser: res.data });
       toast.success("Account created successfully");
       get().connectSocket();
@@ -52,6 +53,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("/auth/login", data);
+      localStorage.setItem("token", res.data.token);
       set({ authUser: res.data });
       toast.success("Logged in successfully");
       get().connectSocket();
@@ -62,15 +64,22 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  // logout: async () => {
+  //   try {
+  //     await axiosInstance.post("/auth/logout");
+  //     get().disconnectSocket();
+  //     set({ authUser: null, onlineUsers: [] });
+  //     toast.success("Logged out successfully");
+  //   } catch (error) {
+  //     toast.error(error.response?.data?.message);
+  //   }
+  // },
+
   logout: async () => {
-    try {
-      await axiosInstance.post("/auth/logout");
-      get().disconnectSocket();
-      set({ authUser: null, onlineUsers: [] });
-      toast.success("Logged out successfully");
-    } catch (error) {
-      toast.error(error.response?.data?.message);
-    }
+    localStorage.removeItem("token");
+    get().disconnectSocket();
+    set({ authUser: null, onlineUsers: [] });
+    toast.success("Logged out successfully");
   },
 
   updateProfile: async (data) => {
@@ -171,7 +180,6 @@ export const useAuthStore = create((set, get) => ({
       useCallStore.getState().resetCall();
     });
 
-    // 🔥 2️⃣ Set socket AFTER listeners
     set({ socket: newSocket });
   },
 

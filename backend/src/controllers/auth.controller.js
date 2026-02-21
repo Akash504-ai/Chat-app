@@ -42,7 +42,7 @@ export const signup = async (req, res) => {
       role: "user",
     });
 
-    generateToken(newUser._id, res);
+    const token = generateToken(newUser._id);
 
     await sendWelcomeEmail(newUser.email, newUser.fullName);
 
@@ -52,6 +52,7 @@ export const signup = async (req, res) => {
       email: newUser.email,
       profilePic: newUser.profilePic,
       role: newUser.role, 
+      token
     });
   } catch (error) {
     console.error("Signup error:", error.message);
@@ -91,7 +92,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    generateToken(user._id, res);
+    const token = generateToken(user._id);
 
     res.status(200).json({
       _id: user._id,
@@ -99,6 +100,7 @@ export const login = async (req, res) => {
       email: user.email,
       profilePic: user.profilePic,
       role: user.role,
+      token
     });
   } catch (error) {
     console.error("Login error:", error.message);
