@@ -2,7 +2,7 @@ import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
-import { sendWelcomeEmail } from "../lib/sendEmail.js";
+// import { sendWelcomeEmail } from "../lib/sendEmail.js";
 
 //signup
 // Get fullName, email, password from req.body
@@ -44,7 +44,7 @@ export const signup = async (req, res) => {
 
     const token = generateToken(newUser._id);
 
-    await sendWelcomeEmail(newUser.email, newUser.fullName);
+    // await sendWelcomeEmail(newUser.email, newUser.fullName);
 
     res.status(201).json({
       _id: newUser._id,
