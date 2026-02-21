@@ -99,6 +99,9 @@ export const useAuthStore = create((set, get) => ({
 
     const newSocket = io(BASE_URL, {
       auth: { userId: authUser._id },
+      withCredentials: true,
+      transports: ["websocket"],
+      reconnection: true,
     });
 
     // 🔥 1️⃣ Attach ALL listeners BEFORE doing anything else
