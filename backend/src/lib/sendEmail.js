@@ -1,11 +1,19 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: process.env.BREVO_SMTP_HOST,
+  port: Number(process.env.BREVO_SMTP_PORT),
+  secure: false, // 587
+  auth: {
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_PASS,
+  },
+});
 
 export const sendWelcomeEmail = async (to, name) => {
   try {
-    await resend.emails.send({
-      from: "PASO <onboarding@resend.dev>", // default testing domain
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM, // must be verified in Brevo
       to,
       subject: "Welcome to PASO 🚀",
       html: `

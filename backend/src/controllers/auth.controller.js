@@ -48,9 +48,11 @@ export const signup = async (req, res) => {
     //   console.log("Email failed:", err.message),
     // );
 
-    sendWelcomeEmail(newUser.email, newUser.fullName).catch((err) =>
-      console.log("Email failed:", err.message),
-    );
+    setImmediate(() => {
+      sendWelcomeEmail(newUser.email, newUser.fullName).catch((err) =>
+        console.log("Email failed:", err.message),
+      );
+    });
 
     res.status(201).json({
       _id: newUser._id,
