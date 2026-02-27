@@ -85,6 +85,29 @@ const messageSchema = new mongoose.Schema(
       mediaUrl: String,
       text: String,
     },
+
+    // AI Moderation
+    toxic: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    spam: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    toxicScore: {
+      type: Number,
+      default: 0,
+    },
+
+    spamScore: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true },
 );

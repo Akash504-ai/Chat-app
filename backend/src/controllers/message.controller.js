@@ -4,6 +4,7 @@ import Message from "../models/message.model.js";
 import Group from "../models/group.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { emitToUser, io } from "../lib/socket.js";
+import analyzeMessage from "../lib/mlService.js";
 
 export const updateChatWallpaper = async (req, res) => {
   try {
@@ -162,6 +163,17 @@ export const sendMessage = async (req, res) => {
       };
     }
 
+    // 🧠 AI ANALYSIS (only if text exists)
+    let analysis = {
+      toxic_score: 0,
+      spam_score: 0,
+      smart_replies: [],
+    };
+
+    if (text?.trim()) {
+      analysis = await analyzeMessage(text.trim());
+    }
+
     let message = await Message.create({
       senderId,
       receiverId,
@@ -171,6 +183,12 @@ export const sendMessage = async (req, res) => {
       file: fileData,
       replyTo: replyTo || null,
       status: "sent",
+
+      // 🧠 AI fields
+      toxic: analysis.toxic_score > 0.8,
+      spam: analysis.spam_score > 0.5,
+      toxicScore: analysis.toxic_score,
+      spamScore: analysis.spam_score,
     });
 
     message = await message.populate({
@@ -189,7 +207,10 @@ export const sendMessage = async (req, res) => {
       status: "delivered",
     });
 
-    res.status(201).json(message);
+    res.status(201).json({
+      message,
+      smartReplies: analysis.smart_replies,
+    });
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -280,6 +301,17 @@ export const sendGroupMessage = async (req, res) => {
       };
     }
 
+    // 🧠 AI ANALYSIS
+    let analysis = {
+      toxic_score: 0,
+      spam_score: 0,
+      smart_replies: [],
+    };
+
+    if (text?.trim()) {
+      analysis = await analyzeMessage(text.trim());
+    }
+
     const message = await Message.create({
       senderId,
       groupId,
@@ -289,6 +321,11 @@ export const sendGroupMessage = async (req, res) => {
       file: fileData,
       replyTo: replyTo || null,
       status: "sent",
+
+      toxic: analysis.toxic_score > 0.8,
+      spam: analysis.spam_score > 0.5,
+      toxicScore: analysis.toxic_score,
+      spamScore: analysis.spam_score,
     });
 
     const populatedMessage = await message.populate({
@@ -302,7 +339,10 @@ export const sendGroupMessage = async (req, res) => {
 
     io.to(groupId.toString()).emit("newGroupMessage", populatedMessage);
 
-    res.status(201).json(message);
+    res.status(201).json({
+      message,
+      smartReplies: analysis.smart_replies,
+    });
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
