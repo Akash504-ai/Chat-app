@@ -11,6 +11,7 @@ import {
 } from "../controllers/auth.controller.js";
 
 import { protectRoute } from "../middleware/auth.middleware.js";
+import { forgotPasswordLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
 
@@ -27,5 +28,8 @@ router.put("/update-profile", protectRoute, updateProfile);
 router.put("/security-questions", protectRoute, setupSecurityQuestions);
 router.post("/verify-security", verifySecurityAnswers);
 router.post("/reset-password", resetPassword);
+
+router.post("/verify-security", forgotPasswordLimiter, verifySecurityAnswers);
+router.post("/reset-password", forgotPasswordLimiter, resetPassword);
 
 export default router;
