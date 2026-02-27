@@ -203,23 +203,41 @@ const MessageInput = () => {
 
       {/* 🔥 SMART REPLIES */}
       {smartReplies?.length > 0 && !isAI && (
-        <div className="mb-4 rounded-xl bg-base-200/50 border border-base-300 p-3 relative animate-in fade-in slide-in-from-bottom-2">
+        <div
+          className="
+      mb-4 relative overflow-hidden
+      rounded-2xl p-4
+      bg-base-100/60 backdrop-blur-xl
+      border border-base-300/50
+      shadow-lg shadow-primary/5
+      animate-in fade-in slide-in-from-bottom-4 duration-300
+    "
+        >
+          {/* Glow Background Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 opacity-40 pointer-events-none" />
+
           {/* Close Button */}
           <button
             type="button"
             onClick={() => useChatStore.setState({ smartReplies: [] })}
-            className="absolute top-2 right-2 text-xs text-base-content/40 hover:text-error transition"
+            className="
+        absolute top-3 right-3
+        w-6 h-6 flex items-center justify-center
+        rounded-full text-xs
+        bg-base-200 hover:bg-error hover:text-white
+        transition-all duration-200
+      "
           >
             ✕
           </button>
 
           {/* Title */}
-          <p className="text-xs font-semibold text-base-content/50 mb-2 uppercase tracking-wide">
+          <p className="text-xs font-semibold text-base-content/50 mb-3 uppercase tracking-wider">
             Suggested Replies
           </p>
 
           {/* Replies */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {smartReplies.map((reply, index) => (
               <button
                 key={index}
@@ -229,13 +247,22 @@ const MessageInput = () => {
                   useChatStore.setState({ smartReplies: [] });
                 }}
                 className="
-            px-4 py-1.5 rounded-full
-            bg-primary/10 text-primary
+            group relative
+            px-4 py-2 rounded-full
+            bg-gradient-to-r from-primary/10 to-primary/5
+            text-primary
             border border-primary/20
             text-sm font-medium
-            hover:bg-primary hover:text-white
-            transition-all duration-200
+            transition-all duration-300
+            hover:scale-105 hover:bg-primary hover:text-white
+            hover:shadow-lg hover:shadow-primary/30
+            active:scale-95
           "
+                style={{
+                  animation: `fadeSlideUp 0.4s ease forwards`,
+                  animationDelay: `${index * 70}ms`,
+                  opacity: 0,
+                }}
               >
                 {reply}
               </button>

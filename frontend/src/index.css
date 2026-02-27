@@ -45,3 +45,15 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--bc) / 0.3);
 }
+
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
