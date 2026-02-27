@@ -18,19 +18,24 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200 px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="card bg-base-100 shadow-2xl">
-          <div className="card-body p-8">
+    <div className="h-screen w-full flex items-center justify-center bg-base-200 p-4 md:p-8 relative overflow-hidden">
+      {/* Dynamic Mesh Background Elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[120px] rounded-full animate-pulse" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/10 blur-[120px] rounded-full animate-pulse" />
+
+      <div className="w-full max-w-md relative z-10 flex items-center">
+        <div className="w-full rounded-3xl bg-base-100/70 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border border-white/20 overflow-hidden">
+          <div className="p-8 md:p-10 flex flex-col justify-center">
+            
             {/* LOGO & HEADER */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-10">
               <div className="flex flex-col items-center gap-3">
-                <div className="size-14 rounded-2xl bg-primary flex items-center justify-center">
+                <div className="size-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
                   <MessageSquare className="size-7 text-primary-content" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold">Welcome Back</h1>
-                  <p className="text-base-content/60 text-sm">
+                  <h1 className="text-3xl font-black tracking-tight text-base-content">Welcome Back</h1>
+                  <p className="text-base-content/50 font-medium mt-1">
                     Sign in to continue your conversations
                   </p>
                 </div>
@@ -40,14 +45,14 @@ const LoginPage = () => {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email */}
               <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Email Address</span>
+                <label className="label py-1">
+                  <span className="label-text font-bold text-xs uppercase opacity-70">Email Address</span>
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 size-5 opacity-50" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 size-5 opacity-40" />
                   <input
                     type="email"
-                    className="input input-bordered w-full pl-12"
+                    className="input input-bordered w-full pl-12 bg-base-200/50 border-none focus:ring-2 ring-primary/20 transition-all h-12"
                     placeholder="name@email.com"
                     value={formData.email}
                     onChange={(e) =>
@@ -59,15 +64,23 @@ const LoginPage = () => {
 
               {/* Password */}
               <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Password</span>
-                </label>
+                <div className="flex justify-between items-end mb-1 px-1">
+                  <label className="label p-0">
+                    <span className="label-text font-bold text-xs uppercase opacity-70">Password</span>
+                  </label>
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs font-bold text-primary hover:underline transition-all"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
 
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 size-5 opacity-50" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 size-5 opacity-40" />
                   <input
                     type={showPassword ? "text" : "password"}
-                    className="input input-bordered w-full pl-12 pr-12"
+                    className="input input-bordered w-full pl-12 pr-12 bg-base-200/50 border-none focus:ring-2 ring-primary/20 transition-all h-12"
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) =>
@@ -78,52 +91,40 @@ const LoginPage = () => {
 
                   <button
                     type="button"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? (
-                      <EyeOff className="size-5" />
-                    ) : (
-                      <Eye className="size-5" />
-                    )}
+                    {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
                   </button>
                 </div>
               </div>
 
-              {/* Forgot Password */}
-              <div className="text-right">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
-
               {/* Submit Button */}
-              <button
-                type="submit"
-                className="btn btn-primary w-full mt-4"
-                disabled={isLoggingIn}
-              >
-                {isLoggingIn ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="size-5 animate-spin" />
-                    <span>Signing in...</span>
-                  </div>
-                ) : (
-                  "Sign In"
-                )}
-              </button>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="btn btn-primary w-full h-12 shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                  disabled={isLoggingIn}
+                >
+                  {isLoggingIn ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="size-5 animate-spin" />
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    "Sign In"
+                  )}
+                </button>
+              </div>
             </form>
 
             {/* Footer */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-base-content/70">
+            <div className="mt-8 text-center">
+              <p className="text-sm text-base-content/50 font-medium">
                 Don&apos;t have an account?
                 <Link
                   to="/signup"
-                  className="text-primary font-semibold ml-1 hover:underline"
+                  className="text-primary font-bold ml-1.5 hover:underline transition-all"
                 >
                   Create account
                 </Link>
