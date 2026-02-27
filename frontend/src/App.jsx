@@ -24,6 +24,8 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminReports from "./pages/AdminReports";
 import AdminRoute from "./components/admin/AdminRoute";
 import AdminLayout from "./components/admin/AdminLayout";
+import ForgotPasswordPage from "./pages/ForgotPassword.jsx";
+// import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
@@ -60,7 +62,7 @@ const App = () => {
       {authUser && authUser.role !== "admin" && <Navbar />}
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         <Routes>
           <Route
             path="/"
@@ -84,6 +86,10 @@ const App = () => {
           <Route
             path="/login"
             element={!authUser ? <LoginPage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/forgot-password"
+            element={!authUser ? <ForgotPasswordPage /> : <Navigate to="/" />}
           />
           <Route
             path="/settings"

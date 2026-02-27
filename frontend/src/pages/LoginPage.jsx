@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Link } from "react-router-dom";
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  Mail,
-  MessageSquare,
-} from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +22,6 @@ const LoginPage = () => {
       <div className="w-full max-w-md">
         <div className="card bg-base-100 shadow-2xl">
           <div className="card-body p-8">
-
             {/* LOGO & HEADER */}
             <div className="text-center mb-8">
               <div className="flex flex-col items-center gap-3">
@@ -37,9 +29,7 @@ const LoginPage = () => {
                   <MessageSquare className="size-7 text-primary-content" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold">
-                    Welcome Back
-                  </h1>
+                  <h1 className="text-3xl font-bold">Welcome Back</h1>
                   <p className="text-base-content/60 text-sm">
                     Sign in to continue your conversations
                   </p>
@@ -48,7 +38,6 @@ const LoginPage = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-
               {/* Email */}
               <div className="form-control">
                 <label className="label">
@@ -101,6 +90,16 @@ const LoginPage = () => {
                 </div>
               </div>
 
+              {/* Forgot Password */}
+              <div className="text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"
@@ -130,7 +129,6 @@ const LoginPage = () => {
                 </Link>
               </p>
             </div>
-
           </div>
         </div>
       </div>

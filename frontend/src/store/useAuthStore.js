@@ -19,6 +19,11 @@ export const useAuthStore = create((set, get) => ({
   isCheckingAuth: true,
   onlineUsers: [],
   socket: null,
+  isVerifyingSecurity: false,
+  isResettingPassword: false,
+  resetToken: null,
+  securityQuestions: [],
+  isFetchingQuestions: false,
 
   // AUTH
   checkAuth: async () => {
@@ -93,6 +98,63 @@ export const useAuthStore = create((set, get) => ({
       toast.error(error.response?.data?.message);
     } finally {
       set({ isUpdatingProfile: false });
+    }
+  },
+
+  verifySecurityAnswers: async (data) => {
+    set({ isVerifyingSecurity: true });
+
+    try {
+      const res = await axiosInstance.post("/auth/verify-security", data);
+
+      set({ resetToken: res.data.resetToken });
+      toast.success("Security answers verified");
+
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return false;
+    } finally {
+      set({ isVerifyingSecurity: false });
+    }
+  },
+
+  resetPassword: async (data) => {
+    set({ isResettingPassword: true });
+
+    try {
+      await axiosInstance.post("/auth/reset-password", {
+        ...data,
+        resetToken: get().resetToken,
+      });
+
+      set({ resetToken: null });
+      toast.success("Password reset successful");
+
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return false;
+    } finally {
+      set({ isResettingPassword: false });
+    }
+  },
+
+  fetchSecurityQuestions: async (email) => {
+    set({ isFetchingQuestions: true });
+
+    try {
+      const res = await axiosInstance.post("/auth/get-security-questions", {
+        email,
+      });
+
+      set({ securityQuestions: res.data.questions });
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return false;
+    } finally {
+      set({ isFetchingQuestions: false });
     }
   },
 

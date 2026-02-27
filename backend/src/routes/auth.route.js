@@ -8,6 +8,7 @@ import {
   setupSecurityQuestions,
   verifySecurityAnswers,
   resetPassword,
+  getSecurityQuestions,
 } from "../controllers/auth.controller.js";
 
 import { protectRoute } from "../middleware/auth.middleware.js";
@@ -31,5 +32,6 @@ router.post("/reset-password", resetPassword);
 
 router.post("/verify-security", forgotPasswordLimiter, verifySecurityAnswers);
 router.post("/reset-password", forgotPasswordLimiter, resetPassword);
+router.post("/get-security-questions", getSecurityQuestions);
 
 export default router;

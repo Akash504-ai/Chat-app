@@ -16,38 +16,55 @@ import crypto from "crypto";
 // Generate JWT token and set cookie
 // Send user data (without password) in response
 export const signup = async (req, res) => {
-  const { fullName, email, password } = req.body; //to make req.body working we use "app.use(express.json());"---this middleware in our "index.js/server.js"
+  const { fullName, email, password, securityQuestions } = req.body;
 
   try {
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters" });
+    if (!securityQuestions || securityQuestions.length !== 3) {
+      return res.status(400).json({
+        message: "All 3 security questions are required",
+      });
     }
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    const existingUser = await User.findOne({
+      email: email.toLowerCase(),
+    });
+
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // 🔐 Hash security answers
+    const hashedQuestions = await Promise.all(
+      securityQuestions.map(async (q) => ({
+        question: q.question,
+        answer: await bcrypt.hash(
+          q.answer.toLowerCase().trim(),
+          10
+        ),
+      }))
+    );
+
     const newUser = await User.create({
       fullName,
       email: email.toLowerCase(),
       password: hashedPassword,
       role: "user",
+      securityQuestions: hashedQuestions,
     });
 
     const token = generateToken(newUser._id);
-
-    // sendWelcomeEmail(newUser.email, newUser.fullName).catch((err) =>
-    //   console.log("Email failed:", err.message),
-    // );
 
     setImmediate(() => {
       sendWelcomeEmail(newUser.email, newUser.fullName).catch((err) =>
@@ -64,7 +81,7 @@ export const signup = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error("Signup error:", error.message);
+    console.error("Signup error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -290,4 +307,40 @@ export const resetPassword = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
+};
+
+// export const getSecurityQuestions = async (req, res) => {
+//   const { email } = req.body;
+
+//   try {
+//     const user = await User.findOne({ email: email.toLowerCase() });
+
+//     if (!user || !user.securityQuestions.length) {
+//       return res.status(400).json({ message: "Invalid credentials" });
+//     }
+
+//     const questions = user.securityQuestions.map((q) => q.question);
+
+//     res.status(200).json({ questions });
+//   } catch (error) {
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+
+export const getSecurityQuestions = async (req, res) => {
+  const { email } = req.body;
+
+  console.log("EMAIL RECEIVED:", email);
+
+  const user = await User.findOne({ email: email.toLowerCase() });
+
+  console.log("USER FOUND:", user);
+
+  if (!user || !user.securityQuestions.length) {
+    return res.status(400).json({ message: "Invalid credentials" });
+  }
+
+  res.status(200).json({
+    questions: user.securityQuestions.map(q => q.question),
+  });
 };
