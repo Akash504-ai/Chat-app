@@ -396,26 +396,40 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                   {/* 🔥 AI MODERATION BADGES (Premium UI) */}
                   {!message.deletedForEveryone &&
                     (message.toxic || message.spam) && (
-                      <div className="mb-2 flex gap-2 flex-wrap">
+                      <div className="mb-3 flex gap-2 flex-wrap">
                         {message.toxic && (
                           <div
-                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full 
-                        bg-red-500/10 text-red-500 border border-red-500/20 
-                        backdrop-blur-sm text-[11px] font-medium"
+                            className="group flex items-center gap-2 px-3 py-1.5 rounded-full
+          bg-gradient-to-r from-red-500/15 to-rose-500/15
+          text-red-500 border border-red-500/30
+          shadow-sm hover:shadow-red-500/20
+          transition-all duration-300 backdrop-blur-md"
                           >
-                            <ShieldAlert size={12} className="opacity-80" />
-                            <span>Toxic</span>
+                            <ShieldAlert
+                              size={14}
+                              className="opacity-80 group-hover:scale-110 transition-transform"
+                            />
+                            <span className="text-xs font-semibold tracking-wide">
+                              Toxic Message
+                            </span>
                           </div>
                         )}
 
                         {message.spam && (
                           <div
-                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full 
-                        bg-amber-500/10 text-amber-500 border border-amber-500/20 
-                        backdrop-blur-sm text-[11px] font-medium"
+                            className="group flex items-center gap-2 px-3 py-1.5 rounded-full
+          bg-gradient-to-r from-amber-400/15 to-orange-400/15
+          text-amber-500 border border-amber-400/30
+          shadow-sm hover:shadow-amber-400/20
+          transition-all duration-300 backdrop-blur-md"
                           >
-                            <ShieldAlert size={12} className="opacity-80" />
-                            <span>Spam</span>
+                            <ShieldAlert
+                              size={14}
+                              className="opacity-80 group-hover:scale-110 transition-transform"
+                            />
+                            <span className="text-xs font-semibold tracking-wide">
+                              Spam Detected
+                            </span>
                           </div>
                         )}
                       </div>
