@@ -159,7 +159,7 @@ const ChatHeader = () => {
                   {isGroup
                     ? selectedGroup.name
                     : isAI
-                      ? "AI Assistant"
+                      ? "Meta AI"
                       : selectedUser.fullName}
                 </h3>
                 {isAI && (

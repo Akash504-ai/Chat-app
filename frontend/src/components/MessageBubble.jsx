@@ -467,7 +467,7 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
         <div
           className={`mt-1.5 flex items-center gap-1.5 text-[10px] font-semibold opacity-50 ${isMe ? "mr-1" : "ml-1"}`}
         >
-          {isAI && <span className="text-primary">AI Assistant</span>}
+          {isAI && <span className="text-primary">Meta AI</span>}
           <span>{formatMessageTime(message.createdAt)}</span>
           {renderStatusTick()}
         </div>
