@@ -19,6 +19,7 @@ import AudioMessage from "./AudioMessage";
 import { formatMessageTime } from "../lib/utils";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
+import { useAuthStore } from "../store/useAuthStore";
 
 const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
 
@@ -31,8 +32,8 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
   const {
     deleteMessageForMe,
     deleteMessageForEveryone,
-    reactions,
-    addReaction,
+    // reactions,
+    // addReaction,
     pinnedMessages,
     togglePin,
     setReplyingTo,
@@ -41,8 +42,12 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
     searchQuery,
   } = useChatStore();
 
+  const authUser = useAuthStore((state) => state.authUser);
+
   const isPinned = pinnedMessages?.[chatId]?.[message._id];
-  const myReaction = reactions?.[chatId]?.[message._id];
+  const myReaction = message.reactions?.find(
+    (r) => r.userId === authUser._id,
+  )?.emoji;
   const canDeleteForEveryone = isMe && !message.deletedForEveryone;
 
   // AI Detection
@@ -169,8 +174,17 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                     {REACTIONS.map((emoji) => (
                       <button
                         key={emoji}
-                        onClick={() => {
-                          addReaction(chatId, message._id, emoji);
+                        onClick={async () => {
+                          try {
+                            await axiosInstance.post(
+                              `/messages/react/${message._id}`,
+                              {
+                                emoji,
+                              },
+                            );
+                          } catch (err) {
+                            toast.error("Failed to react");
+                          }
                           setShowEmojis(false);
                         }}
                         className="text-xl hover:scale-125 active:scale-90 transition-transform px-1"
@@ -429,13 +443,20 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
               )}
 
               {/* Reaction Display */}
-              {myReaction && (
+
+              {message.reactions?.length > 0 && (
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className={`absolute -bottom-3 ${isMe ? "left-0" : "right-0"} flex items-center bg-base-100 border border-base-300 rounded-full px-1.5 py-0.5 shadow-md z-10`}
+                  className={`absolute -bottom-3 ${
+                    isMe ? "left-0" : "right-0"
+                  } flex items-center gap-1 bg-base-100 border border-base-300 rounded-full px-2 py-0.5 shadow-md z-10`}
                 >
-                  <span className="text-[12px]">{myReaction}</span>
+                  {message.reactions.map((r, i) => (
+                    <span key={i} className="text-[12px]">
+                      {r.emoji}
+                    </span>
+                  ))}
                 </motion.div>
               )}
             </motion.div>

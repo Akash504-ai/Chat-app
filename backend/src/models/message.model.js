@@ -108,6 +108,16 @@ const messageSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    reactions: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        emoji: String,
+      },
+    ],
   },
   { timestamps: true },
 );
@@ -117,6 +127,7 @@ messageSchema.pre("validate", function (next) {
   // must be personal OR group
   if (!this.receiverId && !this.groupId) {
     return next(new Error("Message must have receiverId or groupId"));
+    1;
   }
 
   // cannot be both

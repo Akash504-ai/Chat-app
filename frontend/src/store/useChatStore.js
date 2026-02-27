@@ -189,17 +189,13 @@ export const useChatStore = create(
           };
         }),
 
-      addReaction: (chatId, messageId, emoji) =>
-        set((state) => ({
-          reactions: {
-            ...state.reactions,
-            [chatId]: {
-              ...(state.reactions[chatId] || {}),
-              [messageId]:
-                state.reactions?.[chatId]?.[messageId] === emoji ? null : emoji,
-            },
-          },
-        })),
+      addReaction: async (chatId, messageId, emoji) => {
+        try {
+          await axiosInstance.post(`/messages/react/${messageId}`, { emoji });
+        } catch {
+          toast.error("Reaction failed");
+        }
+      },
 
       //changing this
       getUsers: async () => {
@@ -390,6 +386,26 @@ export const useChatStore = create(
         socket.off("messageDeletedEveryone");
         socket.off("messageStatusUpdate");
         socket.off("messageStatusUpdateBulk");
+
+        // socket.on("reactionUpdated", ({ messageId, reactions }) => {
+        //   set((state) => ({
+        //     messages: state.messages.map((m) =>
+        //       m._id === messageId ? { ...m, reactions } : m,
+        //     ),
+        //   }));
+        // });
+
+        socket.on("reactionUpdated", (data) => {
+          console.log("🔥 FRONTEND RECEIVED:", data);
+
+          set((state) => ({
+            messages: state.messages.map((m) =>
+              m._id === data.messageId
+                ? { ...m, reactions: data.reactions }
+                : m,
+            ),
+          }));
+        });
 
         /* ---------- PRIVATE MESSAGE ---------- */
         socket.on("newMessage", (msg) => {

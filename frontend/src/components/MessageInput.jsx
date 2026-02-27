@@ -201,16 +201,24 @@ const MessageInput = () => {
         </div>
       )}
 
-      {/* 🔥 SMART REPLIES – Premium UI */}
+      {/* 🔥 SMART REPLIES */}
       {smartReplies?.length > 0 && !isAI && (
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2 px-1">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            <p className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-              Suggested Replies
-            </p>
-          </div>
+        <div className="mb-4 rounded-xl bg-base-200/50 border border-base-300 p-3 relative animate-in fade-in slide-in-from-bottom-2">
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={() => useChatStore.setState({ smartReplies: [] })}
+            className="absolute top-2 right-2 text-xs text-base-content/40 hover:text-error transition"
+          >
+            ✕
+          </button>
 
+          {/* Title */}
+          <p className="text-xs font-semibold text-base-content/50 mb-2 uppercase tracking-wide">
+            Suggested Replies
+          </p>
+
+          {/* Replies */}
           <div className="flex flex-wrap gap-2">
             {smartReplies.map((reply, index) => (
               <button
@@ -221,32 +229,15 @@ const MessageInput = () => {
                   useChatStore.setState({ smartReplies: [] });
                 }}
                 className="
-            group relative
-            px-5 py-2
-            rounded-full
-            bg-gradient-to-r from-primary/10 to-primary/5
+            px-4 py-1.5 rounded-full
+            bg-primary/10 text-primary
             border border-primary/20
             text-sm font-medium
-            text-primary
-            backdrop-blur-md
-            shadow-sm
-            transition-all duration-300
-            hover:shadow-lg hover:scale-105
             hover:bg-primary hover:text-white
-            active:scale-95
+            transition-all duration-200
           "
               >
-                <span className="relative z-10">{reply}</span>
-
-                {/* Glow Effect */}
-                <span
-                  className="
-            absolute inset-0 rounded-full
-            bg-primary opacity-0
-            group-hover:opacity-10
-            blur-xl transition duration-300
-          "
-                />
+                {reply}
               </button>
             ))}
           </div>

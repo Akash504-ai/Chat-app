@@ -5,6 +5,7 @@ import Group from "../models/group.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { emitToUser, io } from "../lib/socket.js";
 import analyzeMessage from "../lib/mlService.js";
+// import { emitToUser } from "../lib/socket.js";
 
 export const updateChatWallpaper = async (req, res) => {
   try {
@@ -482,4 +483,43 @@ export const searchGroupMessages = async (req, res) => {
   } catch {
     res.status(500).json({ message: "Search failed" });
   }
+};
+
+export const reactToMessage = async (req, res) => {
+  const { messageId } = req.params;
+  const { emoji } = req.body;
+  const userId = req.user._id;
+
+  const message = await Message.findById(messageId);
+  if (!message) return res.status(404).json({ message: "Not found" });
+
+  // Remove previous reaction from this user
+  message.reactions = message.reactions.filter(
+    (r) => r.userId.toString() !== userId.toString(),
+  );
+
+  // Add new reaction
+  message.reactions.push({ userId, emoji });
+
+  await message.save();
+
+  // Emit to both users
+  if (message.groupId) {
+    io.to(message.groupId.toString()).emit("reactionUpdated", {
+      messageId,
+      reactions: message.reactions,
+    });
+  } else {
+    emitToUser(message.senderId.toString(), "reactionUpdated", {
+      messageId,
+      reactions: message.reactions,
+    });
+
+    emitToUser(message.receiverId.toString(), "reactionUpdated", {
+      messageId,
+      reactions: message.reactions,
+    });
+  }
+
+  res.sendStatus(200);
 };

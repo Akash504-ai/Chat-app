@@ -10,10 +10,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: [
-      "https://chat-app-sooty-mu.vercel.app",
-      "http://localhost:5173",
-    ],
+    origin: ["https://chat-app-sooty-mu.vercel.app", "http://localhost:5173"],
     credentials: true,
   },
 });
@@ -27,8 +24,19 @@ export function getReceiverSocketIds(userId) {
 }
 
 export function emitToUser(userId, event, payload) {
-  const socketIds = getReceiverSocketIds(userId);
+  console.log("📤 Trying to emit to:", userId);
+
+  const socketIds = userSocketMap[userId];
+
+  console.log("📡 Raw socket set:", socketIds);
+
+  if (!socketIds) {
+    console.log("❌ No socket found for user:", userId);
+    return;
+  }
+
   socketIds.forEach((id) => {
+    console.log("➡ Emitting to socket:", id);
     io.to(id).emit(event, payload);
   });
 }
