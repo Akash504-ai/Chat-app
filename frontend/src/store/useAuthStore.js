@@ -175,7 +175,7 @@ export const useAuthStore = create((set, get) => ({
       reconnection: true,
     });
 
-    // 🔥 1️⃣ Attach ALL listeners BEFORE doing anything else
+    //Attach ALL listeners BEFORE doing anything else
 
     newSocket.on("getOnlineUsers", (userIds) => {
       console.log("RAW FROM SERVER:", userIds);
