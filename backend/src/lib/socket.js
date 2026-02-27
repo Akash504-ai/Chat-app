@@ -95,7 +95,7 @@ io.on("connection", async (socket) => {
     });
   });
 
-  socket.on("call:invite", ({ to, callType, roomId }) => {
+  socket.on("call:invite", async ({ to, callType, roomId }) => {
     if (activeCalls.has(to)) {
       socket.emit("call:busy");
       return;
@@ -104,8 +104,12 @@ io.on("connection", async (socket) => {
     activeCalls.add(userId);
     activeCalls.add(to);
 
+    const callerUser = await User.findById(userId).select(
+      "_id fullName profilePic",
+    );
+
     socket.to(to).emit("call:incoming", {
-      caller: { _id: userId },
+      caller: callerUser,
       callType,
       roomId,
     });
@@ -127,7 +131,7 @@ io.on("connection", async (socket) => {
     socket.to(to).emit("call:ended");
   });
 
-  socket.on("group:call:start", ({ groupId, callType, roomId }) => {
+  socket.on("group:call:start", async ({ groupId, callType, roomId }) => {
     if (activeGroupCalls.has(groupId)) {
       socket.emit("group:call:already-active");
       return;
@@ -135,11 +139,15 @@ io.on("connection", async (socket) => {
 
     activeGroupCalls.set(groupId, roomId);
 
+    const callerUser = await User.findById(userId).select(
+      "_id fullName profilePic",
+    );
+
     socket.to(groupId).emit("group:call:incoming", {
       groupId,
       callType,
       roomId,
-      caller: { _id: userId },
+      caller: callerUser,
     });
   });
 
