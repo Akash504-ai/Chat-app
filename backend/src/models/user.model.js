@@ -69,8 +69,23 @@ const userSchema = new mongoose.Schema(
       of: String,
       default: {},
     },
+
+    // 🔐 Security Questions
+    securityQuestions: [
+      {
+        question: {
+          type: String,
+          required: true,
+        },
+        answer: {
+          type: String,
+          required: true,
+          select: false, // never return answer
+        },
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
