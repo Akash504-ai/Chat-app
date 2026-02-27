@@ -1,5 +1,21 @@
 import mongoose from "mongoose";
 
+const securityQuestionSchema = new mongoose.Schema(
+  {
+    question: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    answer: {
+      type: String,
+      required: true,
+      select: false, // never return answer
+    },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -28,7 +44,7 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🔹 Role system (Admin Panel ready)
+    // 🔹 Role system
     role: {
       type: String,
       enum: ["user", "admin"],
@@ -70,22 +86,28 @@ const userSchema = new mongoose.Schema(
       default: {},
     },
 
-    // 🔐 Security Questions
-    securityQuestions: [
-      {
-        question: {
-          type: String,
-          required: true,
+    // 🔐 Security Questions (Max 3)
+    securityQuestions: {
+      type: [securityQuestionSchema],
+      validate: [
+        {
+          validator: function (arr) {
+            return arr.length <= 3;
+          },
+          message: "Maximum 3 security questions allowed",
         },
-        answer: {
-          type: String,
-          required: true,
-          select: false, // never return answer
-        },
-      },
-    ],
+      ],
+      default: [],
+    },
+
+    // 🔐 Temporary reset session (very important)
+    passwordResetSession: {
+      type: String,
+      select: false,
+      default: null,
+    },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
