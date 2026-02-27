@@ -3,6 +3,7 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
 import { sendWelcomeEmail } from "../lib/sendEmail.js";
+import crypto from "crypto";
 
 //signup
 // Get fullName, email, password from req.body
@@ -188,6 +189,105 @@ export const checkAuth = async (req, res) => {
     res.status(200).json(user);
   } catch (error) {
     console.error("Check auth error:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+export const setupSecurityQuestions = async (req, res) => {
+  const { questions } = req.body; // [{question, answer}]
+  const userId = req.user._id;
+
+  try {
+    if (!questions || questions.length === 0) {
+      return res.status(400).json({ message: "Questions required" });
+    }
+
+    if (questions.length > 3) {
+      return res.status(400).json({ message: "Max 3 questions allowed" });
+    }
+
+    const hashedQuestions = await Promise.all(
+      questions.map(async (q) => ({
+        question: q.question,
+        answer: await bcrypt.hash(
+          q.answer.toLowerCase().trim(),
+          10
+        ),
+      }))
+    );
+
+    await User.findByIdAndUpdate(userId, {
+      securityQuestions: hashedQuestions,
+    });
+
+    res.status(200).json({ message: "Security questions saved" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const verifySecurityAnswers = async (req, res) => {
+  const { email, answers } = req.body;
+
+  try {
+    const user = await User.findOne({ email: email.toLowerCase() })
+      .select("+securityQuestions.answer +passwordResetSession");
+
+    if (!user || user.securityQuestions.length === 0) {
+      return res.status(400).json({ message: "Invalid request" });
+    }
+
+    if (answers.length !== user.securityQuestions.length) {
+      return res.status(400).json({ message: "Answers mismatch" });
+    }
+
+    for (let i = 0; i < answers.length; i++) {
+      const isMatch = await bcrypt.compare(
+        answers[i].toLowerCase().trim(),
+        user.securityQuestions[i].answer
+      );
+
+      if (!isMatch) {
+        return res.status(400).json({ message: "Incorrect answers" });
+      }
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    user.passwordResetSession = resetToken;
+    await user.save();
+
+    res.status(200).json({ resetToken });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { email, resetToken, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ email: email.toLowerCase() })
+      .select("+passwordResetSession +password");
+
+    if (!user || user.passwordResetSession !== resetToken) {
+      return res.status(400).json({ message: "Unauthorized reset attempt" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.passwordResetSession = null;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
