@@ -379,6 +379,34 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                     </div>
                   )}
 
+                  {/* 🔥 AI MODERATION BADGES (Premium UI) */}
+                  {!message.deletedForEveryone &&
+                    (message.toxic || message.spam) && (
+                      <div className="mb-2 flex gap-2 flex-wrap">
+                        {message.toxic && (
+                          <div
+                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full 
+                        bg-red-500/10 text-red-500 border border-red-500/20 
+                        backdrop-blur-sm text-[11px] font-medium"
+                          >
+                            <ShieldAlert size={12} className="opacity-80" />
+                            <span>Toxic</span>
+                          </div>
+                        )}
+
+                        {message.spam && (
+                          <div
+                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full 
+                        bg-amber-500/10 text-amber-500 border border-amber-500/20 
+                        backdrop-blur-sm text-[11px] font-medium"
+                          >
+                            <ShieldAlert size={12} className="opacity-80" />
+                            <span>Spam</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                   {message.text && (
                     <p className="text-[14.5px] leading-relaxed whitespace-pre-wrap break-words">
                       {Array.isArray(highlightedText)

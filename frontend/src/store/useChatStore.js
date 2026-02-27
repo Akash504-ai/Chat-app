@@ -29,6 +29,7 @@ export const useChatStore = create(
       searchResults: [],
       currentSearchIndex: 0,
       isSearching: false,
+      smartReplies: [],
 
       setHighlightedMessage: (id) => set({ highlightedMessageId: id }),
 
@@ -254,7 +255,7 @@ export const useChatStore = create(
         );
 
         set({
-          messages: [...messages, res.data],
+          messages: [...messages, res.data.message],
           replyingTo: null,
         });
       },
@@ -301,7 +302,8 @@ export const useChatStore = create(
         );
 
         set({
-          messages: [...messages, res.data],
+          messages: [...messages, res.data.message],
+          // smartReplies: res.data.smartReplies || [],
           replyingTo: null,
         });
       },
@@ -408,6 +410,7 @@ export const useChatStore = create(
           ) {
             set((state) => ({
               messages: [...state.messages, msg],
+              smartReplies: msg.smartReplies || [],
             }));
 
             axiosInstance.put(`/messages/mark-seen/${chatUserId}`);
@@ -535,6 +538,7 @@ export const useChatStore = create(
             searchQuery: "",
             searchResults: [],
             highlightedMessageId: null,
+            smartReplies: [],
           };
         }),
 
@@ -552,6 +556,7 @@ export const useChatStore = create(
           searchQuery: "",
           searchResults: [],
           highlightedMessageId: null,
+          smartReplies: [],
         })),
     }),
     {

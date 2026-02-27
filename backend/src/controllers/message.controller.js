@@ -200,8 +200,10 @@ export const sendMessage = async (req, res) => {
       },
     });
 
-    emitToUser(receiverId, "newMessage", message);
-
+    emitToUser(receiverId, "newMessage", {
+      ...message.toObject(),
+      smartReplies: analysis.smart_replies,
+    });
     emitToUser(senderId, "messageStatusUpdate", {
       messageId: message._id,
       status: "delivered",

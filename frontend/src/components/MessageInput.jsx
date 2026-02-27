@@ -26,6 +26,7 @@ const MessageInput = () => {
     stopTyping,
     replyingTo,
     clearReplyingTo,
+    smartReplies,
   } = useChatStore();
 
   const isAI = selectedChatType === "private" && selectedUser?.isAI;
@@ -141,6 +142,8 @@ const MessageInput = () => {
     setImagePreview(null);
     setFileData(null);
     setAudioData(null);
+
+    // useChatStore.setState({ smartReplies: [] });
   };
 
   return (
@@ -195,6 +198,58 @@ const MessageInput = () => {
               </div>
             </Preview>
           )}
+        </div>
+      )}
+
+      {/* 🔥 SMART REPLIES – Premium UI */}
+      {smartReplies?.length > 0 && !isAI && (
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            <p className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
+              Suggested Replies
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {smartReplies.map((reply, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => {
+                  setText(reply);
+                  useChatStore.setState({ smartReplies: [] });
+                }}
+                className="
+            group relative
+            px-5 py-2
+            rounded-full
+            bg-gradient-to-r from-primary/10 to-primary/5
+            border border-primary/20
+            text-sm font-medium
+            text-primary
+            backdrop-blur-md
+            shadow-sm
+            transition-all duration-300
+            hover:shadow-lg hover:scale-105
+            hover:bg-primary hover:text-white
+            active:scale-95
+          "
+              >
+                <span className="relative z-10">{reply}</span>
+
+                {/* Glow Effect */}
+                <span
+                  className="
+            absolute inset-0 rounded-full
+            bg-primary opacity-0
+            group-hover:opacity-10
+            blur-xl transition duration-300
+          "
+                />
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
