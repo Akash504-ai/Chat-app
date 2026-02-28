@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { X, Trash2, Eye, Send } from "lucide-react";
+import { X, Trash2, Eye } from "lucide-react";
 import { useStatusStore } from "../store/useStatusStore";
 import StatusProgress from "./StatusProgress";
 import { useAuthStore } from "../store/useAuthStore";
@@ -15,40 +15,51 @@ const StatusViewer = () => {
     deleteStatus,
   } = useStatusStore();
 
-  const [replyText, setReplyText] = useState("");
-const { createOrGetChat, sendMessage } = useChatStore();
-const navigate = useNavigate();
-
-
-  const [showViewers, setShowViewers] = useState(false);
-
   const { authUser } = useAuthStore();
+  const { createOrGetChat, sendMessage } = useChatStore();
+  const navigate = useNavigate();
 
-  const userStatuses = useMemo(() => {
-    if (!selectedStatus) return [];
-    return statuses.filter((s) => s.user._id === selectedStatus.user._id);
-  }, [statuses, selectedStatus]);
-
+  const [replyText, setReplyText] = useState("");
+  const [showViewers, setShowViewers] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    if (!selectedStatus) return;
+  // 🔥 SAFELY GROUP USER STATUSES
+  const userStatuses = useMemo(() => {
+    if (!selectedStatus?.user?._id) return [];
 
-    const index = userStatuses.findIndex((s) => s._id === selectedStatus._id);
+    return statuses.filter(
+      (s) =>
+        s?.user?._id &&
+        s.user._id === selectedStatus.user._id
+    );
+  }, [statuses, selectedStatus]);
+
+  // 🔥 SET INDEX + REGISTER VIEW
+  useEffect(() => {
+    if (!selectedStatus?.user?._id) return;
+
+    const index = userStatuses.findIndex(
+      (s) => s?._id === selectedStatus._id
+    );
 
     setCurrentIndex(index === -1 ? 0 : index);
+
     viewStatus(selectedStatus);
   }, [selectedStatus, userStatuses, viewStatus]);
 
-  if (!selectedStatus) return null;
+  // 🚫 HARD STOP IF NOTHING SELECTED
+  if (!selectedStatus?.user?._id) return null;
 
   const status = userStatuses[currentIndex];
+
+  // 🚫 HARD STOP IF STATUS INVALID
+  if (!status?.user) return null;
 
   const nextStatus = () => {
     if (currentIndex < userStatuses.length - 1) {
       setCurrentIndex((i) => i + 1);
     } else {
-      clearSelectedStatus(); // exit viewer
+      clearSelectedStatus();
     }
   };
 
@@ -59,24 +70,23 @@ const navigate = useNavigate();
   };
 
   const handleSendReply = async () => {
-  if (!replyText.trim()) return;
+    if (!replyText.trim()) return;
 
-  const chat = await createOrGetChat(status.user._id);
+    const chat = await createOrGetChat(status.user._id);
 
-  await sendMessage(chat._id, {
-    text: replyText,
-    statusReply: {
-      statusId: status._id,
-      mediaUrl: status.mediaUrl,
-      text: status.text,
-    },
-  });
+    await sendMessage(chat._id, {
+      text: replyText,
+      statusReply: {
+        statusId: status._id,
+        mediaUrl: status.mediaUrl,
+        text: status.text,
+      },
+    });
 
-  setReplyText("");
-  clearSelectedStatus();
-  navigate("/chats");
-};
-
+    setReplyText("");
+    clearSelectedStatus();
+    navigate("/chats");
+  };
 
   const isImage = status.mediaUrl?.match(/\.(jpg|jpeg|png|webp)$/i);
   const isVideo = status.mediaUrl?.match(/\.(mp4|webm|ogg)$/i);
@@ -87,12 +97,10 @@ const navigate = useNavigate();
       <div className="flex gap-1 px-2 pt-2">
         {userStatuses.map((_, i) => {
           if (i < currentIndex) {
-            // completed
             return <div key={i} className="flex-1 h-1 bg-white rounded" />;
           }
 
           if (i === currentIndex) {
-            // active
             return (
               <div key={i} className="flex-1">
                 <StatusProgress duration={5000} onComplete={nextStatus} />
@@ -100,14 +108,12 @@ const navigate = useNavigate();
             );
           }
 
-          // upcoming
           return <div key={i} className="flex-1 h-1 bg-white/30 rounded" />;
         })}
       </div>
 
       {/* HEADER */}
       <div className="flex items-center justify-between p-4 text-white z-20 relative">
-        {/* LEFT : USER INFO */}
         <div className="flex items-center gap-3">
           <img
             src={status.user.profilePic || "/avatar.png"}
@@ -122,36 +128,20 @@ const navigate = useNavigate();
           </div>
         </div>
 
-        {/* RIGHT : ACTIONS */}
         <div className="flex items-center gap-3">
-          {/* VIEWERS (only for own status) */}
-          {status.user._id === authUser._id && (
-            <button
-              onClick={() => setShowViewers(true)}
-              className="opacity-80 hover:opacity-100"
-              title="Viewers"
-            >
+          {status.user._id === authUser?._id && (
+            <button onClick={() => setShowViewers(true)}>
               <Eye size={20} />
             </button>
           )}
 
-          {/* DELETE (only for own status) */}
-          {status.user._id === authUser._id && (
-            <button
-              onClick={() => deleteStatus(status._id)}
-              className="opacity-80 hover:opacity-100"
-              title="Delete status"
-            >
+          {status.user._id === authUser?._id && (
+            <button onClick={() => deleteStatus(status._id)}>
               <Trash2 size={20} />
             </button>
           )}
 
-          {/* CLOSE */}
-          <button
-            onClick={clearSelectedStatus}
-            className="opacity-80 hover:opacity-100"
-            title="Close"
-          >
+          <button onClick={clearSelectedStatus}>
             <X />
           </button>
         </div>
@@ -164,7 +154,7 @@ const navigate = useNavigate();
       </div>
 
       {/* CONTENT */}
-      <div className="flex-1 flex items-center justify-center z-0">
+      <div className="flex-1 flex items-center justify-center">
         {isImage && (
           <img
             src={status.mediaUrl}
@@ -186,21 +176,25 @@ const navigate = useNavigate();
           </div>
         )}
       </div>
+
+      {/* VIEWERS */}
       {showViewers && (
         <div className="absolute inset-0 bg-black/60 z-30 flex items-end">
           <div className="w-full bg-base-100 rounded-t-xl p-4 max-h-[60%] overflow-y-auto">
             <div className="flex justify-between items-center mb-3">
-              <p className="font-medium">Viewed by {status.viewers.length}</p>
+              <p className="font-medium">
+                Viewed by {status.viewers?.length || 0}
+              </p>
               <button onClick={() => setShowViewers(false)}>
                 <X />
               </button>
             </div>
 
-            {status.viewers.length === 0 && (
+            {status.viewers?.length === 0 && (
               <p className="text-sm opacity-60">No views yet</p>
             )}
 
-            {status.viewers.map((viewer) => (
+            {status.viewers?.map((viewer) => (
               <div key={viewer._id} className="flex items-center gap-3 py-2">
                 <img
                   src={viewer.profilePic || "/avatar.png"}
