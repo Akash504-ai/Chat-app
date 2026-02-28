@@ -1,0 +1,19 @@
+import type * as Brevo from "../../../../index.js";
+/**
+ * @example
+ *     {
+ *         pid: "pid"
+ *     }
+ */
+export interface GetLoyaltyOfferProgramsPidOffersRequest {
+    /** Loyalty Program ID */
+    pid: string;
+    /** Page size */
+    limit?: number;
+    /** Pagination offset */
+    offset?: number;
+    /** State of the reward */
+    state?: string;
+    /** Version */
+    version?: Brevo.GetLoyaltyOfferProgramsPidOffersRequestVersion;
+}

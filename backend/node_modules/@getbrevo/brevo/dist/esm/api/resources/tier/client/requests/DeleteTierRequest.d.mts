@@ -1,0 +1,13 @@
+/**
+ * @example
+ *     {
+ *         pid: "pid",
+ *         tid: "tid"
+ *     }
+ */
+export interface DeleteTierRequest {
+    /** Loyalty Program ID */
+    pid: string;
+    /** Tier ID */
+    tid: string;
+}

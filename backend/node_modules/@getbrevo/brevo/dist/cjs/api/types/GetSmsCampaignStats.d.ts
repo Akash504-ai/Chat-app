@@ -1,0 +1,16 @@
+export interface GetSmsCampaignStats {
+    /** Number of replies to the SMS */
+    answered: number;
+    /** Number of delivered SMS */
+    delivered: number;
+    /** Number of hardbounced SMS */
+    hardBounces: number;
+    /** Number of processing SMS */
+    processing: number;
+    /** Number of sent SMS */
+    sent: number;
+    /** Number of softbounced SMS */
+    softBounces: number;
+    /** Number of unsubscription SMS */
+    unsubscriptions: number;
+}

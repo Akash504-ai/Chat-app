@@ -1,0 +1,9 @@
+/**
+ * Specify the payment currency and amount.
+ */
+export interface Cart {
+    /** Currency code for the payment amount. */
+    currency: "EUR";
+    /** Payment amount, in cents. e.g. if you want to request €12.00, then the amount in cents is 1200. */
+    specificAmount: number;
+}

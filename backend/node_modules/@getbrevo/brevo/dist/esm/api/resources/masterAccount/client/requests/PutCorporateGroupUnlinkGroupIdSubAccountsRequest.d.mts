@@ -1,0 +1,13 @@
+/**
+ * @example
+ *     {
+ *         groupId: "groupId",
+ *         subAccountIds: [423432, 234323, 87678]
+ *     }
+ */
+export interface PutCorporateGroupUnlinkGroupIdSubAccountsRequest {
+    /** Group id */
+    groupId: string;
+    /** List of sub-account ids */
+    subAccountIds: number[];
+}

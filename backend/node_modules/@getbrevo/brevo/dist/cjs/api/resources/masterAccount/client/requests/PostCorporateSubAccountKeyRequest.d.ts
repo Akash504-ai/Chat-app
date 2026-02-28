@@ -1,0 +1,13 @@
+/**
+ * @example
+ *     {
+ *         id: 3232323,
+ *         name: "My Api Key"
+ *     }
+ */
+export interface PostCorporateSubAccountKeyRequest {
+    /** Id of the sub-account organization */
+    id: number;
+    /** Name of the API key */
+    name: string;
+}

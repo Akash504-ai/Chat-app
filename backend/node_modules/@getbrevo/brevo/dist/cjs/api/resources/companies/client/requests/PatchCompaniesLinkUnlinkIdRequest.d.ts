@@ -1,0 +1,17 @@
+/**
+ * @example
+ *     {
+ *         id: "id"
+ *     }
+ */
+export interface PatchCompaniesLinkUnlinkIdRequest {
+    id: string;
+    /** Contact ids for contacts to be linked with company */
+    linkContactIds?: number[];
+    /** Deal ids for deals to be linked with company */
+    linkDealsIds?: string[];
+    /** Contact ids for contacts to be unlinked from company */
+    unlinkContactIds?: number[];
+    /** Deal ids for deals to be unlinked from company */
+    unlinkDealsIds?: string[];
+}

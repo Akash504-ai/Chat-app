@@ -1,0 +1,13 @@
+/**
+ * @example
+ *     {
+ *         id: "id",
+ *         text: "Good morning! How can I help you?"
+ *     }
+ */
+export interface PutConversationsMessagesIdRequest {
+    /** ID of the message */
+    id: string;
+    /** edited message text */
+    text: string;
+}

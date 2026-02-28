@@ -1,0 +1,12 @@
+export type GetScheduledEmailByIdResponse = {
+    batches?: {
+        createdAt: string;
+        scheduledAt: string;
+        status: "inProgress" | "queued" | "processed" | "error";
+    }[] | undefined;
+    count?: number | undefined;
+} | {
+    createdAt: string;
+    scheduledAt: string;
+    status: "inProgress" | "queued" | "processed" | "error";
+};

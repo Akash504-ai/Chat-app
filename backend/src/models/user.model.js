@@ -13,7 +13,7 @@ const securityQuestionSchema = new mongoose.Schema(
       select: false, // never return answer
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const userSchema = new mongoose.Schema(
@@ -106,8 +106,23 @@ const userSchema = new mongoose.Schema(
       select: false,
       default: null,
     },
+
+    // 🔐 Email Verification
+    // isVerified: {
+    //   type: Boolean,
+    //   default: false,
+    // },
+
+    // verificationToken: {
+    //   type: String,
+    //   select: false,
+    // },
+
+    // verificationTokenExpires: {
+    //   type: Date,
+    // },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);

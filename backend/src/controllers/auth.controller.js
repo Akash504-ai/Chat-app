@@ -16,16 +16,17 @@ import crypto from "crypto";
 // Generate JWT token and set cookie
 // Send user data (without password) in response
 export const signup = async (req, res) => {
-  const { fullName, email, password, securityQuestions } = req.body;
-
   try {
+    const { fullName, email, password, securityQuestions } = req.body;
+
+    // 1️⃣ Validation
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     if (!securityQuestions || securityQuestions.length !== 3) {
       return res.status(400).json({
-        message: "All 3 security questions are required",
+        message: "Exactly 3 security questions are required",
       });
     }
 
@@ -35,43 +36,43 @@ export const signup = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({
-      email: email.toLowerCase(),
-    });
+    const normalizedEmail = email.toLowerCase().trim();
 
+    // 2️⃣ Check existing user
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
+    // 3️⃣ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    //Hash security answers
+    // 4️⃣ Hash security answers
     const hashedQuestions = await Promise.all(
       securityQuestions.map(async (q) => ({
         question: q.question,
-        answer: await bcrypt.hash(
-          q.answer.toLowerCase().trim(),
-          10
-        ),
+        answer: await bcrypt.hash(q.answer.toLowerCase().trim(), 10),
       }))
     );
 
+    // 5️⃣ Create user (NO verification fields)
     const newUser = await User.create({
       fullName,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       password: hashedPassword,
-      role: "user",
       securityQuestions: hashedQuestions,
+      role: "user",
     });
 
+    // 6️⃣ Generate JWT immediately
     const token = generateToken(newUser._id);
 
+    // 7️⃣ Send Welcome Email (non-blocking)
     setImmediate(() => {
-      sendWelcomeEmail(newUser.email, newUser.fullName).catch((err) =>
-        console.log("Email failed:", err.message),
-      );
+      sendWelcomeEmail(newUser.email, newUser.fullName);
     });
 
+    // 8️⃣ Send user response
     res.status(201).json({
       _id: newUser._id,
       fullName: newUser.fullName,
@@ -80,11 +81,13 @@ export const signup = async (req, res) => {
       role: newUser.role,
       token,
     });
+
   } catch (error) {
     console.error("Signup error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 //login
 // Get email, password from req.body
@@ -106,6 +109,12 @@ export const login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
+
+    // if (!user.isVerified) {
+    //   return res.status(401).json({
+    //     message: "Please verify your email first",
+    //   });
+    // }
 
     if (user.isBanned) {
       return res.status(403).json({
@@ -210,7 +219,6 @@ export const checkAuth = async (req, res) => {
   }
 };
 
-
 export const setupSecurityQuestions = async (req, res) => {
   const { questions } = req.body; // [{question, answer}]
   const userId = req.user._id;
@@ -227,11 +235,8 @@ export const setupSecurityQuestions = async (req, res) => {
     const hashedQuestions = await Promise.all(
       questions.map(async (q) => ({
         question: q.question,
-        answer: await bcrypt.hash(
-          q.answer.toLowerCase().trim(),
-          10
-        ),
-      }))
+        answer: await bcrypt.hash(q.answer.toLowerCase().trim(), 10),
+      })),
     );
 
     await User.findByIdAndUpdate(userId, {
@@ -248,8 +253,9 @@ export const verifySecurityAnswers = async (req, res) => {
   const { email, answers } = req.body;
 
   try {
-    const user = await User.findOne({ email: email.toLowerCase() })
-      .select("+securityQuestions.answer +passwordResetSession");
+    const user = await User.findOne({ email: email.toLowerCase() }).select(
+      "+securityQuestions.answer +passwordResetSession",
+    );
 
     if (!user || user.securityQuestions.length === 0) {
       return res.status(400).json({ message: "Invalid request" });
@@ -262,7 +268,7 @@ export const verifySecurityAnswers = async (req, res) => {
     for (let i = 0; i < answers.length; i++) {
       const isMatch = await bcrypt.compare(
         answers[i].toLowerCase().trim(),
-        user.securityQuestions[i].answer
+        user.securityQuestions[i].answer,
       );
 
       if (!isMatch) {
@@ -285,8 +291,9 @@ export const resetPassword = async (req, res) => {
   const { email, resetToken, newPassword } = req.body;
 
   try {
-    const user = await User.findOne({ email: email.toLowerCase() })
-      .select("+passwordResetSession +password");
+    const user = await User.findOne({ email: email.toLowerCase() }).select(
+      "+passwordResetSession +password",
+    );
 
     if (!user || user.passwordResetSession !== resetToken) {
       return res.status(400).json({ message: "Unauthorized reset attempt" });
@@ -341,6 +348,27 @@ export const getSecurityQuestions = async (req, res) => {
   }
 
   res.status(200).json({
-    questions: user.securityQuestions.map(q => q.question),
+    questions: user.securityQuestions.map((q) => q.question),
   });
 };
+
+// export const verifyEmail = async (req, res) => {
+//   const { token } = req.params;
+
+//   const user = await User.findOne({
+//     verificationToken: token,
+//     verificationTokenExpires: { $gt: Date.now() },
+//   });
+
+//   if (!user) {
+//     return res.status(400).json({ message: "Invalid or expired token" });
+//   }
+
+//   user.isVerified = true;
+//   user.verificationToken = undefined;
+//   user.verificationTokenExpires = undefined;
+
+//   await user.save();
+
+//   res.redirect("http://localhost:5173/login");
+// };

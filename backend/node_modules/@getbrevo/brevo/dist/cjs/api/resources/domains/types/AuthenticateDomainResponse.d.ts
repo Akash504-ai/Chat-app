@@ -1,0 +1,6 @@
+export interface AuthenticateDomainResponse {
+    /** Domain name that was authenticated */
+    domain_name: string;
+    /** Success message confirming authentication */
+    message: string;
+}

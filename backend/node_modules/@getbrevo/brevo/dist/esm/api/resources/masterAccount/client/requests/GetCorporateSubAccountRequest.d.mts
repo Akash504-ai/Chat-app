@@ -1,0 +1,13 @@
+/**
+ * @example
+ *     {
+ *         offset: 1,
+ *         limit: 1
+ *     }
+ */
+export interface GetCorporateSubAccountRequest {
+    /** Index of the first sub-account in the page */
+    offset: number;
+    /** Number of sub-accounts to be displayed on each page */
+    limit: number;
+}

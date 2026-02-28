@@ -1,0 +1,10 @@
+/**
+ * @example
+ *     {
+ *         id: "050db7b0-9bb7-4c1e-9c68-5a8dace8c1dc"
+ *     }
+ */
+export interface GetPaymentRequestRequest {
+    /** Id of the payment Request */
+    id: string;
+}
