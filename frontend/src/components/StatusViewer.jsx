@@ -28,9 +28,7 @@ const StatusViewer = () => {
     if (!selectedStatus?.user?._id) return [];
 
     return statuses.filter(
-      (s) =>
-        s?.user?._id &&
-        s.user._id === selectedStatus.user._id
+      (s) => s?.user?._id && s.user._id === selectedStatus.user._id,
     );
   }, [statuses, selectedStatus]);
 
@@ -38,9 +36,7 @@ const StatusViewer = () => {
   useEffect(() => {
     if (!selectedStatus?.user?._id) return;
 
-    const index = userStatuses.findIndex(
-      (s) => s?._id === selectedStatus._id
-    );
+    const index = userStatuses.findIndex((s) => s?._id === selectedStatus._id);
 
     setCurrentIndex(index === -1 ? 0 : index);
 
@@ -52,8 +48,10 @@ const StatusViewer = () => {
 
   const status = userStatuses[currentIndex];
 
-  // 🚫 HARD STOP IF STATUS INVALID
-  if (!status?.user) return null;
+  if (!status) {
+    clearSelectedStatus();
+    return null;
+  }
 
   const nextStatus = () => {
     if (currentIndex < userStatuses.length - 1) {
