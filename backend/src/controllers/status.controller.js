@@ -50,9 +50,9 @@ export const viewStatus = async (req, res) => {
 
 export const deleteStatus = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { statusId } = req.params;
 
-    const status = await Status.findById(id);
+    const status = await Status.findById(statusId);
 
     if (!status) {
       return res.status(404).json({ message: "Status not found" });
@@ -63,7 +63,10 @@ export const deleteStatus = async (req, res) => {
     }
 
     if (status.mediaUrl) {
-      const publicId = status.mediaUrl.split("/").pop().split(".")[0];
+      const publicId = status.mediaUrl
+        .split("/")
+        .pop()
+        .split(".")[0];
 
       await cloudinary.uploader.destroy(`statuses/${publicId}`, {
         resource_type: "auto",
