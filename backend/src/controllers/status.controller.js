@@ -50,19 +50,20 @@ export const viewStatus = async (req, res) => {
 
 export const deleteStatus = async (req, res) => {
   try {
-    const status = await Status.findById(req.params.statusId);
+    const { id } = req.params;
 
-    if (!status) return res.status(404).json({ message: "Status not found" });
+    const status = await Status.findById(id);
 
-    if (status.user.toString() !== req.user.id) {
+    if (!status) {
+      return res.status(404).json({ message: "Status not found" });
+    }
+
+    if (status.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
     if (status.mediaUrl) {
-      const publicId = status.mediaUrl
-        .split("/")
-        .slice(-1)[0]
-        .split(".")[0];
+      const publicId = status.mediaUrl.split("/").pop().split(".")[0];
 
       await cloudinary.uploader.destroy(`statuses/${publicId}`, {
         resource_type: "auto",
@@ -70,6 +71,7 @@ export const deleteStatus = async (req, res) => {
     }
 
     await status.deleteOne();
+
     res.json({ success: true });
   } catch (err) {
     console.error("Delete status error:", err);
