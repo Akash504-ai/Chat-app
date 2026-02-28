@@ -17,7 +17,8 @@ const StatusSidebar = ({ setActiveTab }) => {
 
   // group statuses by user
   const groupedStatuses = statuses.reduce((acc, status) => {
-    const userId = status.user._id;
+    if (!status?.user?._id) return acc;
+    const userId = status.user._id; 
     if (!acc[userId]) {
       acc[userId] = {
         user: status.user,
@@ -70,18 +71,18 @@ const StatusSidebar = ({ setActiveTab }) => {
         {/* OTHER STATUSES */}
         {Object.values(groupedStatuses).map(({ user, statuses }) => (
           <div
-            key={user._id}
+            key={user?._id}
             onClick={() => viewStatus(statuses[0])}
             className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-base-200"
           >
             <img
               src={user.profilePic || "/avatar.png"}
-              alt={user.name}
+              alt={user?.fullName}
               className="w-12 h-12 rounded-full ring-2 ring-primary"
             />
 
             <div>
-              <p className="font-medium">{user.fullName}</p>
+              <p className="font-medium">{user?.fullName}</p>
               <p className="text-xs opacity-60">
                 {new Date(statuses[0].createdAt).toLocaleTimeString([], {
                   hour: "2-digit",
