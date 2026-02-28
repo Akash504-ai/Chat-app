@@ -63,14 +63,17 @@ export const deleteStatus = async (req, res) => {
     }
 
     if (status.mediaUrl) {
-      const publicId = status.mediaUrl
-        .split("/")
-        .pop()
-        .split(".")[0];
+      try {
+        const urlParts = status.mediaUrl.split("/");
+        const fileWithExt = urlParts[urlParts.length - 1];
+        const folder = urlParts[urlParts.length - 2];
+        const publicId = `${folder}/${fileWithExt.split(".")[0]}`;
 
-      await cloudinary.uploader.destroy(`statuses/${publicId}`, {
-        resource_type: "auto",
-      });
+        await cloudinary.uploader.destroy(publicId);
+      } catch (cloudErr) {
+        console.error("Cloudinary delete failed:", cloudErr.message);
+        // Do NOT stop deletion if Cloudinary fails
+      }
     }
 
     await status.deleteOne();
