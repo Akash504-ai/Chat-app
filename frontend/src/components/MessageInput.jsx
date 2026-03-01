@@ -1,7 +1,16 @@
 import { useRef, useState, useEffect } from "react";
-import { Image, Send, X, Paperclip, Mic, StopCircle } from "lucide-react";
+import {
+  Image,
+  Send,
+  X,
+  Paperclip,
+  Mic,
+  StopCircle,
+  Smile,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { useChatStore } from "../store/useChatStore";
+import EmojiPicker from "emoji-picker-react";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
@@ -9,7 +18,9 @@ const MessageInput = () => {
   const [fileData, setFileData] = useState(null);
   const [audioData, setAudioData] = useState(null);
   const [recording, setRecording] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
+  const emojiRef = useRef(null);
   const fileRef = useRef(null);
   const imageRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -37,6 +48,21 @@ const MessageInput = () => {
       stopTyping();
     };
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiRef.current && !emojiRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleEmojiClick = (emojiData) => {
+    setText((prev) => prev + emojiData.emoji);
+  };
 
   const handleImageChange = (e) => {
     if (isAI) return;
@@ -316,6 +342,22 @@ const MessageInput = () => {
                   hidden
                   onChange={handleFileChange}
                 />
+
+                <div className="relative" ref={emojiRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowEmojiPicker((prev) => !prev)}
+                    className="btn btn-ghost btn-circle btn-xs sm:btn-sm"
+                  >
+                    <Smile size={18} />
+                  </button>
+
+                  {showEmojiPicker && (
+                    <div className="absolute bottom-12 right-0 z-50">
+                      <EmojiPicker onEmojiClick={handleEmojiClick} />
+                    </div>
+                  )}
+                </div>
 
                 <button
                   type="button"
