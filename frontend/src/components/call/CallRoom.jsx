@@ -18,10 +18,11 @@ const CallRoom = () => {
     const appID = Number(import.meta.env.VITE_ZEGO_APP_ID);
     const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET;
 
-    console.log("AppID:", appID);
-    console.log("ServerSecret:", serverSecret);
-    console.log("RoomID:", roomId);
-    console.log("UserID:", String(authUser._id));
+    //this is for debuging process only (otherwise no need of this)
+    // console.log("AppID:", appID);
+    // console.log("ServerSecret:", serverSecret);
+    // console.log("RoomID:", roomId);
+    // console.log("UserID:", String(authUser._id));
 
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
