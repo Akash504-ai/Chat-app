@@ -41,7 +41,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-base-100 pt-20 px-4 pb-8 mt-[-40px]">
+    <div className="h-full overflow-y-auto bg-base-100 pt-24 px-4 pb-8 mt-[-50px]">
       <div className="mx-auto max-w-2xl space-y-8">
         
         {/* Header */}
