@@ -7,8 +7,7 @@ const CallRoom = () => {
   const containerRef = useRef(null);
   const zegoRef = useRef(null);
 
-  const { callStatus, callType, roomId, endCall, isGroupCall } =
-    useCallStore();
+  const { callStatus, callType, roomId, endCall, isGroupCall } = useCallStore();
   const { authUser } = useAuthStore();
 
   useEffect(() => {
@@ -19,12 +18,17 @@ const CallRoom = () => {
     const appID = Number(import.meta.env.VITE_ZEGO_APP_ID);
     const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET;
 
+    console.log("AppID:", appID);
+    console.log("ServerSecret:", serverSecret);
+    console.log("RoomID:", roomId);
+    console.log("UserID:", String(authUser._id));
+
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
       serverSecret,
       roomId,
       String(authUser._id),
-      authUser.fullName || "User"
+      authUser.fullName || "User",
     );
 
     const zego = ZegoUIKitPrebuilt.create(kitToken);
