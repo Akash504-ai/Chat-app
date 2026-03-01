@@ -4,16 +4,20 @@ const ML_SERVICE_URL = process.env.ML_SERVICE_URL;
 
 const analyzeMessage = async (text) => {
   try {
-    const response = await axios.post(ML_SERVICE_URL, {
-      text,
-    });
+    console.log("Calling ML:", ML_SERVICE_URL);
+
+    const response = await axios.post(
+      ML_SERVICE_URL,
+      { text },
+      { timeout: 60000 }
+    );
+
+    console.log("ML RESPONSE:", response.data);
 
     return response.data;
 
   } catch (error) {
-    console.error("ML Service Error:", error.message);
-
-    // Fail-safe fallback (never crash chat)
+    console.error("🔥 FULL ML ERROR:", error);
     return {
       toxic_score: 0,
       spam_score: 0,
