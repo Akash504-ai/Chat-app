@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { ArrowLeft, Camera, Mail, User, Save, ShieldCheck, Calendar } from "lucide-react";
+import {
+  ArrowLeft,
+  Camera,
+  Mail,
+  User,
+  Save,
+  ShieldCheck,
+  Calendar,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
@@ -41,9 +49,8 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-base-100 pt-20 px-4 pb-8 mt-[-40px]">
+    <div className="h-full overflow-y-auto bg-base-100 pt-24 px-4 pb-8 mt-[-50px]">
       <div className="mx-auto max-w-2xl space-y-8">
-        
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -55,10 +62,12 @@ const ProfilePage = () => {
             </button>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
-              <p className="text-sm text-base-content/60">Manage your account settings</p>
+              <p className="text-sm text-base-content/60">
+                Manage your account settings
+              </p>
             </div>
           </div>
-          
+
           {isDirty && (
             <button
               onClick={handleSave}
@@ -77,22 +86,25 @@ const ProfilePage = () => {
 
         {/* Main Profile Section */}
         <div className="grid gap-8">
-          
           {/* Profile Card */}
           <div className="bg-base-200/50 border border-base-300 rounded-3xl p-6 sm:p-8 space-y-8 backdrop-blur-sm">
-            
             {/* Avatar Section */}
             <div className="flex flex-col items-center gap-4">
               <div className="relative group">
                 <div className="relative h-32 w-32 sm:h-40 sm:w-40">
                   <img
                     src={selectedImg || authUser?.profilePic || "/avatar.png"}
-                    alt="Profile"
+                    alt={`${authUser?.fullName || "User"} profile picture`}
+                    onError={(e) => {
+                      e.currentTarget.src = "/avatar.png";
+                    }}
                     className={`h-full w-full rounded-full object-cover ring-4 ring-base-100 shadow-2xl transition-all duration-300 ${
-                      isUpdatingProfile ? "opacity-50 blur-[2px]" : "group-hover:brightness-90"
+                      isUpdatingProfile
+                        ? "opacity-50 blur-[2px]"
+                        : "group-hover:brightness-90"
                     }`}
                   />
-                  
+
                   {isUpdatingProfile && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -117,7 +129,9 @@ const ProfilePage = () => {
                   />
                 </label>
               </div>
-              <p className="text-xs text-base-content/40 italic">Click the camera to update photo</p>
+              <p className="text-xs text-base-content/40 italic">
+                Click the camera to update photo
+              </p>
             </div>
 
             {/* Form Fields */}
@@ -159,15 +173,19 @@ const ProfilePage = () => {
               <ShieldCheck className="w-5 h-5 text-success" />
               Account Verification
             </h2>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 rounded-2xl bg-base-100 border border-base-300 flex items-center gap-4">
                 <div className="p-3 rounded-xl bg-primary/10 text-primary">
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold opacity-40">Member Since</p>
-                  <p className="font-medium">{authUser?.createdAt?.split("T")[0]}</p>
+                  <p className="text-[10px] uppercase font-bold opacity-40">
+                    Member Since
+                  </p>
+                  <p className="font-medium">
+                    {authUser?.createdAt?.split("T")[0]}
+                  </p>
                 </div>
               </div>
 
@@ -176,7 +194,9 @@ const ProfilePage = () => {
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold opacity-40">Account Status</p>
+                  <p className="text-[10px] uppercase font-bold opacity-40">
+                    Account Status
+                  </p>
                   <p className="text-success font-bold">Verified Active</p>
                 </div>
               </div>
