@@ -13,8 +13,8 @@ const SettingsPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="h-full overflow-y-auto bg-base-100 pt-20 px-4 pb-8">
-      <div className="mx-auto max-w-5xl space-y-8">
+    <div className="h-full overflow-y-auto bg-base-100 pt-20 px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="mx-auto max-w-5xl space-y-8 mt-[-45px]">
         {/* Header */}
         <div className="flex items-center gap-4">
           <button
