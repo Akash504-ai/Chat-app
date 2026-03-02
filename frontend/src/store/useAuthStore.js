@@ -3,6 +3,7 @@ import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { useCallStore } from "./useCallStore";
+import { useChatStore } from "./useChatStore.js";
 
 // const BASE_URL =
 //   import.meta.env.MODE === "development"
@@ -218,6 +219,7 @@ export const useAuthStore = create((set, get) => ({
     newSocket.on("connect", () => {
       console.log("✅ Socket connected:", newSocket.id);
       newSocket.emit("requestOnlineUsers"); // force sync
+      useChatStore.getState().subscribeToMessages();
     });
 
     newSocket.on("disconnect", () => {
