@@ -175,10 +175,26 @@ export const useAuthStore = create((set, get) => ({
     //   reconnection: true,
     // });
 
+    // const newSocket = io(BASE_URL, {
+    //   auth: { userId: authUser._id },
+    //   withCredentials: true,
+    //   reconnection: true,
+    // });
+
     const newSocket = io(BASE_URL, {
       auth: { userId: authUser._id },
-      withCredentials: true,
+
+      // Let socket decide best transport (polling → websocket upgrade)
+      transports: ["polling", "websocket"],
+
+      // Stability settings
       reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+
+      // Important for slower mobile TLS handshakes
+      timeout: 20000,
     });
 
     //Attach ALL listeners BEFORE doing anything else

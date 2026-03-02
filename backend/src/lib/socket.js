@@ -8,11 +8,16 @@ import User from "../models/user.model.js";
 const app = express();
 const server = http.createServer(app);
 
+server.keepAliveTimeout = 120000;
+server.headersTimeout = 120000;
+
 const io = new Server(server, {
   cors: {
     origin: ["https://chat-app-sooty-mu.vercel.app", "http://localhost:5173"],
     credentials: true,
   },
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
 
 const userSocketMap = {};
