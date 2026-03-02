@@ -378,7 +378,6 @@ export const useChatStore = create(
         const socket = useAuthStore.getState().socket;
         if (!socket) return;
 
-        // 🔥 clear old listeners (VERY IMPORTANT)
         socket.off("newMessage");
         socket.off("newGroupMessage");
         socket.off("typing");
