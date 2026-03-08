@@ -80,4 +80,4 @@ def analyze_message(message: Message):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# uvicorn app:app --host 0.0.0.0 --port 8000 --reload 
+# To run it locally use this ---> uvicorn app:app --host 0.0.0.0 --port 8000 --reload 
