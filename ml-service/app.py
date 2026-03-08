@@ -3,14 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import joblib
 
-# ----------------------------
 # App Initialization
-# ----------------------------
 app = FastAPI(title="AI Moderation Service")
 
-# ----------------------------
 # CORS Configuration
-# ----------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Change to frontend URL in production
