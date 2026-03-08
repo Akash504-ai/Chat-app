@@ -2,9 +2,7 @@ import mongoose from "mongoose";
 import Group from "../models/group.model.js";
 import User from "../models/user.model.js";
 
-/**
- * GET MY GROUPS
- */
+// GET MY GROUPS
 export const getMyGroups = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -22,9 +20,7 @@ export const getMyGroups = async (req, res) => {
   }
 };
 
-/**
- * CREATE GROUP
- */
+// CREATE GROUP
 export const createGroup = async (req, res) => {
   try {
     const { name, members = [], avatar = "" } = req.body;
@@ -64,9 +60,7 @@ export const createGroup = async (req, res) => {
   }
 };
 
-/**
- * GET GROUP INFO
- */
+// GET GROUP INFO
 export const getGroupById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -99,9 +93,7 @@ export const getGroupById = async (req, res) => {
   }
 };
 
-/**
- * ADD USER (ADMIN ONLY)
- */
+// ADD USER (ADMIN ONLY)
 export const addUserToGroup = async (req, res) => {
   const { id } = req.params;
   const { userId } = req.body;
@@ -142,9 +134,7 @@ export const addUserToGroup = async (req, res) => {
   res.json(populatedGroup);
 };
 
-/**
- * REMOVE USER (ADMIN ONLY)
- */
+// REMOVE USER (ADMIN ONLY)
 export const removeUserFromGroup = async (req, res) => {
   try {
     const { id } = req.params;
@@ -174,9 +164,7 @@ export const removeUserFromGroup = async (req, res) => {
   }
 };
 
-/**
- * LEAVE GROUP
- */
+// LEAVE GROUP
 export const leaveGroup = async (req, res) => {
   try {
     const { id } = req.params;
@@ -199,9 +187,7 @@ export const leaveGroup = async (req, res) => {
   }
 };
 
-/**
- * UPDATE GROUP INFO (ADMIN ONLY)
- */
+// UPDATE GROUP INFO (ADMIN ONLY)
 export const updateGroup = async (req, res) => {
   try {
     const { id } = req.params;
