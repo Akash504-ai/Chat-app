@@ -90,7 +90,7 @@ export const getDashboardStats = async (req, res) => {
     const totalReports = await Report.countDocuments();
     const pendingReports = await Report.countDocuments({ status: "pending" });
 
-    // 🔥 Monthly Users Growth
+    // Monthly Users Growth
     const monthlyUsers = await User.aggregate([
       {
         $group: {
@@ -101,7 +101,7 @@ export const getDashboardStats = async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
-    // 🔥 Monthly Messages Growth
+    // Monthly Messages Growth
     const monthlyMessages = await Message.aggregate([
       {
         $group: {
