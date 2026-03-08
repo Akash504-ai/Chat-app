@@ -5,7 +5,6 @@ import Group from "../models/group.model.js";
 import cloudinary from "../lib/cloudinary.js";
 import { emitToUser, io } from "../lib/socket.js";
 import analyzeMessage from "../lib/mlService.js";
-// import { emitToUser } from "../lib/socket.js";
 
 export const updateChatWallpaper = async (req, res) => {
   try {
@@ -164,7 +163,7 @@ export const sendMessage = async (req, res) => {
       };
     }
 
-    // 🧠 AI ANALYSIS (only if text exists)
+    // AI ANALYSIS (only if text exists)
     let analysis = {
       toxic_score: 0,
       spam_score: 0,
@@ -185,7 +184,7 @@ export const sendMessage = async (req, res) => {
       replyTo: replyTo || null,
       status: "sent",
 
-      // 🧠 AI fields
+      // AI fields
       toxic: analysis.toxic_score > 0.8,
       spam: analysis.spam_score > 0.5,
       toxicScore: analysis.toxic_score,
@@ -304,7 +303,7 @@ export const sendGroupMessage = async (req, res) => {
       };
     }
 
-    // 🧠 AI ANALYSIS
+    // AI ANALYSIS
     let analysis = {
       toxic_score: 0,
       spam_score: 0,
