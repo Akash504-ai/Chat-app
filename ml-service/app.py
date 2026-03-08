@@ -15,9 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ----------------------------
 # Load Models (Only Once)
-# ----------------------------
 try:
     toxic_model = joblib.load("toxic_model.pkl")
     toxic_vectorizer = joblib.load("tfidf_vectorizer.pkl")
@@ -31,9 +29,7 @@ try:
 except Exception as e:
     raise RuntimeError(f"Error loading models: {e}")
 
-# ----------------------------
 # Smart Reply Mapping
-# ----------------------------
 reply_map = {
     "greeting": ["Hi!", "Hello!", "Hey!"],
     "question": ["Yes", "No", "Maybe"],
@@ -42,15 +38,11 @@ reply_map = {
     "appreciation": ["You're welcome!", "No problem!", "Anytime!"]
 }
 
-# ----------------------------
 # Request Schema
-# ----------------------------
 class Message(BaseModel):
     text: str
 
-# ----------------------------
 # Health Check Endpoint
-# ----------------------------
 @app.get("/health")
 def health():
     return {"status": "ML service running"}
