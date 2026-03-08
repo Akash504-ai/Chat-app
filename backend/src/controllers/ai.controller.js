@@ -3,6 +3,7 @@ import User from "../models/user.model.js";
 import { emitToUser } from "../lib/socket.js";
 import { askAI } from "../services/ai.service.js";
 
+// Meta AI like whatsapp feature api call
 export const chatWithAI = async (req, res) => {
   try {
     if (!req.user) {
