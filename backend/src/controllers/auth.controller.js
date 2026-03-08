@@ -116,6 +116,7 @@ export const login = async (req, res) => {
     //   });
     // }
 
+    // checking user is baned from admin side or not
     if (user.isBanned) {
       return res.status(403).json({
         message: "Your account has been banned",
