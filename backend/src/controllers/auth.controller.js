@@ -19,7 +19,7 @@ export const signup = async (req, res) => {
   try {
     const { fullName, email, password, securityQuestions } = req.body;
 
-    // 1️⃣ Validation
+    // Validation
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -38,16 +38,16 @@ export const signup = async (req, res) => {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // 2️⃣ Check existing user
+    // Check existing user
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    // 3️⃣ Hash password
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 4️⃣ Hash security answers
+    // Hash security answers
     const hashedQuestions = await Promise.all(
       securityQuestions.map(async (q) => ({
         question: q.question,
@@ -55,7 +55,7 @@ export const signup = async (req, res) => {
       }))
     );
 
-    // 5️⃣ Create user (NO verification fields)
+    // Create user (NO verification fields)
     const newUser = await User.create({
       fullName,
       email: normalizedEmail,
@@ -64,15 +64,15 @@ export const signup = async (req, res) => {
       role: "user",
     });
 
-    // 6️⃣ Generate JWT immediately
+    // Generate JWT immediately
     const token = generateToken(newUser._id);
 
-    // 7️⃣ Send Welcome Email (non-blocking)
+    // Send Welcome Email (non-blocking)
     setImmediate(() => {
       sendWelcomeEmail(newUser.email, newUser.fullName);
     });
 
-    // 8️⃣ Send user response
+    // Send user response
     res.status(201).json({
       _id: newUser._id,
       fullName: newUser.fullName,
