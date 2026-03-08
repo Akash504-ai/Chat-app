@@ -241,3 +241,6 @@ export const deleteGroup = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+//adding photo during group creation == FUTURE IMPLEMENTATION
