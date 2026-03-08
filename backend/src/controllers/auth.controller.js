@@ -349,6 +349,8 @@ export const getSecurityQuestions = async (req, res) => {
   });
 };
 
+
+//Future alaning--->
 // export const verifyEmail = async (req, res) => {
 //   const { token } = req.params;
 
