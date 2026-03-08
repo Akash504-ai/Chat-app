@@ -337,13 +337,9 @@ export const resetPassword = async (req, res) => {
 
 export const getSecurityQuestions = async (req, res) => {
   const { email } = req.body;
-
   // console.log("EMAIL RECEIVED:", email);
-
   const user = await User.findOne({ email: email.toLowerCase() });
-
   // console.log("USER FOUND:", user);
-
   if (!user || !user.securityQuestions.length) {
     return res.status(400).json({ message: "Invalid credentials" });
   }
