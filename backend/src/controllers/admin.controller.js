@@ -81,12 +81,7 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-/*
-========================================
-ADMIN — Dashboard Stats
-========================================
-*/
-
+// Admin dashbord stats
 export const getDashboardStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
