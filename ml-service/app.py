@@ -47,9 +47,7 @@ class Message(BaseModel):
 def health():
     return {"status": "ML service running"}
 
-# ----------------------------
-# Analyze Endpoint
-# ----------------------------
+# Endpoint analyze
 @app.post("/analyze")
 def analyze_message(message: Message):
 
