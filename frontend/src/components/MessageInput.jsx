@@ -19,6 +19,7 @@ const MessageInput = () => {
   const [audioData, setAudioData] = useState(null);
   const [recording, setRecording] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   const emojiRef = useRef(null);
   const fileRef = useRef(null);
@@ -172,8 +173,57 @@ const MessageInput = () => {
     // useChatStore.setState({ smartReplies: [] });
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragActive(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragActive(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setFileData({
+          base64: reader.result,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <div className="border-t border-base-300 p-2 sm:p-4 w-full shrink-0 bg-base-100">
+    <div
+      className={`relative border-t border-base-300 p-2 sm:p-4 w-full shrink-0 bg-base-100 ${
+        dragActive ? "bg-primary/10 border-primary" : ""
+      }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* DRAG OVERLAY */}
+      {dragActive && (
+        <div className="absolute inset-0 flex items-center justify-center bg-base-200/70 backdrop-blur-sm z-40 rounded-xl">
+          <p className="text-lg font-semibold text-primary">
+            Drop file to upload
+          </p>
+        </div>
+      )}
       {replyingTo && (
         <div className="mb-2 flex items-center justify-between rounded-lg bg-base-200 px-3 py-2 text-sm">
           <div className="truncate">
