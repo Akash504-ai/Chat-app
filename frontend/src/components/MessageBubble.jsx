@@ -224,7 +224,10 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className={`absolute bottom-full mb-2 z-[101] ${isMe ? "right-0" : "left-0"} bg-base-100 border border-base-300 rounded-xl shadow-2xl w-48 overflow-hidden py-1`}
+                    className={`absolute bottom-full mb-2 z-[101] 
+                      ${isMe ? "right-0" : "left-0"} 
+                      max-w-[85vw]
+                      bg-base-100 border border-base-300 rounded-xl shadow-2xl w-48 overflow-hidden py-1`}
                   >
                     {!message.deletedForEveryone && (
                       <button
