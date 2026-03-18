@@ -149,7 +149,7 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
         >
           {/* Action Menu (Icons) */}
           <div
-            className={`flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
+            className={`flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200`}
           >
             <div className="relative" ref={emojiRef}>
               <button
