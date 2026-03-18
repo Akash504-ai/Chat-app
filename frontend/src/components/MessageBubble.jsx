@@ -78,8 +78,14 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
       if (emojiRef.current && !emojiRef.current.contains(event.target))
         setShowEmojis(false);
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
   }, []);
 
   const handleCopyText = async () => {
