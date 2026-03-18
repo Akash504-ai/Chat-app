@@ -175,7 +175,10 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                     initial={{ opacity: 0, scale: 0.8, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                    className={`absolute bottom-full mb-2 ${isMe ? "right-0" : "left-0"} flex items-center gap-1 bg-base-100 border border-base-300 rounded-full px-2 py-1.5 shadow-2xl z-[100]`}
+                    className={`absolute bottom-full mb-2 
+                                ${isMe ? "right-0" : "left-0"} 
+                                max-w-[90vw] overflow-x-auto
+                                flex items-center gap-1 bg-base-100 border border-base-300 rounded-full px-2 py-1.5 shadow-2xl z-[100]`}
                   >
                     {REACTIONS.map((emoji) => (
                       <button
