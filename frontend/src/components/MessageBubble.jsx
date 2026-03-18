@@ -164,7 +164,7 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                   setShowEmojis(!showEmojis);
                   setOpen(false);
                 }}
-                className={`p-1.5 rounded-full hover:bg-base-200 transition-colors ${showEmojis ? "text-primary bg-base-200" : "text-base-content/40"}`}
+                className={`p-2 sm:p-1.5 rounded-full hover:bg-base-200 transition-colors ${showEmojis ? "text-primary bg-base-200" : "text-base-content/40"}`}
               >
                 <SmilePlus size={16} />
               </button>
@@ -175,6 +175,7 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                     initial={{ opacity: 0, scale: 0.8, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                    onClick={(e) => e.stopPropagation()}
                     className={`absolute bottom-full mb-2 
                                 ${isMe ? "right-0" : "left-0"} 
                                 max-w-[90vw] overflow-x-auto
@@ -213,7 +214,7 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                   setOpen(!open);
                   setShowEmojis(false);
                 }}
-                className={`p-1.5 rounded-full hover:bg-base-200 transition-colors ${open ? "text-primary bg-base-200" : "text-base-content/40"}`}
+                className={`p-2 sm:p-1.5 rounded-full hover:bg-base-200 transition-colors ${open ? "text-primary bg-base-200" : "text-base-content/40"}`}
               >
                 <MoreVertical size={16} />
               </button>
@@ -224,6 +225,7 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                    onClick={(e) => e.stopPropagation()}
                     className={`absolute bottom-full mb-2 z-[101] 
                       ${isMe ? "right-0" : "left-0"} 
                       max-w-[85vw]
