@@ -26,14 +26,16 @@ const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
 const MessageBubble = ({ message, sender, isMe, chatId }) => {
   const [open, setOpen] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
+  const [emojiPosition, setEmojiPosition] = useState({ top: 0, left: 0 });
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 640 : false);
+  
   const menuRef = useRef(null);
   const emojiRef = useRef(null);
 
   const {
     deleteMessageForMe,
     deleteMessageForEveryone,
-    // reactions,
-    // addReaction,
     pinnedMessages,
     togglePin,
     setReplyingTo,
@@ -45,44 +47,38 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
   const authUser = useAuthStore((state) => state.authUser);
 
   const isPinned = pinnedMessages?.[chatId]?.[message._id];
-  const myReaction = message.reactions?.find(
-    (r) => r.userId === authUser._id,
-  )?.emoji;
   const canDeleteForEveryone = isMe && !message.deletedForEveryone;
-
-  // AI Detection
   const isAI = sender?.isAI;
 
   const highlightedText = useMemo(() => {
     if (!searchQuery || !message.text) return message.text;
-
     const regex = new RegExp(`(${searchQuery})`, "ig");
     return message.text.split(regex);
   }, [message.text, searchQuery]);
 
   const renderStatusTick = () => {
     if (!isMe || message.isTemp || message.deletedForEveryone) return null;
-    if (message.status === "sent")
-      return <Check size={12} className="opacity-40" />;
-    if (message.status === "delivered")
-      return <CheckCheck size={12} className="opacity-40" />;
-    if (message.status === "seen")
-      return <CheckCheck size={12} className="text-sky-500" />;
+    if (message.status === "sent") return <Check size={12} className="opacity-40" />;
+    if (message.status === "delivered") return <CheckCheck size={12} className="opacity-40" />;
+    if (message.status === "seen") return <CheckCheck size={12} className="text-sky-500" />;
     return null;
   };
 
+  // 1. Reactive isMobile
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handleResize);
+    
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target))
-        setOpen(false);
-      if (emojiRef.current && !emojiRef.current.contains(event.target))
-        setShowEmojis(false);
+      if (menuRef.current && !menuRef.current.contains(event.target)) setOpen(false);
+      if (emojiRef.current && !emojiRef.current.contains(event.target)) setShowEmojis(false);
     };
-
+    
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
-
+    
     return () => {
+      window.removeEventListener("resize", handleResize);
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
@@ -102,17 +98,12 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
 
   const handleReport = async () => {
     if (!window.confirm("Report this message?")) return;
-
     try {
       await axiosInstance.post("/reports", {
-        reportedUserId:
-          typeof message.senderId === "string"
-            ? message.senderId
-            : message.senderId?._id,
+        reportedUserId: typeof message.senderId === "string" ? message.senderId : message.senderId?._id,
         reportedMessageId: message._id,
         reason: "Inappropriate content",
       });
-
       toast.success("Report submitted successfully");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to submit report");
@@ -127,229 +118,179 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
       id={`msg-${message._id}`}
-      className={`chat ${isMe ? "chat-end" : "chat-start"} group mb-3 sm:mb-6 px-2 sm:px-4 relative`}
+      className={`chat ${isMe ? "chat-end" : "chat-start"} group mb-4 sm:mb-6 px-2 sm:px-4 relative`}
     >
-      {/* Avatar */}
       <div className="chat-image avatar self-end mb-1">
-        <div
-          className={`h-8 w-8 rounded-full shadow-sm overflow-hidden ring-1 flex items-center justify-center
-      ${isAI ? "ring-primary animate-pulse" : "ring-base-300"}
-    `}
-        >
+        <div className={`h-8 w-8 rounded-full shadow-sm overflow-hidden ring-1 flex items-center justify-center ${isAI ? "ring-primary animate-pulse" : "ring-base-300"}`}>
           <img
             src={sender?.profilePic || "/avatar.png"}
             alt="avatar"
             className="h-full w-full object-cover rounded-full"
-            onError={(e) => {
-              e.currentTarget.src = "/avatar.png";
-            }}
+            onError={(e) => { e.currentTarget.src = "/avatar.png"; }}
           />
         </div>
       </div>
 
-      <div
-        className={`flex flex-col max-w-[75%] sm:max-w-[85%] md:max-w-[70%] ${isMe ? "items-end" : "items-start"}`}
-      >
-        <div
-          className={`flex items-center gap-2 ${isMe ? "flex-row" : "flex-row-reverse"}`}
-        >
-          {/* Action Menu (Icons) */}
-          <div
-            className={`flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200`}
-          >
+      <div className={`flex flex-col max-w-[85%] sm:max-w-[70%] ${isMe ? "items-end" : "items-start"}`}>
+        <div className={`flex items-center gap-1 sm:gap-2 ${isMe ? "flex-row" : "flex-row-reverse"}`}>
+          
+          {/* Action Icons */}
+          <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+            {/* Emoji Trigger */}
             <div className="relative" ref={emojiRef}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowEmojis(!showEmojis);
+                  if (isMobile) {
+                    setEmojiPosition({ top: window.innerHeight / 2, left: window.innerWidth / 2 - 150 });
+                  } else {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    // 2. Safe Desktop Position (Clamping)
+                    setEmojiPosition({ 
+                      top: rect.top - 60, 
+                      left: Math.min(Math.max(rect.left + rect.width / 2, 120), window.innerWidth - 120) 
+                    });
+                  }
+                  setShowEmojis((prev) => !prev);
                   setOpen(false);
                 }}
-                className={`p-2 sm:p-1.5 rounded-full hover:bg-base-200 transition-colors ${showEmojis ? "text-primary bg-base-200" : "text-base-content/40"}`}
+                className={`p-2 rounded-full hover:bg-base-200 transition-colors ${showEmojis ? "text-primary bg-base-200" : "text-base-content/40"}`}
               >
-                <SmilePlus size={16} />
+                <SmilePlus size={18} />
               </button>
 
               <AnimatePresence>
                 {showEmojis && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className={`absolute bottom-full mb-2 
-                                ${isMe ? "right-0" : "left-0"} 
-                                max-w-[90vw] overflow-x-auto
-                                flex items-center gap-1 bg-base-100 border border-base-300 rounded-full px-2 py-1.5 shadow-2xl z-[100]`}
-                  >
-                    {REACTIONS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        onClick={async () => {
-                          try {
-                            await axiosInstance.post(
-                              `/messages/react/${message._id}`,
-                              {
-                                emoji,
-                              },
-                            );
-                          } catch (err) {
-                            toast.error("Failed to react");
-                          }
-                          setShowEmojis(false);
-                        }}
-                        className="text-xl hover:scale-125 active:scale-90 transition-transform px-1"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </motion.div>
+                  <>
+                    {isMobile && <div className="fixed inset-0 bg-black/20 z-[9998]" onClick={() => setShowEmojis(false)} />}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, y: isMobile ? -50 : 10 }}
+                      animate={{ opacity: 1, scale: 1, y: isMobile ? -50 : 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: isMobile ? -50 : 10 }}
+                      className="fixed z-[9999] bg-base-100 border border-base-300 rounded-2xl px-3 py-2 shadow-xl flex items-center gap-2 sm:gap-3"
+                      style={{
+                        top: emojiPosition.top,
+                        left: emojiPosition.left,
+                        transform: "translate(-50%, -50%)",
+                      }}
+                    >
+                      {REACTIONS.map((emoji) => (
+                        <button
+                          key={emoji}
+                          onClick={async () => {
+                            try {
+                              await axiosInstance.post(`/messages/react/${message._id}`, { emoji });
+                            } catch (err) {
+                              toast.error("Failed to react");
+                            }
+                            setShowEmojis(false);
+                          }}
+                          className="text-2xl hover:scale-125 active:scale-90 transition-transform p-1"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>
 
+            {/* Menu Trigger */}
             <div className="relative" ref={menuRef}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setOpen(!open);
+                  if (isMobile) {
+                    setMenuPosition({ top: window.innerHeight / 2, left: window.innerWidth / 2 - 105 });
+                  } else {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    // Clamping menu position
+                    setMenuPosition({ 
+                      top: rect.top, 
+                      left: Math.min(Math.max(rect.left, 100), window.innerWidth - 100)
+                    });
+                  }
+                  setOpen((prev) => !prev);
                   setShowEmojis(false);
                 }}
-                className={`p-2 sm:p-1.5 rounded-full hover:bg-base-200 transition-colors ${open ? "text-primary bg-base-200" : "text-base-content/40"}`}
+                className={`p-2 rounded-full hover:bg-base-200 transition-colors ${open ? "text-primary bg-base-200" : "text-base-content/40"}`}
               >
-                <MoreVertical size={16} />
+                <MoreVertical size={18} />
               </button>
 
               <AnimatePresence>
                 {open && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className={`absolute bottom-full mb-2 z-[101] 
-                      ${isMe ? "right-0" : "left-0"} 
-                      max-w-[85vw]
-                      bg-base-100 border border-base-300 rounded-xl shadow-2xl w-48 overflow-hidden py-1`}
-                  >
-                    {!message.deletedForEveryone && (
-                      <button
-                        onClick={() => {
-                          togglePin(chatId, message._id);
-                          setOpen(false);
-                        }}
-                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200"
-                      >
-                        <Pin
-                          size={14}
-                          className={
-                            isPinned
-                              ? "text-warning fill-warning"
-                              : "opacity-50"
-                          }
-                        />
-                        <span>{isPinned ? "Unpin" : "Pin Message"}</span>
-                      </button>
-                    )}
-                    {message.text && (
-                      <button
-                        onClick={handleCopyText}
-                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200"
-                      >
-                        <Copy size={14} className="opacity-50" />{" "}
-                        <span>Copy Text</span>
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        setReplyingTo(message);
-                        setOpen(false);
+                  <>
+                    {isMobile && <div className="fixed inset-0 bg-black/20 z-[9998]" onClick={() => setOpen(false)} />}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: isMobile ? -50 : 10 }}
+                      animate={{ opacity: 1, scale: 1, y: isMobile ? -50 : 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: isMobile ? -50 : 10 }}
+                      className="fixed z-[9999] w-56 bg-base-100 border border-base-300 rounded-2xl shadow-2xl overflow-hidden py-1"
+                      style={{
+                        top: menuPosition.top,
+                        left: menuPosition.left,
+                        transform: isMobile ? "translate(-50%, -50%)" : "translateX(-100%)",
                       }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200"
                     >
-                      <Reply size={14} className="opacity-50" />
-                      <span>Reply</span>
-                    </button>
-
-                    {/* Report (only if not my message & not deleted) */}
-                    {!isMe && !message.deletedForEveryone && (
-                      <button
-                        onClick={handleReport}
-                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-warning/10 text-warning border-t border-base-200"
-                      >
-                        <ShieldAlert size={14} />
-                        <span>Report</span>
+                      {!message.deletedForEveryone && (
+                        <button onClick={() => { togglePin(chatId, message._id); setOpen(false); }} className="flex w-full items-center gap-3 px-4 py-3 text-sm hover:bg-base-200">
+                          <Pin size={16} className={isPinned ? "text-warning fill-warning" : "opacity-50"} />
+                          <span>{isPinned ? "Unpin" : "Pin Message"}</span>
+                        </button>
+                      )}
+                      {message.text && (
+                        <button onClick={handleCopyText} className="flex w-full items-center gap-3 px-4 py-3 text-sm hover:bg-base-200">
+                          <Copy size={16} className="opacity-50" />
+                          <span>Copy Text</span>
+                        </button>
+                      )}
+                      <button onClick={() => { setReplyingTo(message); setOpen(false); }} className="flex w-full items-center gap-3 px-4 py-3 text-sm hover:bg-base-200">
+                        <Reply size={16} className="opacity-50" />
+                        <span>Reply</span>
                       </button>
-                    )}
-
-                    <button
-                      onClick={() => {
-                        deleteMessageForMe(message._id);
-                        setOpen(false);
-                      }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm hover:bg-base-200 border-t border-base-200"
-                    >
-                      <Trash size={14} className="opacity-50" />{" "}
-                      <span>Delete for me</span>
-                    </button>
-                    {canDeleteForEveryone && (
-                      <button
-                        onClick={() => {
-                          deleteMessageForEveryone(message._id);
-                          setOpen(false);
-                        }}
-                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error/10 border-t border-base-200 font-medium"
-                      >
-                        <Trash2 size={14} /> <span>Delete for all</span>
+                      {!isMe && !message.deletedForEveryone && (
+                        <button onClick={handleReport} className="flex w-full items-center gap-3 px-4 py-3 text-sm hover:bg-warning/10 text-warning border-t border-base-200">
+                          <ShieldAlert size={16} />
+                          <span>Report</span>
+                        </button>
+                      )}
+                      <button onClick={() => { deleteMessageForMe(message._id); setOpen(false); }} className="flex w-full items-center gap-3 px-4 py-3 text-sm hover:bg-base-200 border-t border-base-200">
+                        <Trash size={16} className="opacity-50" />
+                        <span>Delete for me</span>
                       </button>
-                    )}
-                  </motion.div>
+                      {canDeleteForEveryone && (
+                        <button onClick={() => { deleteMessageForEveryone(message._id); setOpen(false); }} className="flex w-full items-center gap-3 px-4 py-3 text-sm text-error hover:bg-error/10 border-t border-base-200 font-medium">
+                          <Trash2 size={16} />
+                          <span>Delete for all</span>
+                        </button>
+                      )}
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>
           </div>
 
-          {/* MESSAGE BUBBLE */}
+          {/* Bubble Content */}
           <div className="relative">
             {isPinned && (
-              <div
-                className={`absolute -top-3 ${isMe ? "-left-1" : "-right-1"} z-20`}
-              >
-                <Pin
-                  size={14}
-                  className="text-warning fill-warning rotate-45 shadow-sm"
-                />
+              <div className={`absolute -top-3 ${isMe ? "-left-1" : "-right-1"} z-20`}>
+                <Pin size={14} className="text-warning fill-warning rotate-45 shadow-sm" />
               </div>
             )}
 
             <motion.div
-              animate={
-                isAI
-                  ? {
-                      boxShadow: [
-                        "0px 0px 0px rgba(59, 130, 246, 0)",
-                        "0px 0px 12px rgba(59, 130, 246, 0.2)",
-                        "0px 0px 0px rgba(59, 130, 246, 0)",
-                      ],
-                    }
-                  : {}
-              }
+              animate={isAI ? { boxShadow: ["0px 0px 0px rgba(59, 130, 246, 0)", "0px 0px 12px rgba(59, 130, 246, 0.2)", "0px 0px 0px rgba(59, 130, 246, 0)"] } : {}}
               transition={{ repeat: Infinity, duration: 3 }}
-              className={`relative px-4 py-2.5 shadow-sm transition-all duration-300
-              ${
-                highlightedMessageId === message._id
-                  ? "ring-2 ring-primary ring-offset-2 bg-primary/10"
-                  : ""
-              }
-              ${
-                message.deletedForEveryone
-                  ? "bg-base-200/50 border border-base-300 text-base-content/40 italic rounded-2xl"
-                  : isMe
-                    ? "bg-primary text-primary-content rounded-2xl rounded-tr-none shadow-md"
-                    : isAI
-                      ? "bg-base-100 border-2 border-primary/20 text-base-content rounded-2xl rounded-tl-none shadow-lg shadow-primary/5"
-                      : "bg-base-100 border border-base-200 text-base-content rounded-2xl rounded-tl-none shadow-sm"
-              }
-            `}
+              className={`relative px-4 py-2.5 shadow-sm transition-all duration-300 rounded-2xl
+                ${highlightedMessageId === message._id ? "ring-2 ring-primary ring-offset-2 bg-primary/10" : ""}
+                ${message.deletedForEveryone ? "bg-base-200/50 border border-base-300 text-base-content/40 italic" : 
+                  isMe ? "bg-primary text-primary-content rounded-tr-none shadow-md" : 
+                  isAI ? "bg-base-100 border-2 border-primary/20 text-base-content rounded-tl-none shadow-lg shadow-primary/5" : 
+                  "bg-base-100 border border-base-200 text-base-content rounded-tl-none shadow-sm"}
+              `}
             >
               {message.deletedForEveryone ? (
                 <div className="flex items-center gap-2 text-[13px]">
@@ -363,108 +304,55 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                     </div>
                   )}
 
-                  {/* REPLY PREVIEW */}
                   {message.replyTo && (
                     <div
                       onClick={() => {
                         const id = message.replyTo._id;
                         setHighlightedMessage(id);
-
-                        document.getElementById(`msg-${id}`)?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "center",
-                        });
-
+                        document.getElementById(`msg-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
                         setTimeout(() => setHighlightedMessage(null), 1200);
                       }}
-                      className="mb-1.5 px-2 py-1 rounded-md bg-black/5 text-[12px] border-l-4 border-primary cursor-pointer hover:bg-black/10 transition"
+                      className="mb-1.5 px-2 py-1.5 rounded-lg bg-black/5 text-[12px] border-l-4 border-primary cursor-pointer hover:bg-black/10 transition"
                     >
-                      <div className="font-medium text-primary">
-                        {message.replyTo.senderId?.fullName || "User"}
-                      </div>
-                      <div className="truncate opacity-80">
-                        {message.replyTo.text || "Media message"}
-                      </div>
+                      <div className="font-bold text-primary truncate">{message.replyTo.senderId?.fullName || "User"}</div>
+                      <div className="truncate opacity-80">{message.replyTo.text || "Media message"}</div>
                     </div>
                   )}
 
-                  {/* ATTACHMENTS */}
                   {(message.image || message.audio || message.file?.url) && (
-                    <div className="flex flex-col gap-2 mb-1.5">
-                      {message.image && (
-                        <img
-                          src={message.image}
-                          className="rounded-lg max-w-full max-h-72 object-cover border border-black/5"
-                          alt="attachment"
-                        />
-                      )}
-
-                      {message.audio && (
-                        <AudioMessage audioUrl={message.audio} isMe={isMe} />
-                      )}
-
+                    <div className="flex flex-col gap-2 mb-2">
+                      {message.image && <img src={message.image} className="rounded-xl max-w-full max-h-80 object-cover border border-black/5" alt="attachment" />}
+                      {message.audio && <AudioMessage audioUrl={message.audio} isMe={isMe} />}
                       {message.file?.url && <FileMessage file={message.file} />}
                     </div>
                   )}
 
-                  {/* 🔥 AI MODERATION BADGES (Premium UI) */}
-                  {!message.deletedForEveryone &&
-                    (message.toxic || message.spam) && (
-                      <div className="mb-3 flex gap-2 flex-wrap">
-                        {message.toxic && (
-                          <div
-                            className="group flex items-center gap-1.5 sm:gap-2 
-                                      px-2 py-1 sm:px-3 sm:py-1.5 rounded-full
-                                      bg-gradient-to-r from-red-500/15 to-rose-500/15
-                                      text-red-500 border border-red-500/30
-                                      shadow-sm hover:shadow-red-500/20
-                                      transition-all duration-300 backdrop-blur-md"
-                          >
-                            <ShieldAlert
-                              size={12}
-                              className="opacity-80 sm:size-[14px] group-hover:scale-110 transition-transform"
-                            />
-                            <span className="text-[10px] sm:text-xs font-semibold tracking-wide">
-                              Toxic Message
-                            </span>
-                          </div>
-                        )}
-
-                        {message.spam && (
-                          <div
-                            className="group flex items-center gap-1.5 sm:gap-2 
-                                      px-2 py-1 sm:px-3 sm:py-1.5 rounded-full
-                                      bg-gradient-to-r from-amber-400/15 to-orange-400/15
-                                      text-amber-500 border border-amber-400/30
-                                      shadow-sm hover:shadow-amber-400/20
-                                      transition-all duration-300 backdrop-blur-md"
-                          >
-                            <ShieldAlert
-                              size={12}
-                              className="opacity-80 sm:size-[14px] group-hover:scale-110 transition-transform"
-                            />
-                            <span className="text-[10px] sm:text-xs font-semibold tracking-wide">
-                              Spam Detected
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                  {!message.deletedForEveryone && (message.toxic || message.spam) && (
+                    <div className="mb-2 flex gap-2 flex-wrap">
+                      {message.toxic && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 border border-red-500/20">
+                          <ShieldAlert size={12} />
+                          <span className="text-[10px] font-bold uppercase tracking-tighter">Toxic</span>
+                        </div>
+                      )}
+                      {message.spam && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                          <ShieldAlert size={12} />
+                          <span className="text-[10px] font-bold uppercase tracking-tighter">Spam</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {message.text && (
-                    <p className="text-[14.5px] leading-relaxed whitespace-pre-wrap break-words">
+                    <p className="text-[15px] sm:text-[14.5px] leading-relaxed whitespace-pre-wrap break-words">
                       {Array.isArray(highlightedText)
                         ? highlightedText.map((part, i) =>
-                            part.toLowerCase() === searchQuery.toLowerCase() ? (
-                              <mark
-                                key={i}
-                                className="bg-yellow-300 text-black px-0.5 rounded-sm"
-                              >
-                                {part}
-                              </mark>
+                            part.toLowerCase() === searchQuery?.toLowerCase() ? (
+                              <mark key={i} className="bg-yellow-300 text-black px-0.5 rounded-sm">{part}</mark>
                             ) : (
                               <span key={i}>{part}</span>
-                            ),
+                            )
                           )
                         : highlightedText}
                     </p>
@@ -473,19 +361,14 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
               )}
 
               {/* Reaction Display */}
-
               {message.reactions?.length > 0 && (
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className={`absolute -bottom-3 ${
-                    isMe ? "left-0" : "right-0"
-                  } flex items-center gap-1 bg-base-100 border border-base-300 rounded-full px-2 py-0.5 shadow-md z-10`}
+                  className={`absolute -bottom-3.5 ${isMe ? "left-0" : "right-0"} flex items-center gap-1 bg-base-100 border border-base-300 rounded-full px-1.5 py-0.5 shadow-md z-10`}
                 >
                   {message.reactions.map((r, i) => (
-                    <span key={i} className="text-[12px]">
-                      {r.emoji}
-                    </span>
+                    <span key={i} className="text-[12px] leading-none">{r.emoji}</span>
                   ))}
                 </motion.div>
               )}
@@ -493,11 +376,9 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
           </div>
         </div>
 
-        {/* FOOTER */}
-        <div
-          className={`mt-1.5 flex items-center gap-1.5 text-[10px] font-semibold opacity-50 ${isMe ? "mr-1" : "ml-1"}`}
-        >
-          {isAI && <span className="text-primary">Meta AI</span>}
+        {/* Footer info */}
+        <div className={`mt-2 flex items-center gap-1.5 text-[10px] font-bold opacity-60 ${isMe ? "mr-1" : "ml-1"}`}>
+          {isAI && <span className="text-primary uppercase tracking-widest">Meta AI</span>}
           <span>{formatMessageTime(message.createdAt)}</span>
           {renderStatusTick()}
         </div>
