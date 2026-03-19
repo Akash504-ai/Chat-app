@@ -413,11 +413,12 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                       <div className="mb-3 flex gap-2 flex-wrap">
                         {message.toxic && (
                           <div
-                            className="group flex items-center gap-2 px-3 py-1.5 rounded-full
-          bg-gradient-to-r from-red-500/15 to-rose-500/15
-          text-red-500 border border-red-500/30
-          shadow-sm hover:shadow-red-500/20
-          transition-all duration-300 backdrop-blur-md"
+                            className="group flex items-center gap-1.5 sm:gap-2 
+px-2 py-1 sm:px-3 sm:py-1.5 rounded-full
+bg-gradient-to-r from-red-500/15 to-rose-500/15
+text-red-500 border border-red-500/30
+shadow-sm hover:shadow-red-500/20
+transition-all duration-300 backdrop-blur-md"
                           >
                             <ShieldAlert
                               size={14}
