@@ -424,7 +424,7 @@ transition-all duration-300 backdrop-blur-md"
                               size={14}
                               className="opacity-80 group-hover:scale-110 transition-transform"
                             />
-                            <span className="text-xs font-semibold tracking-wide">
+                            <span className="text-[10px] sm:text-xs font-semibold tracking-wide">
                               Toxic Message
                             </span>
                           </div>
