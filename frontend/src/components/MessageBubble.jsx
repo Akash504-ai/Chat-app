@@ -432,17 +432,18 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
 
                         {message.spam && (
                           <div
-                            className="group flex items-center gap-2 px-3 py-1.5 rounded-full
-          bg-gradient-to-r from-amber-400/15 to-orange-400/15
-          text-amber-500 border border-amber-400/30
-          shadow-sm hover:shadow-amber-400/20
-          transition-all duration-300 backdrop-blur-md"
+                            className="group flex items-center gap-1.5 sm:gap-2 
+  px-2 py-1 sm:px-3 sm:py-1.5 rounded-full
+  bg-gradient-to-r from-amber-400/15 to-orange-400/15
+  text-amber-500 border border-amber-400/30
+  shadow-sm hover:shadow-amber-400/20
+  transition-all duration-300 backdrop-blur-md"
                           >
                             <ShieldAlert
-                              size={14}
-                              className="opacity-80 group-hover:scale-110 transition-transform"
+                              size={12}
+                              className="opacity-80 sm:size-[14px] group-hover:scale-110 transition-transform"
                             />
-                            <span className="text-xs font-semibold tracking-wide">
+                            <span className="text-[10px] sm:text-xs font-semibold tracking-wide">
                               Spam Detected
                             </span>
                           </div>
