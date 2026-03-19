@@ -433,11 +433,11 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                         {message.spam && (
                           <div
                             className="group flex items-center gap-1.5 sm:gap-2 
-  px-2 py-1 sm:px-3 sm:py-1.5 rounded-full
-  bg-gradient-to-r from-amber-400/15 to-orange-400/15
-  text-amber-500 border border-amber-400/30
-  shadow-sm hover:shadow-amber-400/20
-  transition-all duration-300 backdrop-blur-md"
+                                      px-2 py-1 sm:px-3 sm:py-1.5 rounded-full
+                                      bg-gradient-to-r from-amber-400/15 to-orange-400/15
+                                      text-amber-500 border border-amber-400/30
+                                      shadow-sm hover:shadow-amber-400/20
+                                      transition-all duration-300 backdrop-blur-md"
                           >
                             <ShieldAlert
                               size={12}
