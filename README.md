@@ -1,3 +1,4 @@
+![License](https://img.shields.io/badge/license-MIT-green)
 # PASO – Advanced Real-Time Chat Application
 
 PASO is a production-level real-time communication platform inspired by WhatsApp, enhanced with **Machine Learning capabilities**, **AI automation**, and full multimedia support. It integrates messaging, voice/video communication, intelligent moderation, and admin analytics into a complete chat ecosystem.
