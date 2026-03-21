@@ -273,9 +273,13 @@ const ContributePage = () => {
               </div>
 
               <div className="mt-8 flex items-center justify-between">
-                <button className="btn btn-error btn-outline btn-sm rounded-full px-6 group-hover:bg-error group-hover:text-error-content transition-all">
+                <a
+                  href="https://github.com/Akash504-ai/Chat-app/issues"
+                  target="_blank"
+                  className="btn btn-error btn-outline btn-sm rounded-full px-6"
+                >
                   Open Tracker
-                </button>
+                </a>
                 <Share2
                   size={18}
                   className="opacity-20 group-hover:opacity-100 transition-opacity"
@@ -302,9 +306,13 @@ const ContributePage = () => {
               </div>
 
               <div className="mt-8">
-                <button className="btn btn-secondary btn-outline btn-sm rounded-full px-6 group-hover:bg-secondary group-hover:text-secondary-content transition-all">
+                <a
+                  href="https://github.com/Akash504-ai/Chat-app/discussions"
+                  target="_blank"
+                  className="btn btn-secondary btn-outline btn-sm rounded-full px-6"
+                >
                   Discussion Hub
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -326,9 +334,12 @@ const ContributePage = () => {
               </div>
 
               <div className="mt-8">
-                <button className="btn btn-accent btn-outline btn-sm rounded-full px-6 group-hover:bg-accent group-hover:text-accent-content transition-all">
+                <a
+                  href="mailto:your-email@example.com"
+                  className="btn btn-accent btn-outline btn-sm rounded-full px-6"
+                >
                   View Policy
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -344,7 +355,7 @@ const ContributePage = () => {
                 size={20}
                 className="text-red-500 fill-red-500 animate-pulse"
               />{" "}
-              by Akash Santra 
+              by Akash Santra
             </p>
           </div>
         </footer>
