@@ -25,6 +25,7 @@ import AdminReports from "./pages/AdminReports";
 import AdminRoute from "./components/admin/AdminRoute";
 import AdminLayout from "./components/admin/AdminLayout";
 import ForgotPasswordPage from "./pages/ForgotPassword.jsx";
+import ContributePage from "./components/ContributePage.jsx";
 // import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 
 const App = () => {
@@ -99,6 +100,7 @@ const App = () => {
             path="/profile"
             element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
           />
+          <Route path="/contribute" element={<ContributePage />} />
           <Route
             path="/admin"
             element={
