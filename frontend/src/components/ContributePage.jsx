@@ -335,7 +335,7 @@ const ContributePage = () => {
 
               <div className="mt-8">
                 <a
-                  href="mailto:your-email@example.com"
+                  href="https://github.com/Akash504-ai/Chat-app/tree/main?tab=security-ov-file"
                   className="btn btn-accent btn-outline btn-sm rounded-full px-6"
                 >
                   View Policy
