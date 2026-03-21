@@ -7,6 +7,8 @@ import {
   Settings,
   User,
   X,
+  GitPullRequest, // Added this for the logo
+  Code2,          // Alternative "dev" logo
 } from "lucide-react";
 import { useState } from "react";
 import { useChatStore } from "../store/useChatStore";
@@ -16,6 +18,8 @@ const Navbar = () => {
   const { logout, authUser } = useAuthStore();
   const [open, setOpen] = useState(false);
   const { selectedUser, selectedGroup } = useChatStore();
+
+  const GITHUB_URL = "https://github.com/Akash504-ai/Chat-app.git";
 
   return (
     <header
@@ -28,30 +32,35 @@ const Navbar = () => {
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center gap-3 text-lg font-semibold"
+            className="flex items-center gap-3 text-lg font-semibold hover:opacity-80 transition-opacity"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
               <MessageSquare className="h-5 w-5 text-primary" />
             </div>
-            <span>PASO</span>
+            <span className="tracking-tighter">PASO</span>
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-3">
             
             {/* GitHub Repo */}
             <a
-              href="https://github.com/your-username/your-repo"
+              href={GITHUB_URL}
               target="_blank"
               rel="noreferrer"
-              className="btn btn-ghost btn-sm gap-2"
+              className="btn btn-ghost btn-sm px-2"
+              title="View Source"
             >
-              <FaGithub className="h-4 w-4" />
+              <FaGithub className="h-5 w-5" />
             </a>
 
-            {/* Contribute Page */}
-            <Link to="/contribute" className="btn btn-ghost btn-sm gap-2">
-              🚀 <span>Contribute</span>
+            {/* IMPROVED: Contribute Page */}
+            <Link 
+              to="/contribute" 
+              className="btn btn-ghost btn-sm gap-2 group border border-transparent hover:border-primary/20"
+            >
+              <GitPullRequest className="h-4 w-4 text-primary group-hover:rotate-12 transition-transform" />
+              <span className="group-hover:text-primary transition-colors">Contribute</span>
             </Link>
 
             <Link to="/settings" className="btn btn-ghost btn-sm gap-2">
@@ -61,6 +70,7 @@ const Navbar = () => {
 
             {authUser && (
               <>
+                <div className="divider divider-horizontal mx-0"></div>
                 <Link to="/profile" className="btn btn-ghost btn-sm gap-2">
                   <User className="h-4 w-4" />
                   <span>Profile</span>
@@ -89,33 +99,34 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {open && (
-        <div className="md:hidden border-t border-base-300 bg-base-100 px-4 py-3">
+        <div className="md:hidden border-t border-base-300 bg-base-100 px-4 py-4 animate-in slide-in-from-top duration-300">
           <div className="flex flex-col gap-2">
 
             {/* GitHub */}
             <a
-              href="https://github.com/your-username/your-repo"
+              href={GITHUB_URL}
               target="_blank"
               rel="noreferrer"
-              className="btn btn-ghost btn-sm justify-start gap-2"
+              className="btn btn-ghost btn-sm justify-start gap-3 px-4"
             >
               <FaGithub className="h-4 w-4" />
-              GitHub
+              GitHub Repository
             </a>
 
-            {/* Contribute */}
+            {/* Mobile Contribute */}
             <Link
               to="/contribute"
               onClick={() => setOpen(false)}
-              className="btn btn-ghost btn-sm justify-start gap-2"
+              className="btn btn-ghost btn-sm justify-start gap-3 px-4 text-primary bg-primary/5"
             >
-              🚀 Contribute
+              <GitPullRequest className="h-4 w-4" />
+              Contribute to PASO
             </Link>
 
             <Link
               to="/settings"
               onClick={() => setOpen(false)}
-              className="btn btn-ghost btn-sm justify-start gap-2"
+              className="btn btn-ghost btn-sm justify-start gap-3 px-4"
             >
               <Settings className="h-4 w-4" />
               Settings
@@ -126,7 +137,7 @@ const Navbar = () => {
                 <Link
                   to="/profile"
                   onClick={() => setOpen(false)}
-                  className="btn btn-ghost btn-sm justify-start gap-2"
+                  className="btn btn-ghost btn-sm justify-start gap-3 px-4"
                 >
                   <User className="h-4 w-4" />
                   Profile
@@ -137,7 +148,7 @@ const Navbar = () => {
                     logout();
                     setOpen(false);
                   }}
-                  className="btn btn-outline btn-error btn-sm justify-start gap-2"
+                  className="btn btn-error btn-sm justify-start gap-3 px-4 mt-2"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
