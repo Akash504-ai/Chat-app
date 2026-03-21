@@ -303,6 +303,10 @@ npm run dev
 - Mobile optimization
 - UI/UX improvements
 
+## 🤝 Contributing
+Contributions are welcome!  
+See [CONTRIBUTING.md](./CONTRIBUTING.md)
+
 Author
 
 Akash Santra
