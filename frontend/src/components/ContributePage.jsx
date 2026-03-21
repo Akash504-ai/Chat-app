@@ -1,17 +1,25 @@
-import React, { useEffect, useRef } from 'react';
-import mermaid from 'mermaid';
-import { 
-  Github, MessageSquare, Lightbulb, 
-  Terminal, Heart, Code2, Rocket, Share2, 
-  ShieldCheck, Network, Layers
-} from 'lucide-react';
+import React, { useEffect, useRef } from "react";
+import mermaid from "mermaid";
+import {
+  Github,
+  MessageSquare,
+  Lightbulb,
+  Terminal,
+  Heart,
+  Code2,
+  Rocket,
+  Share2,
+  ShieldCheck,
+  Network,
+  Layers,
+} from "lucide-react";
 
 // Initialize Mermaid configuration
 mermaid.initialize({
   startOnLoad: true,
-  theme: 'dark',
-  securityLevel: 'loose',
-  fontFamily: 'inherit',
+  theme: "dark",
+  securityLevel: "loose",
+  fontFamily: "inherit",
 });
 
 const MermaidDiagram = ({ chart }) => {
@@ -113,7 +121,6 @@ const ContributePage = () => {
   return (
     <div className="min-h-screen bg-base-100 text-base-content py-16 px-4 md:px-8">
       <div className="max-w-6xl mx-auto space-y-24">
-        
         {/* --- Header Section --- */}
         <section className="text-center space-y-6">
           <div className="flex justify-center">
@@ -125,7 +132,7 @@ const ContributePage = () => {
             PASO Roadmap
           </h1>
           <p className="text-lg md:text-xl text-base-content/60 max-w-3xl mx-auto leading-relaxed">
-            From your first fork to your first production-ready Pull Request. 
+            From your first fork to your first production-ready Pull Request.
             Join us in building a smarter communication ecosystem.
           </p>
         </section>
@@ -137,12 +144,18 @@ const ContributePage = () => {
               <h2 className="text-3xl font-bold flex items-center gap-3">
                 <Network className="text-primary" /> System Architecture
               </h2>
-              <p className="text-base-content/60">Understand the data flow between React, FastAPI, and MongoDB.</p>
+              <p className="text-base-content/60">
+                Understand the data flow between React, FastAPI, and MongoDB.
+              </p>
             </div>
             <div className="flex gap-2">
-                <div className="badge badge-outline opacity-50">Microservices</div>
-                <div className="badge badge-outline opacity-50">WebSockets</div>
-                <div className="badge badge-outline opacity-50">ML-Integrated</div>
+              <div className="badge badge-outline opacity-50">
+                Microservices
+              </div>
+              <div className="badge badge-outline opacity-50">WebSockets</div>
+              <div className="badge badge-outline opacity-50">
+                ML-Integrated
+              </div>
             </div>
           </div>
 
@@ -151,8 +164,10 @@ const ContributePage = () => {
             <div className="relative bg-base-200 border border-base-300 rounded-3xl p-4 md:p-8 shadow-2xl overflow-hidden">
               <div className="flex items-center justify-between mb-6 px-2">
                 <div className="flex items-center gap-2">
-                    <Layers size={18} className="text-primary" />
-                    <span className="text-xs font-bold uppercase tracking-widest opacity-70">Infrastructure Map v1.0</span>
+                  <Layers size={18} className="text-primary" />
+                  <span className="text-xs font-bold uppercase tracking-widest opacity-70">
+                    Infrastructure Map v1.0
+                  </span>
                 </div>
               </div>
 
@@ -166,95 +181,154 @@ const ContributePage = () => {
 
         {/* --- The Contribution Journey --- */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start pt-10">
-            <div className="space-y-8">
-              <h2 className="text-3xl font-bold flex items-center gap-3">
-                <Rocket className="text-primary" /> The Contributor's Journey
-              </h2>
-              
-              <ul className="steps steps-vertical">
-                <li className="step step-primary">
-                  <div className="text-left ml-4 py-4">
-                    <h3 className="font-bold text-lg">Fork & Explore</h3>
-                    <p className="text-sm text-base-content/60">Create your own copy of the PASO repository and explore the micro-service architecture.</p>
-                  </div>
-                </li>
-                <li className="step step-primary">
-                  <div className="text-left ml-4 py-4">
-                    <h3 className="font-bold text-lg">Branching Strategy</h3>
-                    <p className="text-sm text-base-content/60">Always create a <code>feat/feature-name</code> or <code>fix/bug-name</code> branch.</p>
-                  </div>
-                </li>
-                <li className="step">
-                  <div className="text-left ml-4 py-4">
-                    <h3 className="font-bold text-lg">Pull Request</h3>
-                    <p className="text-sm text-base-content/60">Submit your PR with a clear description of the problem solved.</p>
-                  </div>
-                </li>
-              </ul>
-            </div>
+          <div className="space-y-8">
+            <h2 className="text-3xl font-bold flex items-center gap-3">
+              <Rocket className="text-primary" /> The Contributor's Journey
+            </h2>
 
-            {/* Quick Setup Terminal Card */}
-            <div className="card bg-neutral text-neutral-content shadow-2xl border border-white/5">
-              <div className="card-body p-0">
-                <div className="bg-white/5 px-6 py-3 flex gap-2 border-b border-white/5">
-                  <div className="w-3 h-3 rounded-full bg-error/50"></div>
-                  <div className="w-3 h-3 rounded-full bg-warning/50"></div>
-                  <div className="w-3 h-3 rounded-full bg-success/50"></div>
-                  <span className="text-xs font-mono ml-4 opacity-40">terminal — bash</span>
+            <ul className="steps steps-vertical">
+              <li className="step step-primary">
+                <div className="text-left ml-4 py-4">
+                  <h3 className="font-bold text-lg">Fork & Explore</h3>
+                  <p className="text-sm text-base-content/60">
+                    Create your own copy of the PASO repository and explore the
+                    micro-service architecture.
+                  </p>
                 </div>
-                <div className="p-8 space-y-6">
-                  <div>
-                    <p className="text-primary font-bold text-sm mb-2 uppercase tracking-widest flex items-center gap-2">
-                      <Terminal size={14} /> Quick Start
+              </li>
+              <li className="step step-primary">
+                <div className="text-left ml-4 py-4">
+                  <h3 className="font-bold text-lg">Branching Strategy</h3>
+                  <p className="text-sm text-base-content/60">
+                    Always create a <code>feat/feature-name</code> or{" "}
+                    <code>fix/bug-name</code> branch.
+                  </p>
+                </div>
+              </li>
+              <li className="step">
+                <div className="text-left ml-4 py-4">
+                  <h3 className="font-bold text-lg">Pull Request</h3>
+                  <p className="text-sm text-base-content/60">
+                    Submit your PR with a clear description of the problem
+                    solved.
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          {/* Quick Setup Terminal Card */}
+          <div className="card bg-neutral text-neutral-content shadow-2xl border border-white/5">
+            <div className="card-body p-0">
+              <div className="bg-white/5 px-6 py-3 flex gap-2 border-b border-white/5">
+                <div className="w-3 h-3 rounded-full bg-error/50"></div>
+                <div className="w-3 h-3 rounded-full bg-warning/50"></div>
+                <div className="w-3 h-3 rounded-full bg-success/50"></div>
+                <span className="text-xs font-mono ml-4 opacity-40">
+                  terminal — bash
+                </span>
+              </div>
+              <div className="p-8 space-y-6">
+                <div>
+                  <p className="text-primary font-bold text-sm mb-2 uppercase tracking-widest flex items-center gap-2">
+                    <Terminal size={14} /> Quick Start
+                  </p>
+                  <div className="font-mono text-sm space-y-2 bg-black/40 p-4 rounded-lg">
+                    <p>
+                      <span className="text-success">git</span> clone
+                      https://github.com/akashsantra/paso.git
                     </p>
-                    <div className="font-mono text-sm space-y-2 bg-black/40 p-4 rounded-lg">
-                      <p><span className="text-success">git</span> clone https://github.com/akashsantra/paso.git</p>
-                      <p><span className="text-success">cd</span> paso</p>
-                      <p><span className="text-success">npm</span> install && <span className="text-success">npm</span> run dev</p>
-                    </div>
+                    <p>
+                      <span className="text-success">cd</span> paso
+                    </p>
+                    <p>
+                      <span className="text-success">npm</span> install &&{" "}
+                      <span className="text-success">npm</span> run dev
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
         </section>
 
         {/* --- Action Cards --- */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="group card bg-base-200 hover:bg-base-300 transition-all duration-500 border border-base-300 hover:border-primary/40 cursor-pointer">
-            <div className="card-body">
-              <div className="bg-primary/10 w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <MessageSquare className="text-primary" />
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* BUG REPORTS CARD */}
+          <div className="group relative p-[1px] rounded-3xl overflow-hidden transition-all duration-500 hover:scale-[1.02]">
+            {/* Animated Border Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-error/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="relative bg-base-200/80 backdrop-blur-xl rounded-[23px] p-8 h-full border border-white/5 flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 rounded-2xl bg-error/10 flex items-center justify-center mb-6 ring-1 ring-error/20 group-hover:bg-error/20 transition-colors">
+                  <MessageSquare className="text-error" size={28} />
+                </div>
+                <h2 className="text-2xl font-bold mb-3">Bug Reports</h2>
+                <p className="text-base-content/60 leading-relaxed">
+                  Spotted a glitch in the Socket.io flow or a UI misalignment?
+                  Help us squash it by detailing the steps to reproduce on our
+                  tracker.
+                </p>
               </div>
-              <h2 className="card-title">Bug Reports</h2>
-              <p className="text-sm text-base-content/60">Identify a glitch in Socket.io? Detail it on our issue tracker.</p>
-              <div className="card-actions mt-4">
-                <button className="btn btn-sm btn-ghost gap-2">Open Tracker <Share2 size={14} /></button>
+
+              <div className="mt-8 flex items-center justify-between">
+                <button className="btn btn-error btn-outline btn-sm rounded-full px-6 group-hover:bg-error group-hover:text-error-content transition-all">
+                  Open Tracker
+                </button>
+                <Share2
+                  size={18}
+                  className="opacity-20 group-hover:opacity-100 transition-opacity"
+                />
               </div>
             </div>
           </div>
 
-          <div className="group card bg-base-200 hover:bg-base-300 transition-all duration-500 border border-base-300 hover:border-secondary/40 cursor-pointer">
-            <div className="card-body">
-              <div className="bg-secondary/10 w-14 h-14 rounded-2xl flex items-center justify-center mb-4">
-                <Lightbulb className="text-secondary" />
+          {/* FEATURE REQUESTS CARD */}
+          <div className="group relative p-[1px] rounded-3xl overflow-hidden transition-all duration-500 hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="relative bg-base-200/80 backdrop-blur-xl rounded-[23px] p-8 h-full border border-white/5 flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center mb-6 ring-1 ring-secondary/20 group-hover:bg-secondary/20 transition-colors">
+                  <Lightbulb className="text-secondary" size={28} />
+                </div>
+                <h2 className="text-2xl font-bold mb-3">Feature Requests</h2>
+                <p className="text-base-content/60 leading-relaxed">
+                  Have a vision for AI-driven real-time translation or new
+                  themes? We prioritize high-impact community ideas in our
+                  roadmap.
+                </p>
               </div>
-              <h2 className="card-title">Feature Requests</h2>
-              <p className="text-sm text-base-content/60">Vision for real-time translation? We welcome high-impact ideas.</p>
-              <div className="card-actions mt-4">
-                <button className="btn btn-sm btn-ghost gap-2">Discussion Hub</button>
+
+              <div className="mt-8">
+                <button className="btn btn-secondary btn-outline btn-sm rounded-full px-6 group-hover:bg-secondary group-hover:text-secondary-content transition-all">
+                  Discussion Hub
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="group card bg-base-200 hover:bg-base-300 transition-all duration-500 border border-base-300 hover:border-accent/40 cursor-pointer">
-            <div className="card-body">
-              <div className="bg-accent/10 w-14 h-14 rounded-2xl flex items-center justify-center mb-4">
-                <ShieldCheck className="text-accent" />
+          {/* SECURITY CARD */}
+          <div className="group relative p-[1px] rounded-3xl overflow-hidden transition-all duration-500 hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="relative bg-base-200/80 backdrop-blur-xl rounded-[23px] p-8 h-full border border-white/5 flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 ring-1 ring-accent/20 group-hover:bg-accent/20 transition-colors">
+                  <ShieldCheck className="text-accent" size={28} />
+                </div>
+                <h2 className="text-2xl font-bold mb-3">Security</h2>
+                <p className="text-base-content/60 leading-relaxed">
+                  Found a vulnerability? Please don't post it publicly. Use our
+                  private channel to ensure a coordinated disclosure.
+                </p>
               </div>
-              <h2 className="card-title">Security</h2>
-              <p className="text-sm text-base-content/60">Report vulnerabilities via our private security channel.</p>
-              <div className="card-actions mt-4">
-                <button className="btn btn-sm btn-ghost gap-2">Policy</button>
+
+              <div className="mt-8">
+                <button className="btn btn-accent btn-outline btn-sm rounded-full px-6 group-hover:bg-accent group-hover:text-accent-content transition-all">
+                  View Policy
+                </button>
               </div>
             </div>
           </div>
@@ -265,7 +339,12 @@ const ContributePage = () => {
           <div className="divider opacity-10"></div>
           <div className="flex flex-col items-center gap-4 mt-8">
             <p className="font-semibold text-lg flex items-center gap-2">
-              Made with <Heart size={20} className="text-red-500 fill-red-500 animate-pulse" /> by Akash Santra & the Community
+              Made with{" "}
+              <Heart
+                size={20}
+                className="text-red-500 fill-red-500 animate-pulse"
+              />{" "}
+              by Akash Santra & the Community
             </p>
           </div>
         </footer>
