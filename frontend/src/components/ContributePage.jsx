@@ -344,7 +344,7 @@ const ContributePage = () => {
                 size={20}
                 className="text-red-500 fill-red-500 animate-pulse"
               />{" "}
-              by Akash Santra & the Community
+              by Akash Santra 
             </p>
           </div>
         </footer>
