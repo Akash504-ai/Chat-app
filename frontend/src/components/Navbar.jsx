@@ -3,6 +3,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { LogOut, Menu, MessageSquare, Settings, User, X } from "lucide-react";
 import { useState } from "react";
 import { useChatStore } from "../store/useChatStore";
+import { FaGithub } from "react-icons/fa";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
