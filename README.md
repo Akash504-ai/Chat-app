@@ -233,6 +233,8 @@ Services:
 
 - Backend: Render
 
+- ml-service: Render
+
 ## Environment Variables
 
 ```bash
