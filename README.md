@@ -245,20 +245,22 @@ Services:
 
 ## Environment Variables
 
+Backend
+
 ```bash
-MONGODB_URI=xxx
+MONGODB_URI=
 PORT=5001
-JWT_SECRET=xxx
-NODE_ENV=production
+JWT_SECRET=
+NODE_ENV=
 
-CLOUDINARY_CLOUD_NAME=xxx
-CLOUDINARY_API_KEY=xxx
-CLOUDINARY_API_SECRET=xxx
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
 
-GROQ_API_KEY=gsk_xxx
+GROQ_API_KEY=
 
-ZEGO_APP_ID=xxx
-ZEGO_SERVER_SECRET=xxx
+ZEGO_APP_ID=
+ZEGO_SERVER_SECRET=
 
 CLIENT_URL=https://chat-app-sooty-mu.vercel.app
 BREVO_API_KEY=xxx-xxx-xxx
@@ -267,8 +269,17 @@ ML_SERVICE_URL=https://chat-app-1-bj8j.onrender.com/analyze
 
 BASE_URL=http://localhost:5000
 
-VITE_ZEGO_APP_ID=xxx
-VITE_ZEGO_SERVER_SECRET=xxx
+VITE_ZEGO_APP_ID=
+VITE_ZEGO_SERVER_SECRET=
+VITE_BACKEND_URL=http://localhost:5001
+```
+
+Frontend
+
+```bash
+VITE_ZEGO_APP_ID= (put it in frontend also if not work through backend)
+VITE_ZEGO_SERVER_SECRET= (put it in frontend also if not work through backend)
+# VITE_BACKEND_URL=https://chat-app-xsng.onrender.com
 VITE_BACKEND_URL=http://localhost:5001
 ```
 
