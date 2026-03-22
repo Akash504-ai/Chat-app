@@ -119,20 +119,21 @@ B3 -->|Send Email| E4
 
 ## Authentication
 <p align="center"> 
-    <img src="https://github.com/user-attachments/assets/c45d42c9-2656-4267-80a7-aa016cf302bd" width="45%"/>
-    <img src="https://github.com/user-attachments/assets/ac3c112f-a060-4982-8fed-f0a4310da345" width="45%"/>
-    <img src="https://github.com/user-attachments/assets/7ec2bab0-4605-4012-9907-03c4e6687fe9" width="45%"/>
-    <img src="https://github.com/user-attachments/assets/f7501ffa-502c-47b0-a0d5-8293a9e4d8b0" width="45%"/>
+    <img src="https://github.com/user-attachments/assets/0a79012d-8a32-4bf4-b634-411d512e1a24" width="90%" />
 </p>
 
 ## Chat Interface
-<p align="center"> 
-    <img src="https://github.com/user-attachments/assets/f3cc11c3-8b31-4fe3-864e-f698f1fc497a" width="90%"/> </p> 
-    <p align="center"><img src="https://github.com/user-attachments/assets/88aed0db-a96f-4ead-ab0a-06506117d951" width="90%"/> </p> 
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/f7412938-9575-40c8-a01d-e90540db73ec" width="90%"/> </p> 
+    <p align="center"><img src="https://github.com/user-attachments/assets/a0a6e650-b7e7-46d5-8187-e2f6aa83e5ab" width="90%"/> </p>
+    <p align="center"><img src="https://github.com/user-attachments/assets/56dea4bf-8551-4d2e-adb2-9e4120ec58e7" width="90%"/> </p>
     <p align="center"><img src="https://github.com/user-attachments/assets/9da9c528-4690-43d3-a7bd-0924278725e0" width="90%"/> </p>
 
 ## AI Chat
 <p align="center"> <img src="https://github.com/user-attachments/assets/c262ed0c-303b-4307-9141-9159f20233cf" width="90%"/> </p>
+
+## Calling
+<p align="center"> <img src="https://github.com/user-attachments/assets/3aa8c4bb-0861-4d4b-abad-2861347ac865" width="90%"/> </p>
 
 ## Status page
 <p align="center"> <img src="https://github.com/user-attachments/assets/96aea367-128d-47f1-9588-d89d3dff7b29" width="90%"/> </p>
