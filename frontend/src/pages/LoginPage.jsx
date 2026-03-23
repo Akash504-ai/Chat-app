@@ -19,7 +19,6 @@ const LoginPage = () => {
 
   return (
     <div className="h-screen w-full flex items-center justify-center bg-base-200 p-4 md:p-8 relative overflow-hidden">
-      {/* Dynamic Mesh Background Elements */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[120px] rounded-full animate-pulse" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/10 blur-[120px] rounded-full animate-pulse" />
 
@@ -27,7 +26,6 @@ const LoginPage = () => {
         <div className="w-full rounded-3xl bg-base-100/70 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border border-white/20 overflow-hidden">
           <div className="p-8 md:p-10 flex flex-col justify-center">
             
-            {/* LOGO & HEADER */}
             <div className="text-center mb-10">
               <div className="flex flex-col items-center gap-3">
                 <div className="size-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
@@ -43,7 +41,6 @@ const LoginPage = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
               <div className="form-control">
                 <label className="label py-1">
                   <span className="label-text font-bold text-xs uppercase opacity-70">Email Address</span>
@@ -62,7 +59,6 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              {/* Password */}
               <div className="form-control">
                 <div className="flex justify-between items-end mb-1 px-1">
                   <label className="label p-0">
@@ -99,7 +95,6 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <div className="pt-2">
                 <button
                   type="submit"
@@ -118,7 +113,6 @@ const LoginPage = () => {
               </div>
             </form>
 
-            {/* Footer */}
             <div className="mt-8 text-center">
               <p className="text-sm text-base-content/50 font-medium">
                 Don&apos;t have an account?

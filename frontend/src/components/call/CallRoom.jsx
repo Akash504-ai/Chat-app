@@ -13,7 +13,7 @@ const CallRoom = () => {
   useEffect(() => {
     if (callStatus !== "in-call") return;
     if (!containerRef.current || !roomId || !authUser) return;
-    if (zegoRef.current) return; // 🔒 BLOCK re-init
+    if (zegoRef.current) return; //BLOCK re-init
 
     const appID = Number(import.meta.env.VITE_ZEGO_APP_ID);
     const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET;

@@ -26,7 +26,6 @@ export const useAuthStore = create((set, get) => ({
   securityQuestions: [],
   isFetchingQuestions: false,
 
-  // AUTH
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");
@@ -185,20 +184,16 @@ export const useAuthStore = create((set, get) => ({
     const newSocket = io(BASE_URL, {
       auth: { userId: authUser._id },
 
-      // Let socket decide best transport (polling → websocket upgrade)
       transports: ["polling", "websocket"],
 
-      // Stability settings
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
 
-      // Important for slower mobile TLS handshakes
       timeout: 20000,
     });
 
-    //Attach ALL listeners BEFORE doing anything else
 
     newSocket.on("getOnlineUsers", (userIds) => {
       console.log("RAW FROM SERVER:", userIds);
@@ -217,13 +212,13 @@ export const useAuthStore = create((set, get) => ({
     });
 
     newSocket.on("connect", () => {
-      console.log("✅ Socket connected:", newSocket.id);
+      console.log("Socket connected:", newSocket.id);
       newSocket.emit("requestOnlineUsers"); // force sync
       useChatStore.getState().subscribeToMessages();
     });
 
     newSocket.on("disconnect", () => {
-      console.log("❌ Socket disconnected");
+      console.log("Socket disconnected");
       set({ onlineUsers: [] });
     });
 

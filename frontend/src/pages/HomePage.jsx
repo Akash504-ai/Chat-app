@@ -17,10 +17,8 @@ const HomePage = () => {
   return (
     <div className="flex h-full w-full bg-base-200 overflow-hidden">
 
-      {/* GLOBAL STATUS VIEWER */}
       <StatusViewer />
 
-      {/* 📱 MOBILE */}
       <div className="flex h-full w-full md:hidden">
         {!isChatOpen ? (
           activeTab === "status" ? (
@@ -33,11 +31,9 @@ const HomePage = () => {
         )}
       </div>
 
-      {/* 🖥 DESKTOP */}
       <div className="hidden md:flex h-full w-full justify-center">
         <div className="flex h-full w-full max-w-6xl bg-base-100 shadow-md">
 
-          {/* LEFT */}
           <div className="w-[288px] border-r border-base-300">
             {activeTab === "status" ? (
               <StatusSidebar setActiveTab={setActiveTab} />
@@ -46,7 +42,6 @@ const HomePage = () => {
             )}
           </div>
 
-          {/* RIGHT */}
           <div className="flex-1 overflow-hidden">
             {!isChatOpen ? <NoChatSelected /> : <ChatContainer />}
           </div>

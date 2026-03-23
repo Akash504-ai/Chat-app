@@ -6,7 +6,7 @@ export const createStatus = async (req, res) => {
     const { text } = req.body;
     let mediaUrl = "";
 
-    // ✅ If file is uploaded, send to Cloudinary
+    // If file is uploaded, send to Cloudinary
     if (req.file) {
       const uploadResult = await cloudinary.uploader.upload(req.file.path, {
         folder: "statuses",

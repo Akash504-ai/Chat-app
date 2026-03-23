@@ -23,7 +23,7 @@ const StatusViewer = () => {
   const [showViewers, setShowViewers] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // 🔥 SAFELY GROUP USER STATUSES
+  // SAFELY GROUP USER STATUSES
   const userStatuses = useMemo(() => {
     if (!selectedStatus?.user?._id) return [];
 
@@ -32,7 +32,7 @@ const StatusViewer = () => {
     );
   }, [statuses, selectedStatus]);
 
-  // 🔥 SET INDEX + REGISTER VIEW
+  // SET INDEX + REGISTER VIEW
   useEffect(() => {
     if (!selectedStatus?.user?._id) return;
 
@@ -43,7 +43,7 @@ const StatusViewer = () => {
     viewStatus(selectedStatus);
   }, [selectedStatus, userStatuses, viewStatus]);
 
-  // 🚫 HARD STOP IF NOTHING SELECTED
+  // HARD STOP IF NOTHING SELECTED
   if (!selectedStatus?.user?._id) return null;
 
   const status = userStatuses[currentIndex];
@@ -91,7 +91,6 @@ const StatusViewer = () => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col">
-      {/* PROGRESS */}
       <div className="flex gap-1 px-2 pt-2">
         {userStatuses.map((_, i) => {
           if (i < currentIndex) {
@@ -110,7 +109,6 @@ const StatusViewer = () => {
         })}
       </div>
 
-      {/* HEADER */}
       <div className="flex items-center justify-between p-4 text-white z-20 relative">
         <div className="flex items-center gap-3">
           <img
@@ -175,7 +173,6 @@ const StatusViewer = () => {
         )}
       </div>
 
-      {/* VIEWERS */}
       {showViewers && (
         <div className="absolute inset-0 bg-black/60 z-30 flex items-end">
           <div className="w-full bg-base-100 rounded-t-xl p-4 max-h-[60%] overflow-y-auto">

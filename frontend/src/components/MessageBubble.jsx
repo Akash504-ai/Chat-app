@@ -134,9 +134,7 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
       <div className={`flex flex-col max-w-[85%] sm:max-w-[70%] ${isMe ? "items-end" : "items-start"}`}>
         <div className={`flex items-center gap-1 sm:gap-2 ${isMe ? "flex-row" : "flex-row-reverse"}`}>
           
-          {/* Action Icons */}
           <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
-            {/* Emoji Trigger */}
             <div className="relative" ref={emojiRef}>
               <button
                 onClick={(e) => {
@@ -196,7 +194,6 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
               </AnimatePresence>
             </div>
 
-            {/* Menu Trigger */}
             <div className="relative" ref={menuRef}>
               <button
                 onClick={(e) => {
@@ -273,7 +270,6 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
             </div>
           </div>
 
-          {/* Bubble Content */}
           <div className="relative">
             {isPinned && (
               <div className={`absolute -top-3 ${isMe ? "-left-1" : "-right-1"} z-20`}>
@@ -360,7 +356,6 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
                 </>
               )}
 
-              {/* Reaction Display */}
               {message.reactions?.length > 0 && (
                 <motion.div
                   initial={{ scale: 0 }}
@@ -376,7 +371,6 @@ const MessageBubble = ({ message, sender, isMe, chatId }) => {
           </div>
         </div>
 
-        {/* Footer info */}
         <div className={`mt-2 flex items-center gap-1.5 text-[10px] font-bold opacity-60 ${isMe ? "mr-1" : "ml-1"}`}>
           {isAI && <span className="text-primary uppercase tracking-widest">Meta AI</span>}
           <span>{formatMessageTime(message.createdAt)}</span>

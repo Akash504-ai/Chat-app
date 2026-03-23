@@ -2,11 +2,7 @@ import Report from "../models/report.model.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 
-/*
-========================================
-USER SIDE — Create Report
-========================================
-*/
+// USER SIDE — Create Report
 
 export const createReport = async (req, res) => {
   try {
@@ -55,11 +51,7 @@ export const createReport = async (req, res) => {
   }
 };
 
-/*
-========================================
-ADMIN SIDE — Get All Reports
-========================================
-*/
+// ADMIN SIDE — Get All Reports
 
 export const getAllReports = async (req, res) => {
   try {
@@ -81,12 +73,7 @@ export const getAllReports = async (req, res) => {
   }
 };
 
-/*
-========================================
-ADMIN SIDE — Update Report Status
-========================================
-*/
-
+// ADMIN SIDE — Update Report Status
 export const updateReportStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -116,12 +103,7 @@ export const updateReportStatus = async (req, res) => {
   }
 };
 
-/*
-========================================
-ADMIN — Delete Reported Message
-========================================
-*/
-
+// ADMIN — Delete Reported Message
 export const deleteReportedMessage = async (req, res) => {
   try {
     const report = await Report.findById(req.params.id);
@@ -153,12 +135,7 @@ export const deleteReportedMessage = async (req, res) => {
   }
 };
 
-/*
-========================================
-ADMIN — Ban User From Report
-========================================
-*/
-
+// ADMIN — Ban User From Report
 export const banUserFromReport = async (req, res) => {
   try {
     const report = await Report.findById(req.params.id);
@@ -197,12 +174,7 @@ export const banUserFromReport = async (req, res) => {
   }
 };
 
-/*
-========================================
-ADMIN — Delete Report Permanently (Optional)
-========================================
-*/
-
+// ADMIN — Delete Report Permanently (Optional)
 export const deleteReport = async (req, res) => {
   try {
     const report = await Report.findByIdAndDelete(req.params.id);

@@ -44,14 +44,14 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🔹 Role system
+    //Role system
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
     },
 
-    // 🔹 Ban system
+    // Ban system
     isBanned: {
       type: Boolean,
       default: false,
@@ -62,13 +62,13 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🔹 AI bot account
+    // AI bot account
     isAI: {
       type: Boolean,
       default: false,
     },
 
-    // 🔹 Presence
+    // Presence
     isOnline: {
       type: Boolean,
       default: false,
@@ -79,14 +79,13 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
-    // 🔹 Custom wallpapers per chat
     chatWallpapers: {
       type: Map,
       of: String,
       default: {},
     },
 
-    // 🔐 Security Questions (Max 3)
+    // Security Questions (Max 3)
     securityQuestions: {
       type: [securityQuestionSchema],
       validate: [
@@ -100,14 +99,15 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
 
-    // 🔐 Temporary reset session (very important)
+    // Temporary reset session (very important)
     passwordResetSession: {
       type: String,
       select: false,
       default: null,
     },
 
-    // 🔐 Email Verification
+    // Future implementation
+    // Email Verification
     // isVerified: {
     //   type: Boolean,
     //   default: false,

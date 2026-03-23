@@ -23,11 +23,11 @@ export function getReceiverSocketIds(userId) {
   return userSocketMap[userId] ? [...userSocketMap[userId]] : [];
 }
 export function emitToUser(userId, event, payload) {
-  console.log("📤 Trying to emit to:", userId);
+  console.log("Trying to emit to:", userId);
   const socketIds = userSocketMap[userId];
-  console.log("📡 Raw socket set:", socketIds);
+  console.log("Raw socket set:", socketIds);
   if (!socketIds) {
-    console.log("❌ No socket found for user:", userId);
+    console.log("No socket found for user:", userId);
     return;
   }
   socketIds.forEach((id) => {
@@ -36,12 +36,12 @@ export function emitToUser(userId, event, payload) {
   });
 }
 io.on("connection", async (socket) => {
-  console.log("🔥 SOCKET FILE LOADED");
+  console.log("SOCKET FILE LOADED");
   const userId = socket.handshake.auth.userId;
   if (!userId) return;
   socket.on("requestOnlineUsers", () => {
     const users = Object.keys(userSocketMap);
-    console.log("📤 Sending online users:", users);
+    console.log("Sending online users:", users);
     socket.emit("getOnlineUsers", users);
   });
   if (!userSocketMap[userId]) {

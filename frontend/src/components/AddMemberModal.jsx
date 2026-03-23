@@ -36,7 +36,7 @@ const AddMemberModal = ({ group, onClose, onAdded }) => {
   }, [users, group.members, searchTerm]);
 
   const handleAddMember = async (user) => {
-    // 🔥 HARD BLOCK AI
+    // HARD BLOCK AI
     if (user.isAI) {
       toast.error("AI cannot be added to groups");
       return;
@@ -65,7 +65,6 @@ const AddMemberModal = ({ group, onClose, onAdded }) => {
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 mt-[230px]">
-      {/* Backdrop */}
       <div onClick={onClose} className="" />
 
       <motion.div
@@ -75,7 +74,6 @@ const AddMemberModal = ({ group, onClose, onAdded }) => {
         className="relative w-full max-w-sm rounded-3xl bg-base-100
           shadow-2xl border border-base-300 overflow-hidden flex flex-col"
       >
-        {/* HEADER */}
         <div className="flex items-center justify-between border-b p-5">
           <div>
             <h2 className="text-lg font-bold">Add Member</h2>
@@ -86,7 +84,6 @@ const AddMemberModal = ({ group, onClose, onAdded }) => {
           </button>
         </div>
 
-        {/* SEARCH */}
         <div className="p-4 border-b">
           <div className="relative">
             <Search
@@ -103,7 +100,6 @@ const AddMemberModal = ({ group, onClose, onAdded }) => {
           </div>
         </div>
 
-        {/* USERS */}
         <div className="max-h-[45vh] overflow-y-auto p-2">
           {loading ? (
             <div className="flex flex-col items-center py-12 opacity-50">
@@ -148,7 +144,6 @@ const AddMemberModal = ({ group, onClose, onAdded }) => {
           )}
         </div>
 
-        {/* FOOTER */}
         <div className="p-3 text-center border-t text-[10px] opacity-40 font-bold">
           Search globally for new connections
         </div>

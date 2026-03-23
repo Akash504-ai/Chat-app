@@ -90,19 +90,15 @@ const ChatContainer = () => {
 
   return (
     <div className="flex flex-1 flex-col h-full min-h-0 w-full bg-transparent overflow-hidden">
-      {/* HEADER */}
       <div className="shrink-0 z-20">
         <ChatHeader />
       </div>
 
-      {/* PINNED */}
       <div className="shrink-0 z-20">
         <PinnedHeader chatId={chatId} />
       </div>
 
-      {/* MESSAGES AREA */}
       <div className="relative flex-1 min-h-0 overflow-hidden">
-        {/* 🖼️ WALLPAPER LAYER (Fixed inside this container) */}
         {wallpaper && (
           <div
             className="absolute inset-0 z-0"
@@ -114,12 +110,11 @@ const ChatContainer = () => {
               backgroundAttachment: "fixed", // Keeps image still while scrolling
             }}
           >
-            {/* 🌑 DARK OVERLAY FOR READABILITY */}
+            {/* DARK OVERLAY FOR READABILITY */}
             {/* <div className="absolute inset-0 bg-black/40 pointer-events-none" /> */}
           </div>
         )}
 
-        {/* 📜 SCROLLABLE CONTENT LAYER */}
         <div className="relative z-10 h-full overflow-y-auto overscroll-contain px-2 py-2 sm:px-4 sm:py-3">
           <div className="space-y-2 sm:space-y-4">
             {visibleMessages.map((message, idx) => {
@@ -156,7 +151,7 @@ const ChatContainer = () => {
               );
             })}
 
-            {/* 🤖 AI THINKING */}
+            {/* AI THINKING */}
             <AnimatePresence>
               {isAILoading && (
                 <motion.div
@@ -187,8 +182,6 @@ const ChatContainer = () => {
           </div>
         </div>
       </div>
-
-      {/* INPUT */}
       <div className="shrink-0 z-20">
         <MessageInput />
       </div>

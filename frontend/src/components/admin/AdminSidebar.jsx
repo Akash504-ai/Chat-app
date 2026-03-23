@@ -11,7 +11,6 @@ const AdminSidebar = () => {
 
   return (
     <div className="flex flex-col w-64 h-screen bg-base-100 border-r border-base-300">
-      {/* Header / Logo Section */}
       <div className="p-6">
         <div className="flex items-center gap-3 px-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-content font-bold">
@@ -21,7 +20,6 @@ const AdminSidebar = () => {
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 px-4 space-y-1">
         {navItems.map((item) => (
           <NavLink

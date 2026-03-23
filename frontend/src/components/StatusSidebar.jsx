@@ -33,7 +33,6 @@ const StatusSidebar = ({ setActiveTab }) => {
     <>
       <div className="h-full w-full overflow-y-auto">
 
-        {/* HEADER */}
         <div className="flex items-center gap-3 p-4 border-b border-base-300">
           <button
             onClick={() => setActiveTab("chats")}
@@ -50,7 +49,6 @@ const StatusSidebar = ({ setActiveTab }) => {
           </div>
         )}
 
-        {/* MY STATUS */}
         <div
           onClick={() => setShowAddStatus(true)}
           className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-base-200"
@@ -68,7 +66,6 @@ const StatusSidebar = ({ setActiveTab }) => {
 
         <div className="divider my-2" />
 
-        {/* OTHER STATUSES */}
         {Object.values(groupedStatuses).map(({ user, statuses }) => (
           <div
             key={user?._id}
@@ -94,7 +91,6 @@ const StatusSidebar = ({ setActiveTab }) => {
         ))}
       </div>
 
-      {/* ADD STATUS MODAL */}
       {showAddStatus && (
         <AddStatusModal onClose={() => setShowAddStatus(false)} />
       )}

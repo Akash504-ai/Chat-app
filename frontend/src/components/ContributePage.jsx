@@ -121,7 +121,6 @@ const ContributePage = () => {
   return (
     <div className="min-h-screen bg-base-100 text-base-content py-16 px-4 md:px-8">
       <div className="max-w-6xl mx-auto space-y-24">
-        {/* --- Header Section --- */}
         <section className="text-center space-y-6">
           <div className="flex justify-center">
             <div className="badge badge-primary badge-outline gap-2 py-4 px-6 text-sm font-bold tracking-widest uppercase">
@@ -137,7 +136,6 @@ const ContributePage = () => {
           </p>
         </section>
 
-        {/* --- System Architecture Visualization --- */}
         <section className="space-y-8">
           <div className="flex flex-col md:flex-row justify-between items-end gap-4">
             <div className="space-y-2">
@@ -171,7 +169,6 @@ const ContributePage = () => {
                 </div>
               </div>
 
-              {/* Mermaid Diagram Wrapper */}
               <div className="bg-white/5 rounded-2xl p-2 md:p-6 overflow-x-auto custom-mermaid-container">
                 <MermaidDiagram chart={systemArchitecture} />
               </div>
@@ -179,7 +176,6 @@ const ContributePage = () => {
           </div>
         </section>
 
-        {/* --- The Contribution Journey --- */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start pt-10">
           <div className="space-y-8">
             <h2 className="text-3xl font-bold flex items-center gap-3">
@@ -217,7 +213,6 @@ const ContributePage = () => {
             </ul>
           </div>
 
-          {/* Quick Setup Terminal Card */}
           <div className="card bg-neutral text-neutral-content shadow-2xl border border-white/5">
             <div className="card-body p-0">
               <div className="bg-white/5 px-6 py-3 flex gap-2 border-b border-white/5">
@@ -252,11 +247,8 @@ const ContributePage = () => {
           </div>
         </section>
 
-        {/* --- Action Cards --- */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* BUG REPORTS CARD */}
           <div className="group relative p-[1px] rounded-3xl overflow-hidden transition-all duration-500 hover:scale-[1.02]">
-            {/* Animated Border Gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-error/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
             <div className="relative bg-base-200/80 backdrop-blur-xl rounded-[23px] p-8 h-full border border-white/5 flex flex-col justify-between">
@@ -288,7 +280,6 @@ const ContributePage = () => {
             </div>
           </div>
 
-          {/* FEATURE REQUESTS CARD */}
           <div className="group relative p-[1px] rounded-3xl overflow-hidden transition-all duration-500 hover:scale-[1.02]">
             <div className="absolute inset-0 bg-gradient-to-br from-secondary/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
@@ -317,7 +308,6 @@ const ContributePage = () => {
             </div>
           </div>
 
-          {/* SECURITY CARD */}
           <div className="group relative p-[1px] rounded-3xl overflow-hidden transition-all duration-500 hover:scale-[1.02]">
             <div className="absolute inset-0 bg-gradient-to-br from-accent/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
@@ -345,7 +335,6 @@ const ContributePage = () => {
           </div>
         </section>
 
-        {/* --- Footer --- */}
         <footer className="text-center pb-12 pt-10">
           <div className="divider opacity-10"></div>
           <div className="flex flex-col items-center gap-4 mt-8">

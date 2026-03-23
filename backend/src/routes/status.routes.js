@@ -21,7 +21,7 @@ router.get("/", protectRoute, getStatuses);
 
 router.post("/:statusId/view", protectRoute, viewStatus);
 
-// 🗑 delete status
+// delete status
 router.delete("/:statusId", protectRoute, deleteStatus);
 
 export default router;

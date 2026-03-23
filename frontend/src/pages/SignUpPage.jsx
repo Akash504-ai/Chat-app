@@ -59,17 +59,14 @@ const SignUpPage = () => {
 
   return (
     <div className="h-screen w-full flex items-center justify-center bg-base-200 p-3 md:p-8 relative overflow-hidden">
-      {/* Background Glows */}
       <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-primary/10 blur-[100px] rounded-full animate-pulse" />
       <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-secondary/10 blur-[100px] rounded-full animate-pulse" />
 
       <div className="w-full max-w-5xl max-h-[95vh] md:max-h-[850px] relative z-10 flex items-center">
         <div className="w-full rounded-2xl md:rounded-3xl bg-base-100/70 backdrop-blur-2xl shadow-2xl border border-white/20 overflow-hidden flex flex-col">
           
-          {/* Main Content Area */}
           <div className="flex flex-col md:flex-row overflow-y-auto md:overflow-visible">
             
-            {/* LEFT SIDE: Identity */}
             <div className="flex-[1.2] p-5 md:p-10 lg:p-12 flex flex-col justify-center">
               <div className="mb-6 md:mb-8 text-center md:text-left">
                 <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
@@ -139,7 +136,6 @@ const SignUpPage = () => {
               </form>
             </div>
 
-            {/* RIGHT SIDE: Questions */}
             <div className="flex-1 bg-base-200/40 p-5 md:p-10 lg:p-12 flex flex-col border-t md:border-t-0 md:border-l border-base-content/5">
               <div className="flex items-center gap-2 mb-4 md:mb-6">
                 <ShieldCheck className="size-4 md:size-5 text-primary" />
@@ -167,7 +163,6 @@ const SignUpPage = () => {
                 ))}
               </div>
 
-              {/* Desktop Desktop Submit (Hidden on Mobile) */}
               <div className="hidden md:block mt-8 space-y-4">
                 <button
                   type="submit"
@@ -184,7 +179,6 @@ const SignUpPage = () => {
             </div>
           </div>
 
-          {/* MOBILE ONLY FOOTER (Pinned to bottom of card) */}
           <div className="md:hidden p-5 bg-base-100 border-t border-base-200">
             <button
               type="submit"

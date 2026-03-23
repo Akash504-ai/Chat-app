@@ -26,7 +26,6 @@ const PinnedHeader = ({ chatId }) => {
       block: "center",
     });
 
-    // auto clear highlight (same as reply)
     setTimeout(() => {
       setHighlightedMessage(null);
     }, 1500);
