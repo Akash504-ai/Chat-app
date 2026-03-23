@@ -26,17 +26,14 @@ const IncomingCallModal = () => {
           )}
         </div>
 
-        {/* Caller Name */}
         <h2 className="text-xl font-semibold">
           {caller?.fullName || caller?.name || "Someone"}
         </h2>
 
-        {/* Call Type */}
         <p className="text-sm text-base-content/60 mt-1">
           {callType === "video" ? "Incoming Video Call" : "Incoming Voice Call"}
         </p>
 
-        {/* Buttons */}
         <div className="mt-6 flex justify-center gap-6">
           <button
             onClick={rejectCall}

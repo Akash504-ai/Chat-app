@@ -32,7 +32,6 @@ const AddStatusModal = ({ onClose }) => {
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
       <div className="bg-base-100 w-full max-w-md rounded-lg p-4">
 
-        {/* HEADER */}
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-lg">Add Status</h3>
           <button onClick={onClose} className="btn btn-sm btn-ghost">
@@ -40,7 +39,6 @@ const AddStatusModal = ({ onClose }) => {
           </button>
         </div>
 
-        {/* TEXT */}
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -48,7 +46,6 @@ const AddStatusModal = ({ onClose }) => {
           className="textarea textarea-bordered w-full mb-3"
         />
 
-        {/* MEDIA PICKER */}
         <label className="flex items-center gap-2 cursor-pointer mb-3">
           <Image size={18} />
           <span className="text-sm">Add image / video</span>
@@ -60,7 +57,6 @@ const AddStatusModal = ({ onClose }) => {
           />
         </label>
 
-        {/* PREVIEW */}
         {preview && (
           <div className="mb-3">
             {file.type.startsWith("image") ? (
@@ -79,7 +75,6 @@ const AddStatusModal = ({ onClose }) => {
           </div>
         )}
 
-        {/* ACTION */}
         <button
           onClick={handleSubmit}
           disabled={isUploadingStatus}

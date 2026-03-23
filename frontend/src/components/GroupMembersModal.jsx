@@ -79,7 +79,6 @@ const GroupMembersModal = ({ groupId, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 mt-[230px]">
-      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -88,7 +87,6 @@ const GroupMembersModal = ({ groupId, onClose }) => {
         className=""
       />
 
-      {/* Modal */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -96,7 +94,6 @@ const GroupMembersModal = ({ groupId, onClose }) => {
           rounded-3xl bg-base-100 shadow-2xl border border-base-300
           flex flex-col"
       >
-        {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-5">
           <div>
             <h2 className="text-xl font-bold">{group.name}</h2>
@@ -107,7 +104,6 @@ const GroupMembersModal = ({ groupId, onClose }) => {
           </button>
         </div>
 
-        {/* Admin Actions */}
         {isAdmin && (
           <div className="px-6 py-4">
             <button
@@ -119,7 +115,6 @@ const GroupMembersModal = ({ groupId, onClose }) => {
           </div>
         )}
 
-        {/* Members */}
         <div className="flex-1 overflow-y-auto px-2 py-2">
           {safeMembers.map((m) => {
             const isMe = m.userId._id === authUser._id;
@@ -154,7 +149,6 @@ const GroupMembersModal = ({ groupId, onClose }) => {
                   <p className="text-xs capitalize opacity-60">{m.role}</p>
                 </div>
 
-                {/* Remove */}
                 {isAdmin && !isMe && !isCreatorMember && (
                   <button
                     onClick={() => handleRemove(m.userId._id)}
@@ -168,7 +162,6 @@ const GroupMembersModal = ({ groupId, onClose }) => {
           })}
         </div>
 
-        {/* Leave Group */}
         {canLeave && (
           <div className="border-t p-4">
             <button
@@ -181,7 +174,6 @@ const GroupMembersModal = ({ groupId, onClose }) => {
         )}
       </motion.div>
 
-      {/* Add Member Modal */}
       <AnimatePresence>
         {showAddMember && (
           <AddMemberModal

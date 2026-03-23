@@ -116,7 +116,6 @@ const ChatHeader = () => {
       <div className="px-2 sm:px-4 py-2 sm:py-3">
         {/* Added min-w-0 here to allow children to truncate */}
         <div className="flex items-center justify-between gap-2 sm:gap-4 min-w-0">
-          {/* LEFT: Back + Avatar + Text */}
           <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             <button
               onClick={clearSelectedChat}
@@ -125,7 +124,6 @@ const ChatHeader = () => {
               <ArrowLeft className="h-5 w-5" />
             </button>
 
-            {/* Avatar - Slightly smaller on mobile to save space */}
             <div className="shrink-0">
               {isGroup ? (
                 <div className="h-9 w-9 sm:h-12 sm:w-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -152,7 +150,6 @@ const ChatHeader = () => {
               )}
             </div>
 
-            {/* Name + Status - Added min-w-0 and truncate */}
             <div className="min-w-0 flex flex-col justify-center">
               <div className="flex items-center gap-1 min-w-0">
                 <h3 className="font-bold truncate text-[13px] sm:text-lg leading-tight">
@@ -217,9 +214,7 @@ const ChatHeader = () => {
             </div>
           </div>
 
-          {/* RIGHT: Call Buttons + Menu */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {/* Added gap inside the pill for better icon separation */}
             <div className="flex items-center bg-base-200/60 rounded-full p-0.5 sm:p-1 border border-base-300/40 gap-0.5 sm:gap-1">
               {isGroup ? (
                 <>
@@ -275,7 +270,7 @@ const ChatHeader = () => {
               )}
             </div>
 
-            {/* 🔍 SEARCH */}
+            {/*SEARCH */}
             <div className="relative">
               <IconBtn onClick={() => setShowSearch((s) => !s)}>
                 <Search size={18} />
@@ -313,7 +308,6 @@ const ChatHeader = () => {
               )}
             </div>
 
-            {/* MENU */}
             <div ref={menuRef} className="relative">
               <button
                 onClick={() => setOpenMenu(!openMenu)}

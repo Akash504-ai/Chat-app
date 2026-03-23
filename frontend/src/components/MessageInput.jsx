@@ -216,7 +216,6 @@ const MessageInput = () => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* DRAG OVERLAY */}
       {dragActive && (
         <div className="absolute inset-0 flex items-center justify-center bg-base-200/70 backdrop-blur-sm z-40 rounded-xl">
           <p className="text-lg font-semibold text-primary">
@@ -240,7 +239,6 @@ const MessageInput = () => {
         </div>
       )}
 
-      {/* PREVIEWS SECTION */}
       {(imagePreview || fileData || audioData) && (
         <div className="mb-3 flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-2">
           {imagePreview && (
@@ -277,7 +275,6 @@ const MessageInput = () => {
         </div>
       )}
 
-      {/* 🔥 SMART REPLIES */}
       {smartReplies?.length > 0 && !isAI && (
         <div
           className="
@@ -347,7 +344,6 @@ const MessageInput = () => {
         </div>
       )}
 
-      {/* INPUT ROW */}
       <form onSubmit={handleSend} className="flex items-end gap-2">
         <div className="flex-1 flex flex-col gap-2 min-w-0">
           <div className="relative flex items-center bg-base-200 rounded-xl px-3 py-1 sm:py-2">
@@ -376,7 +372,6 @@ const MessageInput = () => {
   "
             />
 
-            {/* Action Buttons inside/beside input for a cleaner look */}
             {!isAI && (
               <div className="flex items-center gap-0.5 sm:gap-1 ml-2">
                 <input

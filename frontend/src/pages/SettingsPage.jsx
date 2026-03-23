@@ -15,7 +15,6 @@ const SettingsPage = () => {
   return (
     <div className="h-full overflow-y-auto bg-base-100 pt-20 px-4 sm:px-6 lg:px-8 pb-8">
       <div className="mx-auto max-w-5xl space-y-8 mt-[-45px]">
-        {/* Header */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate("/")}
@@ -33,7 +32,6 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        {/* Theme Section */}
         <div className="space-y-4">
           <h2 className="text-lg font-medium">Theme</h2>
 
@@ -68,14 +66,12 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        {/* Preview Section */}
         <div className="space-y-4">
           <h2 className="text-lg font-medium">Preview</h2>
 
           <div className="rounded-xl border border-base-300 bg-base-200 p-4">
             <div className="mx-auto max-w-md">
               <div className="rounded-xl overflow-hidden bg-base-100 shadow">
-                {/* Header */}
                 <div className="flex items-center gap-3 px-4 py-3 border-b border-base-300">
                   <div className="h-8 w-8 rounded-full bg-primary text-primary-content flex items-center justify-center font-medium">
                     J
@@ -86,7 +82,6 @@ const SettingsPage = () => {
                   </div>
                 </div>
 
-                {/* Messages */}
                 <div className="p-4 space-y-3 bg-base-100 min-h-[180px]">
                   {PREVIEW_MESSAGES.map((m) => (
                     <div
@@ -109,7 +104,6 @@ const SettingsPage = () => {
                   ))}
                 </div>
 
-                {/* Input */}
                 <div className="border-t border-base-300 p-3 flex gap-2">
                   <input
                     className="input input-bordered flex-1 h-10 text-sm"

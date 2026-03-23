@@ -12,7 +12,6 @@ export const useStatusStore = create(
       isStatusLoading: false,
       isUploadingStatus: false,
 
-      /* ---------------- GET ALL STATUSES ---------------- */
       getStatuses: async () => {
         set({ isStatusLoading: true });
         try {
@@ -25,7 +24,6 @@ export const useStatusStore = create(
         }
       },
 
-      /* ---------------- CREATE STATUS (CLOUDINARY) ---------------- */
       createStatus: async (formData) => {
         set({ isUploadingStatus: true });
         try {
@@ -47,7 +45,6 @@ export const useStatusStore = create(
         }
       },
 
-      /* ---------------- VIEW STATUS ---------------- */
       viewStatus: async (status) => {
         set({ selectedStatus: status });
         try {
@@ -57,7 +54,6 @@ export const useStatusStore = create(
         }
       },
 
-      /* ---------------- DELETE STATUS ---------------- */
       deleteStatus: async (statusId) => {
         try {
           await axiosInstance.delete(`/status/${statusId}`);
@@ -76,7 +72,6 @@ export const useStatusStore = create(
         }
       },
 
-      /* ---------------- CLEAR SELECTED STATUS ---------------- */
       clearSelectedStatus: () =>
         set({
           selectedStatus: null,

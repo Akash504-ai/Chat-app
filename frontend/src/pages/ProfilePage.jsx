@@ -51,7 +51,6 @@ const ProfilePage = () => {
   return (
     <div className="h-full overflow-y-auto bg-base-100 pt-24 px-4 pb-8 mt-[-50px]">
       <div className="mx-auto max-w-2xl space-y-8">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -84,11 +83,8 @@ const ProfilePage = () => {
           )}
         </div>
 
-        {/* Main Profile Section */}
         <div className="grid gap-8">
-          {/* Profile Card */}
           <div className="bg-base-200/50 border border-base-300 rounded-3xl p-6 sm:p-8 space-y-8 backdrop-blur-sm">
-            {/* Avatar Section */}
             <div className="flex flex-col items-center gap-4">
               <div className="relative group">
                 <div className="relative h-32 w-32 sm:h-40 sm:w-40">
@@ -134,7 +130,6 @@ const ProfilePage = () => {
               </p>
             </div>
 
-            {/* Form Fields */}
             <div className="grid gap-6">
               <div className="form-control">
                 <label className="label">
@@ -167,7 +162,6 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {/* Detailed Account Stats */}
           <div className="bg-base-200/50 border border-base-300 rounded-3xl p-6 sm:p-8 backdrop-blur-sm">
             <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-success" />

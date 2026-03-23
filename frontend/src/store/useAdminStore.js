@@ -2,14 +2,12 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 
 export const useAdminStore = create((set, get) => ({
-  // STATE
   users: [],
   reports: [],
   dashboardStats: null,
   loading: false,
   error: null,
 
-  // DASHBOARD STATS
   getDashboardStats: async () => {
     try {
       set({ loading: true, error: null });
@@ -25,7 +23,6 @@ export const useAdminStore = create((set, get) => ({
     }
   },
 
-  // USERS
   getUsers: async (page = 1, search = "", role = "") => {
     try {
       set({ loading: true, error: null });
@@ -66,7 +63,6 @@ export const useAdminStore = create((set, get) => ({
     }
   },
 
-  // REPORTS
   getReports: async (status = "") => {
     try {
       set({ loading: true, error: null });
@@ -90,7 +86,6 @@ export const useAdminStore = create((set, get) => ({
     try {
       await axiosInstance.patch(`/reports/${reportId}/status`, { status });
 
-      // refresh reports
       get().getReports();
     } catch (error) {
       console.error("Update report error:", error);
@@ -103,7 +98,6 @@ export const useAdminStore = create((set, get) => ({
         `/reports/${reportId}/delete-message`
       );
 
-      // refresh reports
       get().getReports();
     } catch (error) {
       console.error("Delete message error:", error);
@@ -114,7 +108,6 @@ export const useAdminStore = create((set, get) => ({
     try {
       await axiosInstance.patch(`/reports/${reportId}/ban-user`);
 
-      // refresh reports
       get().getReports();
     } catch (error) {
       console.error("Ban from report error:", error);

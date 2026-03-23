@@ -86,7 +86,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">Dashboard Overview</h1>
@@ -102,7 +101,6 @@ const AdminDashboard = () => {
         </button>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <StatCard title="Total Users" value={dashboardStats?.totalUsers} icon={<Users className="text-blue-500" />} loading={loading} trend="+12% ↑" />
         <StatCard title="Total Groups" value={dashboardStats?.totalGroups} icon={<Hash className="text-purple-500" />} loading={loading} />
@@ -112,7 +110,6 @@ const AdminDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Growth Chart */}
         <div className="lg:col-span-2 card bg-base-100 border border-base-300 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -143,7 +140,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Distribution Pie Chart */}
         <div className="card bg-base-100 border border-base-300 shadow-sm p-6">
           <h3 className="font-bold text-lg mb-1">Status Distribution</h3>
           <p className="text-xs opacity-50 mb-6">Breakdown of platform activity</p>
@@ -187,7 +183,6 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* 🚀 ULTIMATE DETAILS MODAL */}
       {showDetails && (
         <div className="modal modal-open backdrop-blur-md transition-all duration-500">
           <div className="modal-box max-w-3xl bg-base-100/95 shadow-2xl border border-base-300 rounded-[2.5rem] p-0 overflow-hidden animate-in zoom-in-95 duration-300">

@@ -32,7 +32,6 @@ const AdminUsers = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      {/* 🚀 1. Stats Bar */}
       <div className="stats shadow-sm border border-base-300 bg-base-100 w-full lg:w-fit">
         <div className="stat px-8">
           <div className="stat-title text-xs uppercase font-bold tracking-widest">Platform Users</div>
@@ -44,7 +43,6 @@ const AdminUsers = () => {
         </div>
       </div>
 
-      {/* Header & Controls */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">User Management</h1>
@@ -52,7 +50,6 @@ const AdminUsers = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* 🚀 2. Role Filter */}
           <div className="flex items-center gap-2 bg-base-100 border border-base-300 rounded-lg px-3 py-1">
             <Filter size={14} className="opacity-50" />
             <select 
@@ -85,7 +82,6 @@ const AdminUsers = () => {
         </div>
       </div>
 
-      {/* Users Table */}
       <div className="card bg-base-100 border border-base-300 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="table table-md">
@@ -107,7 +103,6 @@ const AdminUsers = () => {
                     <td>
                       <div className="flex items-center gap-3">
                         <div className="avatar placeholder relative">
-                          {/* 🚀 6. Online Indicator */}
                           {user.isOnline && (
                             <span className="absolute z-10 top-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-base-100"></span>
                           )}
@@ -142,7 +137,6 @@ const AdminUsers = () => {
                     </td>
                     <td className="text-right">
                       <div className="flex justify-end gap-2">
-                        {/* 🚀 4. View Profile Button */}
                         <button 
                           className="btn btn-square btn-sm btn-ghost" 
                           onClick={() => setSelectedUser(user)}
@@ -151,7 +145,7 @@ const AdminUsers = () => {
                         </button>
 
                         {/* for now removing the ban...............[FUTURE FEATURE...]*/}
-                        {/* 🚀 3. Prevent Admin/AI Banning
+                        {/* 3. Prevent Admin/AI Banning
                         <button
                           className={`btn btn-square btn-sm ${user.isBanned ? "btn-success" : "btn-warning"}`}
                           disabled={isAdmin || isMetaAI}
@@ -161,7 +155,7 @@ const AdminUsers = () => {
                           {user.isBanned ? <UserCheck size={16} /> : <UserX size={16} />}
                         </button> */}
 
-                        {/* 🚀 Meta AI Protection */}
+                        {/* Meta AI Protection */}
                         <button
                           className="btn btn-square btn-sm btn-error btn-outline"
                           disabled={isMetaAI || (isAdmin && user.email !== "your-email@admin.com")} // Only super-admin or protect all admins
@@ -171,7 +165,7 @@ const AdminUsers = () => {
                         </button>
                       </div>
 
-                      {/* 🚀 5. Confirm Modal */}
+                      {/*5. Confirm Modal */}
                       <dialog id={`delete_modal_${user._id}`} className="modal modal-bottom sm:modal-middle text-left">
                         <div className="modal-box border border-error/20">
                           <h3 className="font-bold text-lg text-error flex items-center gap-2">
@@ -194,7 +188,6 @@ const AdminUsers = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         <div className="p-4 border-t border-base-200 flex items-center justify-between bg-base-200/10">
           <span className="text-xs font-bold opacity-40 uppercase tracking-tighter">Navigation — Page {page}</span>
           <div className="join shadow-sm">
@@ -205,7 +198,6 @@ const AdminUsers = () => {
         </div>
       </div>
 
-      {/* 🚀 4. View Profile Modal Content */}
       {selectedUser && (
         <dialog open className="modal modal-open">
           <div className="modal-box max-w-sm text-center">

@@ -17,7 +17,7 @@ const analyzeMessage = async (text) => {
     return response.data;
 
   } catch (error) {
-    console.error("🔥 FULL ML ERROR:", error);
+    console.error("FULL ML ERROR:", error);
     return {
       toxic_score: 0,
       spam_score: 0,

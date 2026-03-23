@@ -61,7 +61,6 @@ const AudioMessage = ({ audioUrl, isMe }) => {
       </button>
 
       <div className="flex-1">
-        {/* Progress bar */}
         <div className="h-1 w-full rounded-full bg-black/20 overflow-hidden">
           <div
             className={`h-full transition-all duration-100
@@ -71,7 +70,6 @@ const AudioMessage = ({ audioUrl, isMe }) => {
           />
         </div>
 
-        {/* Time */}
         <div className="flex justify-between text-[11px] mt-1 opacity-70">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>

@@ -20,7 +20,7 @@ const router = express.Router();
 
 router.get("/users", protectRoute, getUsersForSidebar);
 
-// 🔍 Search messages
+// Search messages
 router.get("/search/:userId", protectRoute, searchMessages);
 router.get("/group/search/:groupId", protectRoute, searchGroupMessages);
 

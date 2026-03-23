@@ -25,7 +25,7 @@ const CreateGroupModal = ({ onClose }) => {
       return;
     }
 
-    // 🔒 FINAL SAFETY: ensure only humans go to backend
+    // FINAL SAFETY: ensure only humans go to backend
     const humanMembers = selectedUsers.filter((id) => {
       const user = users.find((u) => u._id === id);
       return user && !user.isAI;
@@ -74,7 +74,6 @@ const CreateGroupModal = ({ onClose }) => {
           className="input input-bordered mb-4 w-full"
         />
 
-        {/* 🔥 AI HIDDEN HERE */}
         <div className="mb-4 max-h-60 space-y-2 overflow-y-auto">
           {users
             .filter((u) => !u.isAI)

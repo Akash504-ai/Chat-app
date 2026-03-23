@@ -55,7 +55,6 @@ const AdminReports = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-error/10 text-error rounded-2xl shadow-inner">
@@ -69,7 +68,6 @@ const AdminReports = () => {
           </div>
         </div>
 
-        {/* Filter UI */}
         <div className="flex items-center gap-3 bg-base-200/50 p-2 rounded-2xl border border-base-300">
           <div className="pl-3 text-base-content/40">
             <Filter size={16} />
@@ -88,7 +86,6 @@ const AdminReports = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="card bg-base-100 border border-base-300 shadow-xl rounded-[2rem] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="table table-lg w-full border-separate border-spacing-0">
@@ -105,10 +102,8 @@ const AdminReports = () => {
               {reports.map((report) => (
                 <tr key={report._id} className="group hover:bg-base-200/40 transition-all">
                   
-                  {/* Entities Column */}
                   <td className="pl-8 py-6">
                     <div className="flex items-center gap-4">
-                      {/* Reporter */}
                       <div className="space-y-1">
                         <span className="text-[10px] font-black opacity-30 uppercase tracking-tighter">Reporter</span>
                         <div className="flex items-center gap-2">
@@ -128,7 +123,6 @@ const AdminReports = () => {
                         <ArrowRight size={14} className="opacity-40" />
                       </div>
 
-                      {/* Reported Entity */}
                       <div className="space-y-1">
                         <span className="text-[10px] font-black text-error/60 uppercase tracking-tighter">Target</span>
                         <div className="flex items-center gap-2">
@@ -150,7 +144,6 @@ const AdminReports = () => {
                     </div>
                   </td>
 
-                  {/* Reason & Preview Column */}
                   <td className="max-w-md py-6">
                     <div className="flex flex-col gap-3">
                       <div className="flex items-start gap-2">
@@ -170,10 +163,8 @@ const AdminReports = () => {
                     </div>
                   </td>
 
-                  {/* Status Column */}
                   <td className="py-6">{getStatusBadge(report.status)}</td>
 
-                  {/* Actions Column */}
                   <td className="text-right pr-8 py-6">
                     <div className="flex justify-end items-center gap-2">
                       {report.status === "pending" ? (

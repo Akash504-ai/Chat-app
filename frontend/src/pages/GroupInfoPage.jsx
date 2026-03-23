@@ -54,7 +54,6 @@ const GroupInfoPage = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      {/* Group Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{group.name}</h1>
@@ -73,14 +72,12 @@ const GroupInfoPage = () => {
         )}
       </div>
 
-      {/* Members */}
       <GroupMembersList
         group={group}
         isAdmin={isAdmin}
         onUpdateGroup={setGroup}
       />
 
-      {/* Actions */}
       <div className="flex gap-3">
         {isAdmin && (
           <button
@@ -99,7 +96,6 @@ const GroupInfoPage = () => {
         </button>
       </div>
 
-      {/* Modals */}
       {showAddMember && (
         <AddMemberModal
           group={group}

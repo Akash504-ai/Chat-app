@@ -8,7 +8,7 @@ import {
   User,
   X,
   GitPullRequest, // Added this for the logo
-  Code2,          // Alternative "dev" logo
+  Code2, // Alternative "dev" logo
 } from "lucide-react";
 import { useState } from "react";
 import { useChatStore } from "../store/useChatStore";
@@ -28,8 +28,6 @@ const Navbar = () => {
     >
       <div className="container mx-auto h-16 px-4">
         <div className="flex h-full items-center justify-between">
-          
-          {/* Logo */}
           <Link
             to="/"
             className="flex items-center gap-3 text-lg font-semibold hover:opacity-80 transition-opacity"
@@ -40,10 +38,7 @@ const Navbar = () => {
             <span className="tracking-tighter">PASO</span>
           </Link>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-3">
-            
-            {/* GitHub Repo */}
             <a
               href={GITHUB_URL}
               target="_blank"
@@ -54,13 +49,14 @@ const Navbar = () => {
               <FaGithub className="h-5 w-5" />
             </a>
 
-            {/* IMPROVED: Contribute Page */}
-            <Link 
-              to="/contribute" 
+            <Link
+              to="/contribute"
               className="btn btn-ghost btn-sm gap-2 group border border-transparent hover:border-primary/20"
             >
               <GitPullRequest className="h-4 w-4 text-primary group-hover:rotate-12 transition-transform" />
-              <span className="group-hover:text-primary transition-colors">Contribute</span>
+              <span className="group-hover:text-primary transition-colors">
+                Contribute
+              </span>
             </Link>
 
             <Link to="/settings" className="btn btn-ghost btn-sm gap-2">
@@ -87,7 +83,6 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Toggle */}
           <button
             onClick={() => setOpen(!open)}
             className="md:hidden btn btn-ghost btn-sm"
@@ -97,12 +92,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {open && (
         <div className="md:hidden border-t border-base-300 bg-base-100 px-4 py-4 animate-in slide-in-from-top duration-300">
           <div className="flex flex-col gap-2">
-
-            {/* GitHub */}
             <a
               href={GITHUB_URL}
               target="_blank"
@@ -113,7 +105,6 @@ const Navbar = () => {
               GitHub Repository
             </a>
 
-            {/* Mobile Contribute */}
             <Link
               to="/contribute"
               onClick={() => setOpen(false)}

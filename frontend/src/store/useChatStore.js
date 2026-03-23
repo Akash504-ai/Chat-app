@@ -318,7 +318,7 @@ export const useChatStore = create(
       deleteMessageForEveryone: async (messageId) => {
         try {
           await axiosInstance.delete(`/messages/${messageId}/everyone`);
-          // ✅ backend will emit socket event
+          // backend will emit socket event
         } catch {
           toast.error("Failed to delete message");
         }
@@ -406,7 +406,6 @@ export const useChatStore = create(
           }));
         });
 
-        /* ---------- PRIVATE MESSAGE ---------- */
         socket.on("newMessage", (msg) => {
           const { selectedUser, selectedChatType } = get();
           const authUser = useAuthStore.getState().authUser;
@@ -414,7 +413,6 @@ export const useChatStore = create(
           const senderId =
             typeof msg.senderId === "string" ? msg.senderId : msg.senderId?._id;
 
-          // ✅ DO NOT count my own messages as unread
           if (senderId === authUser._id) return;
 
           const chatUserId = senderId;
@@ -439,7 +437,6 @@ export const useChatStore = create(
           }
         });
 
-        /* ---------- GROUP MESSAGE ---------- */
         socket.on("newGroupMessage", (msg) => {
           const { selectedGroup, selectedChatType } = get();
 
@@ -460,7 +457,6 @@ export const useChatStore = create(
           }
         });
 
-        /* ---------- TYPING ---------- */
         socket.on("typing", ({ from }) => {
           set((state) => ({
             typingUsers: { ...state.typingUsers, [from]: true },
@@ -475,14 +471,12 @@ export const useChatStore = create(
           });
         });
 
-        /* ---------- DELETE FOR EVERYONE ---------- */
         socket.on("messageDeletedEveryone", ({ messageId }) => {
           set((state) => ({
             messages: state.messages.filter((m) => m._id !== messageId),
           }));
         });
 
-        /* ---------- SEEN (BLUE TICK) ---------- */
         socket.on("messageStatusUpdateBulk", ({ messageIds, status }) => {
           set((state) => ({
             messages: state.messages.map((m) =>
@@ -491,13 +485,11 @@ export const useChatStore = create(
           }));
         });
 
-        // ---------- ONLINE USERS ----------
         socket.off("getOnlineUsers");
         socket.on("getOnlineUsers", (users) => {
           set({ onlineUsers: users });
         });
 
-        // ---------- LAST SEEN UPDATE ----------
         socket.off("userLastSeenUpdate");
         socket.on("userLastSeenUpdate", ({ userId, isOnline, lastSeen }) => {
           set((state) => ({

@@ -13,12 +13,10 @@ const MessageSkeleton = () => {
               isLeft ? "justify-start" : "justify-end"
             }`}
           >
-            {/* LEFT AVATAR */}
             {isLeft && (
               <div className="shrink-0 h-7 w-7 sm:h-9 sm:w-9 md:h-10 md:w-10 rounded-full skeleton" />
             )}
 
-            {/* MESSAGE */}
             <div className="flex flex-col space-y-1 sm:space-y-2 min-w-0 w-full max-w-[88%] sm:max-w-[75%] lg:max-w-[65%]">
               <div className="skeleton h-3 w-12 sm:w-16" />
 
@@ -29,7 +27,6 @@ const MessageSkeleton = () => {
               />
             </div>
 
-            {/* RIGHT AVATAR */}
             {!isLeft && (
               <div className="shrink-0 h-7 w-7 sm:h-9 sm:w-9 md:h-10 md:w-10 rounded-full skeleton" />
             )}

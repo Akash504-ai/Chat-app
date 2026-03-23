@@ -64,7 +64,7 @@ const messageSchema = new mongoose.Schema(
       index: true,
     },
 
-    // Delete for me
+    //for me
     deletedFor: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -73,7 +73,7 @@ const messageSchema = new mongoose.Schema(
       },
     ],
 
-    // Delete for everyone
+    //for everyone
     deletedForEveryone: {
       type: Boolean,
       default: false,
@@ -122,7 +122,7 @@ const messageSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// ✅ Safety checks
+//Safety checks
 messageSchema.pre("validate", function (next) {
   // must be personal OR group
   if (!this.receiverId && !this.groupId) {

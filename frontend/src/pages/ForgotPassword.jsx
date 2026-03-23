@@ -68,14 +68,12 @@ const ForgotPasswordPage = () => {
 
   return (
     <div className="h-screen w-full flex items-center justify-center bg-base-200 p-4 relative overflow-hidden">
-      {/* Background Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[120px] rounded-full animate-pulse" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/10 blur-[120px] rounded-full animate-pulse" />
 
       <div className="w-full max-w-md relative z-10">
         <div className="rounded-3xl bg-base-100/80 backdrop-blur-2xl shadow-2xl border border-white/20 overflow-hidden transition-all duration-500">
           <div className="p-6 md:p-8">
-            {/* Back Button */}
             <button
               type="button"
               onClick={handleBack}
@@ -85,7 +83,6 @@ const ForgotPasswordPage = () => {
               Back
             </button>
 
-            {/* HEADER */}
             <div className="text-center mb-6">
               <div className="inline-flex size-12 rounded-2xl bg-primary/10 items-center justify-center mb-4">
                 {step === 1 && <Mail className="size-6 text-primary" />}
@@ -100,7 +97,6 @@ const ForgotPasswordPage = () => {
               </p>
             </div>
 
-            {/* PROGRESS BAR */}
             <div className="flex gap-2 mb-8">
               {[1, 2, 3].map((s) => (
                 <div 
@@ -112,7 +108,6 @@ const ForgotPasswordPage = () => {
               ))}
             </div>
 
-            {/* STEP 1: Email */}
             {step === 1 && (
               <form onSubmit={handleFetchQuestions} className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 <div className="form-control">
@@ -137,7 +132,6 @@ const ForgotPasswordPage = () => {
               </form>
             )}
 
-            {/* STEP 2: Security Questions (FIXED UI) */}
             {step === 2 && (
               <form onSubmit={handleVerify} className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
                 <div className="max-h-[320px] overflow-y-auto pr-1 space-y-5 custom-scrollbar">
@@ -175,7 +169,6 @@ const ForgotPasswordPage = () => {
               </form>
             )}
 
-            {/* STEP 3: Reset Password */}
             {step === 3 && (
               <form onSubmit={handleReset} className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 <div className="space-y-4">
