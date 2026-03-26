@@ -1,3 +1,7 @@
+![Banner](./assets/banner.png)
+
+<br/>
+
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen)
 # PASO – Advanced Real-Time Chat Application
