@@ -332,3 +332,10 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md)
 Author
 
 Akash Santra
+
+---
+
+## Community Guidelines
+
+- Code of Conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
+- Security Policy: [SECURITY.md](./SECURITY.md)
